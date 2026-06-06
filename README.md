@@ -2,6 +2,10 @@
 
 A simple student-first Latin learning scaffold for grades 3–8.
 
+## Live site
+- Production: https://latin-launchpad.netlify.app
+- Repository: https://github.com/jshoemaker-hub/latin-launchpad
+
 ## What’s included
 - `index.html` — landing page, student signup, grade selection, lesson list, and dashboard
 - `styles.css` — playful interface styles
@@ -22,3 +26,6 @@ A simple student-first Latin learning scaffold for grades 3–8.
 - Add audio pronunciation and review mode
 - Add teacher/parent accounts and lesson assignment
 - Add persistence via a backend API for accounts and progress
+
+## Deployment
+Netlify builds the site from `main` using `netlify.toml`. The build copies the runtime web files into `dist/` and publishes that folder.
