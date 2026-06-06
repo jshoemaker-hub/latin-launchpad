@@ -6,5 +6,6 @@ ref/*.pdf
 
 # Tooling and deploy caches.
 .netlify/
+dist/
 node_modules/
 npm-debug.log*
