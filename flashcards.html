@@ -1,0 +1,1214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Latin Flashcards</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f3ef;
+      color: #1a1a1a;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+
+    .screen { display: none; width: 100%; max-width: 480px; }
+    .screen.active { display: flex; flex-direction: column; gap: 20px; }
+
+    h1 { font-size: 1.8rem; font-weight: 700; }
+    h2 { font-size: 1.3rem; font-weight: 600; }
+    p  { color: #555; line-height: 1.5; }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    }
+
+    .btn {
+      display: block; width: 100%;
+      padding: 14px 20px; border-radius: 12px; border: none;
+      font-size: 1rem; font-weight: 600; cursor: pointer;
+      transition: transform .1s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary   { background: #4f46e5; color: white; }
+    .btn-primary:hover { background: #4338ca; }
+    .btn-secondary { background: #e5e7eb; color: #374151; }
+    .btn-secondary:hover { background: #d1d5db; }
+    .btn-success   { background: #16a34a; color: white; }
+    .btn-danger    { background: #dc2626; color: white; }
+    .btn-report    { background: #0891b2; color: white; }
+    .btn-audio     { background: #7c3aed; color: white; }
+    .btn-audio:hover { background: #6d28d9; }
+    .btn-sm { padding: 9px 14px; font-size: 0.88rem; border-radius: 9px; }
+
+    /* Name */
+    .name-row { display: flex; gap: 8px; align-items: center; }
+    .name-input {
+      flex: 1; padding: 10px 14px; border-radius: 10px;
+      border: 2px solid #e5e7eb; font-size: 1rem; font-family: inherit; outline: none;
+    }
+    .name-input:focus { border-color: #4f46e5; }
+    .name-edit-btn {
+      background: none; border: none; cursor: pointer;
+      color: #6b7280; font-size: 0.85rem; padding: 4px 8px; text-decoration: underline;
+    }
+
+    /* Mode grid — now 3 cards */
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .mode-audio-row { margin-top: 0; }
+    .mode-btn {
+      background: white; border: 2px solid #e5e7eb; border-radius: 14px;
+      padding: 20px 16px; cursor: pointer; text-align: center;
+      transition: border-color .15s, background .15s;
+    }
+    .mode-btn:hover { border-color: #4f46e5; background: #eef2ff; }
+    .mode-btn.selected-visual { border-color: #4f46e5; background: #eef2ff; }
+    .mode-btn.selected-audio  { border-color: #7c3aed; background: #f5f3ff; }
+    .mode-btn.audio-card { grid-column: 1 / -1; display: flex; align-items: center; gap: 16px; padding: 18px 20px; }
+    .mode-btn.audio-card .mode-icon { font-size: 2rem; flex-shrink: 0; }
+    .mode-btn.audio-card .mode-text { text-align: left; }
+    .mode-icon  { font-size: 2rem; display: block; margin-bottom: 6px; }
+    .mode-label { font-weight: 700; font-size: 1rem; }
+    .mode-sub   { font-size: 0.8rem; color: #6b7280; margin-top: 2px; }
+
+    /* Grade */
+    .grade-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .grade-chip {
+      background: #f3f4f6; border: 2px solid transparent;
+      border-radius: 8px; padding: 8px 14px; font-weight: 600; cursor: pointer; transition: all .15s;
+    }
+    .grade-chip.selected { border-color: #4f46e5; background: #eef2ff; color: #4f46e5; }
+
+    /* Week dots */
+    .week-row { display: flex; gap: 8px; justify-content: center; }
+    .day-dot {
+      width: 36px; height: 36px; border-radius: 50%; background: #e5e7eb;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.65rem; font-weight: 700; color: #6b7280; transition: background .3s;
+    }
+    .day-dot.done  { background: #16a34a; color: white; }
+    .day-dot.today { outline: 3px solid #4f46e5; outline-offset: 2px; }
+
+    /* Score row */
+    .score-row { display: flex; gap: 12px; }
+    .score-box {
+      flex: 1; text-align: center; background: white;
+      border-radius: 12px; padding: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.06);
+    }
+    .score-box .label { font-size: 0.78rem; color: #6b7280; margin-bottom: 4px; }
+    .score-box .value { font-size: 1.6rem; font-weight: 700; }
+    .score-box.correct .value { color: #16a34a; }
+    .score-box.missed  .value { color: #dc2626; }
+    .score-box.pct     .value { color: #4f46e5; }
+
+    /* Progress bar */
+    .progress-bar-wrap { background: #e5e7eb; border-radius: 999px; height: 6px; overflow: hidden; }
+    .progress-bar-fill { height: 100%; background: #4f46e5; border-radius: 999px; transition: width 0.4s; }
+
+    /* ── VISUAL flashcard ── */
+    .flashcard-wrap { perspective: 1000px; height: 220px; }
+    .flashcard {
+      width: 100%; height: 100%; position: relative; transform-style: preserve-3d;
+      transition: transform 0.45s cubic-bezier(.4,0,.2,1); cursor: pointer;
+    }
+    .flashcard.flipped { transform: rotateY(180deg); }
+    .flashcard-face {
+      position: absolute; inset: 0; background: white; border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1); backface-visibility: hidden;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 24px; text-align: center; gap: 10px;
+    }
+    .flashcard-face.back { transform: rotateY(180deg); background: #f0f9ff; }
+    .card-emoji   { font-size: 3rem; }
+    .card-latin   { font-size: 1.9rem; font-weight: 700; }
+    .card-english { font-size: 1.5rem; font-weight: 600; color: #1d4ed8; }
+    .card-hint    { font-size: 0.82rem; color: #9ca3af; margin-top: 4px; }
+
+    /* ── AUDIO card ── */
+    .audio-card-panel {
+      background: white; border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      padding: 28px 24px; text-align: center;
+      display: flex; flex-direction: column; align-items: center; gap: 14px;
+    }
+    .audio-emoji  { font-size: 3.5rem; line-height: 1; }
+    .audio-latin  { font-size: 2rem; font-weight: 800; letter-spacing: 0.01em; }
+    .audio-tag    { font-size: 0.78rem; color: #7c3aed; font-weight: 600;
+                    background: #f5f3ff; border-radius: 999px; padding: 3px 12px; }
+
+    /* Hear button */
+    .hear-btn {
+      display: flex; align-items: center; gap: 8px;
+      background: #f5f3ff; border: 2px solid #7c3aed; border-radius: 999px;
+      padding: 9px 20px; font-weight: 700; font-size: 0.9rem; color: #7c3aed;
+      cursor: pointer; transition: background .15s;
+    }
+    .hear-btn:hover { background: #ede9fe; }
+
+    /* Mic button */
+    .mic-btn {
+      width: 76px; height: 76px; border-radius: 50%; border: none;
+      background: #7c3aed; color: white; font-size: 2rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 16px rgba(124,58,237,0.35);
+      transition: transform .15s, background .15s;
+      position: relative;
+    }
+    .mic-btn:hover   { background: #6d28d9; }
+    .mic-btn.listening {
+      background: #dc2626;
+      box-shadow: 0 0 0 0 rgba(220,38,38,0.5);
+      animation: pulse-ring 1.2s ease-out infinite;
+    }
+    @keyframes pulse-ring {
+      0%   { box-shadow: 0 0 0 0   rgba(220,38,38,0.5); }
+      70%  { box-shadow: 0 0 0 18px rgba(220,38,38,0); }
+      100% { box-shadow: 0 0 0 0   rgba(220,38,38,0); }
+    }
+    .mic-btn.processing { background: #d97706; animation: none; }
+    .mic-status { font-size: 0.85rem; color: #6b7280; font-weight: 500; min-height: 20px; }
+
+    /* Result overlay */
+    .audio-result {
+      width: 100%; border-radius: 14px; padding: 16px 18px;
+      display: none; flex-direction: column; gap: 8px;
+    }
+    .audio-result.show { display: flex; }
+    .audio-result.res-correct { background: #f0fdf4; border: 2px solid #86efac; }
+    .audio-result.res-wrong   { background: #fef2f2; border: 2px solid #fca5a5; }
+    .result-verdict { font-size: 1.1rem; font-weight: 800; }
+    .result-verdict.v-correct { color: #15803d; }
+    .result-verdict.v-wrong   { color: #b91c1c; }
+    .result-detail { font-size: 0.88rem; color: #374151; line-height: 1.5; }
+    .result-detail strong { color: #1a1a1a; }
+
+    /* Timer */
+    .timer-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: #f3f4f6; border-radius: 999px;
+      padding: 6px 14px; font-weight: 700; font-size: 0.9rem; color: #374151;
+    }
+    .timer-badge.urgent { background: #fef2f2; color: #dc2626; }
+
+    /* Action row */
+    .action-row { display: flex; gap: 10px; }
+    .action-row .btn { flex: 1; }
+
+    /* Summary */
+    .summary-list { display: flex; flex-direction: column; gap: 8px; margin-top: 8px; }
+    .summary-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px; border-radius: 10px; background: #f9fafb; font-size: 0.9rem;
+    }
+    .summary-item .si-latin   { font-weight: 700; min-width: 110px; }
+    .summary-item .si-english { color: #374151; flex: 1; }
+    .summary-item .si-mark    { font-size: 1.1rem; }
+
+    /* Report */
+    .report-header { text-align: center; margin-bottom: 4px; }
+    .report-section { margin-bottom: 16px; }
+    .report-section h3 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; border-bottom: 1px solid #e5e7eb; padding-bottom: 6px; }
+    .report-stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+    .report-stat { text-align: center; background: #f9fafb; border-radius: 10px; padding: 12px 8px; }
+    .report-stat .rs-val   { font-size: 1.5rem; font-weight: 700; color: #4f46e5; }
+    .report-stat .rs-label { font-size: 0.72rem; color: #6b7280; margin-top: 2px; }
+    .session-table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
+    .session-table th { text-align: left; font-weight: 600; color: #6b7280; border-bottom: 2px solid #e5e7eb; padding: 6px 8px; }
+    .session-table td { padding: 7px 8px; border-bottom: 1px solid #f3f4f6; }
+    .session-table tr:last-child td { border-bottom: none; }
+    .pct-chip { display: inline-block; border-radius: 999px; padding: 2px 10px; font-weight: 700; font-size: 0.82rem; }
+    .pct-high { background: #dcfce7; color: #15803d; }
+    .pct-mid  { background: #fef9c3; color: #854d0e; }
+    .pct-low  { background: #fee2e2; color: #b91c1c; }
+    .goal-banner { text-align: center; border-radius: 12px; padding: 14px; font-weight: 700; font-size: 1rem; }
+    .goal-met   { background: #dcfce7; color: #15803d; }
+    .goal-unmet { background: #f3f4f6; color: #374151; }
+    .missed-list { display: flex; flex-direction: column; gap: 6px; }
+    .missed-item { display: flex; gap: 10px; align-items: center; background: #fef2f2; border-radius: 8px; padding: 8px 12px; font-size: 0.88rem; }
+    .missed-item .mi-latin { font-weight: 700; min-width: 100px; }
+    .missed-item .mi-eng   { color: #6b7280; flex: 1; }
+    .missed-item .mi-count { font-weight: 700; color: #dc2626; font-size: 0.78rem; }
+    .teacher-note { border: 1px dashed #d1d5db; border-radius: 10px; padding: 12px; font-size: 0.85rem; color: #6b7280; line-height: 1.6; }
+
+    /* Utilities */
+    .text-center { text-align: center; }
+    .text-sm     { font-size: 0.85rem; color: #6b7280; }
+    .mt-2        { margin-top: 8px; }
+    .flex        { display: flex; }
+    .items-center    { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .summary-scroll { max-height: 280px; overflow-y: auto; }
+
+    /* No-speech banner */
+    .no-speech-banner {
+      background: #fef9c3; border: 1px solid #fde047; border-radius: 10px;
+      padding: 12px 16px; font-size: 0.85rem; color: #854d0e; display: none;
+    }
+    .no-speech-banner.show { display: block; }
+
+    /* ── Print ── */
+    @media print {
+      body { background: white; padding: 0; display: block; }
+      .screen { display: none !important; max-width: 100%; }
+      #screenReport { display: block !important; }
+      .no-print { display: none !important; }
+      .card { box-shadow: none; border: 1px solid #e5e7eb; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════
+     HOME
+     ══════════════════════════════════ -->
+<div id="screenHome" class="screen active">
+  <div>
+    <h1>🏛️ Latin Flashcards</h1>
+    <p class="mt-2">Quick review sessions to keep your vocabulary sharp.</p>
+  </div>
+
+  <!-- Name -->
+  <div class="card" style="padding:18px 24px">
+    <div class="flex items-center justify-between" style="margin-bottom:8px">
+      <label style="font-weight:600;font-size:0.9rem">Student name</label>
+      <button class="name-edit-btn" id="nameEditBtn" onclick="toggleNameEdit()" style="display:none">Edit</button>
+    </div>
+    <div id="nameInputRow" class="name-row">
+      <input class="name-input" type="text" id="studentName" placeholder="Enter your name…" />
+      <button class="btn btn-primary btn-sm" style="width:auto" onclick="saveName()">Save</button>
+    </div>
+    <div id="nameDisplay" style="display:none;font-size:1.1rem;font-weight:600"></div>
+  </div>
+
+  <!-- Weekly goal -->
+  <div class="card">
+    <div class="flex items-center justify-between" style="margin-bottom:12px">
+      <h2>This week</h2>
+      <span class="text-sm" id="weekGoalLabel">0 / 4 days</span>
+    </div>
+    <div class="week-row" id="weekDots"></div>
+    <p class="text-sm mt-2 text-center" id="weekMsg"></p>
+  </div>
+
+  <!-- Session mode -->
+  <div>
+    <h2 style="margin-bottom:10px">Choose a session</h2>
+    <div class="mode-grid">
+      <div class="mode-btn" id="mode5" onclick="selectMode(5,'visual')">
+        <span class="mode-icon">⚡</span>
+        <div class="mode-label">5 min</div>
+        <div class="mode-sub">~15 cards · visual</div>
+      </div>
+      <div class="mode-btn" id="mode10" onclick="selectMode(10,'visual')">
+        <span class="mode-icon">🔥</span>
+        <div class="mode-label">10 min</div>
+        <div class="mode-sub">~30 cards · visual</div>
+      </div>
+      <div class="mode-btn audio-card" id="modeAudio" onclick="selectMode(5,'audio')">
+        <span class="mode-icon" style="margin-bottom:0">🎙️</span>
+        <div class="mode-text">
+          <div class="mode-label">Audio mode</div>
+          <div class="mode-sub">Hear Latin · speak the English answer · mic auto-scores</div>
+        </div>
+      </div>
+    </div>
+    <div class="no-speech-banner mt-2" id="noSpeechBanner">
+      ⚠️ Your browser doesn't support speech recognition. Audio mode will ask you to self-mark instead. Chrome or Edge work best.
+    </div>
+  </div>
+
+  <!-- Grade -->
+  <div>
+    <h2 style="margin-bottom:10px">Grade</h2>
+    <div class="grade-row" id="gradeRow"></div>
+  </div>
+
+  <!-- Stats -->
+  <div class="score-row">
+    <div class="score-box correct">
+      <div class="label">Best score</div>
+      <div class="value" id="homeBest">—</div>
+    </div>
+    <div class="score-box pct">
+      <div class="label">Sessions</div>
+      <div class="value" id="homeSessions">0</div>
+    </div>
+    <div class="score-box">
+      <div class="label">Streak 🔥</div>
+      <div class="value" id="homeStreak">0</div>
+    </div>
+  </div>
+
+  <div class="action-row">
+    <button class="btn btn-report" onclick="showReport()">📋 Report</button>
+    <button class="btn btn-primary" id="startBtn" onclick="startSession()">Start →</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     VISUAL FLASHCARD
+     ══════════════════════════════════ -->
+<div id="screenCard" class="screen">
+  <div class="flex items-center justify-between">
+    <button class="btn btn-secondary btn-sm" style="width:auto;padding:8px 14px" onclick="confirmQuit()">✕ Quit</button>
+    <span class="timer-badge" id="timerBadge">⏱ 5:00</span>
+    <div class="text-sm" id="cardCounter">1 / 15</div>
+  </div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="progressFill" style="width:0%"></div>
+  </div>
+
+  <div class="score-row">
+    <div class="score-box correct"><div class="label">✓ Got it</div><div class="value" id="liveCorrect">0</div></div>
+    <div class="score-box missed"><div class="label">✗ Missed</div><div class="value" id="liveMissed">0</div></div>
+    <div class="score-box pct"><div class="label">Score</div><div class="value" id="livePct">—</div></div>
+  </div>
+
+  <div class="flashcard-wrap" onclick="flipCard()">
+    <div class="flashcard" id="flashcard">
+      <div class="flashcard-face front">
+        <div class="card-emoji" id="cardEmoji">🏛️</div>
+        <div class="card-latin" id="cardFront">puella</div>
+        <div class="card-hint">Tap to reveal →</div>
+      </div>
+      <div class="flashcard-face back">
+        <div class="card-emoji" id="cardEmojiBack">👧</div>
+        <div class="card-english" id="cardBack">girl</div>
+        <div class="card-hint">How did you do?</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Hear button (visual mode) -->
+  <div class="text-center">
+    <button class="hear-btn" style="display:inline-flex" onclick="speakWord()" id="visualHearBtn">
+      🔊 Hear Latin word
+    </button>
+  </div>
+
+  <div class="action-row" id="answerRow" style="opacity:0;pointer-events:none;transition:opacity .2s">
+    <button class="btn btn-danger" onclick="markCard(false)">✗ Missed</button>
+    <button class="btn btn-success" onclick="markCard(true)">✓ Got it</button>
+  </div>
+
+  <p class="text-sm text-center">Flip the card, then mark how you did.</p>
+</div>
+
+
+<!-- ══════════════════════════════════
+     AUDIO FLASHCARD
+     ══════════════════════════════════ -->
+<div id="screenAudio" class="screen">
+  <div class="flex items-center justify-between">
+    <button class="btn btn-secondary btn-sm" style="width:auto;padding:8px 14px" onclick="confirmQuit()">✕ Quit</button>
+    <span class="timer-badge" id="audioTimerBadge">⏱ 5:00</span>
+    <div class="text-sm" id="audioCardCounter">1 / 15</div>
+  </div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-bar-fill" id="audioProgressFill" style="width:0%"></div>
+  </div>
+
+  <div class="score-row">
+    <div class="score-box correct"><div class="label">✓ Correct</div><div class="value" id="audioLiveCorrect">0</div></div>
+    <div class="score-box missed"><div class="label">✗ Wrong</div><div class="value" id="audioLiveMissed">0</div></div>
+    <div class="score-box pct"><div class="label">Score</div><div class="value" id="audioLivePct">—</div></div>
+  </div>
+
+  <!-- Audio card -->
+  <div class="audio-card-panel">
+    <div class="audio-tag" id="audioTag">🔊 Listen &amp; respond</div>
+    <div class="audio-emoji" id="audioEmoji">🏛️</div>
+    <div class="audio-latin" id="audioLatin">puella</div>
+
+    <button class="hear-btn" onclick="speakAudioWord()" id="hearAgainBtn">
+      🔊 Hear again
+    </button>
+  </div>
+
+  <!-- Mic section -->
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px" id="micSection">
+    <div class="mic-status" id="micStatus">Tap the mic and say the English meaning</div>
+    <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎤</button>
+    <div class="mic-status" id="micTranscript" style="color:#374151;font-style:italic;min-height:18px"></div>
+  </div>
+
+  <!-- Result -->
+  <div class="audio-result" id="audioResult">
+    <div class="result-verdict" id="resultVerdict"></div>
+    <div class="result-detail" id="resultDetail"></div>
+  </div>
+
+  <!-- Next button (shown after answer) -->
+  <button class="btn btn-primary" id="audioNextBtn" style="display:none" onclick="audioNextCard()">Next card →</button>
+
+  <!-- Fallback self-mark (no mic support) -->
+  <div id="fallbackRow" class="action-row" style="display:none">
+    <button class="btn btn-danger" onclick="markAudioCard(false, 'self')">✗ Missed</button>
+    <button class="btn btn-success" onclick="markAudioCard(true, 'self')">✓ Got it</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     SESSION SUMMARY
+     ══════════════════════════════════ -->
+<div id="screenSummary" class="screen">
+  <div>
+    <h1 id="summaryHeadline">Session complete! 🎉</h1>
+    <p class="mt-2" id="summarySubtitle">Here's how you did.</p>
+  </div>
+
+  <div class="score-row">
+    <div class="score-box correct"><div class="label">✓ Correct</div><div class="value" id="sumCorrect">0</div></div>
+    <div class="score-box missed"><div class="label">✗ Missed</div><div class="value" id="sumMissed">0</div></div>
+    <div class="score-box pct"><div class="label">Score</div><div class="value" id="sumPct">—</div></div>
+  </div>
+
+  <div class="card">
+    <div class="flex items-center justify-between" style="margin-bottom:10px">
+      <h2>Weekly goal</h2>
+      <span class="text-sm" id="sumWeekLabel">0 / 4 days</span>
+    </div>
+    <div class="week-row" id="sumWeekDots"></div>
+    <p class="text-sm mt-2 text-center" id="sumWeekMsg"></p>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-bottom:10px">Word review</h2>
+    <div class="summary-scroll summary-list" id="summaryList"></div>
+  </div>
+
+  <div class="action-row">
+    <button class="btn btn-secondary" onclick="goHome()">Home</button>
+    <button class="btn btn-report" onclick="showReport()">📋 Report</button>
+    <button class="btn btn-primary" onclick="startSession()">Again →</button>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════
+     WEEKLY REPORT
+     ══════════════════════════════════ -->
+<div id="screenReport" class="screen">
+  <div class="no-print flex items-center justify-between">
+    <button class="btn btn-secondary btn-sm" style="width:auto;padding:8px 14px" onclick="goHome()">← Back</button>
+    <h2>Weekly Report</h2>
+    <button class="btn btn-primary btn-sm" style="width:auto;padding:8px 14px" onclick="window.print()">🖨️ Print</button>
+  </div>
+
+  <div class="card" id="reportCard">
+    <div class="report-header" style="margin-bottom:20px">
+      <div style="font-size:1.5rem;font-weight:800">Latin Vocabulary Progress Report</div>
+      <div class="text-sm mt-2" style="color:#6b7280">Latin Launchpad · Weekly Summary</div>
+      <div class="text-sm mt-2" id="reportDateRange"></div>
+    </div>
+
+    <div class="report-section">
+      <h3>Student Information</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.9rem">
+        <div><span style="color:#6b7280">Name: </span><strong id="reportName">—</strong></div>
+        <div><span style="color:#6b7280">Grade: </span><strong id="reportGrade">—</strong></div>
+        <div><span style="color:#6b7280">Week: </span><strong id="reportWeek">—</strong></div>
+        <div><span style="color:#6b7280">Days practiced: </span><strong id="reportDayCount">—</strong></div>
+      </div>
+    </div>
+
+    <div class="report-section">
+      <div class="goal-banner" id="goalBanner"></div>
+    </div>
+
+    <div class="report-section">
+      <h3>Practice Days This Week</h3>
+      <div class="week-row" id="reportWeekDots" style="justify-content:flex-start;gap:10px"></div>
+    </div>
+
+    <div class="report-section">
+      <h3>This Week's Performance</h3>
+      <div class="report-stat-grid">
+        <div class="report-stat"><div class="rs-val" id="rsSessions">0</div><div class="rs-label">Sessions</div></div>
+        <div class="report-stat"><div class="rs-val" id="rsCards">0</div><div class="rs-label">Cards reviewed</div></div>
+        <div class="report-stat"><div class="rs-val" id="rsAvg">—</div><div class="rs-label">Average score</div></div>
+        <div class="report-stat"><div class="rs-val" id="rsBest">—</div><div class="rs-label">Best session</div></div>
+        <div class="report-stat"><div class="rs-val" id="rsCorrect">0</div><div class="rs-label">Correct</div></div>
+        <div class="report-stat"><div class="rs-val" id="rsMissedStat">0</div><div class="rs-label">To review</div></div>
+      </div>
+    </div>
+
+    <div class="report-section">
+      <h3>Session Log</h3>
+      <table class="session-table">
+        <thead><tr><th>Date</th><th>Mode</th><th>Cards</th><th>Score</th></tr></thead>
+        <tbody id="sessionTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="report-section">
+      <h3>Words to Keep Practicing</h3>
+      <div class="missed-list" id="missedWordsList"></div>
+      <p class="text-sm mt-2" id="missedNone" style="display:none">🎉 No words missed — great work!</p>
+    </div>
+
+    <div class="report-section">
+      <h3>Teacher Notes</h3>
+      <div class="teacher-note">
+        <div style="margin-bottom:28px">Comments:</div>
+        <div style="display:flex;gap:40px;margin-top:8px">
+          <div style="flex:1;border-top:1px solid #374151;padding-top:6px;font-size:0.78rem;color:#6b7280">Teacher signature</div>
+          <div style="flex:1;border-top:1px solid #374151;padding-top:6px;font-size:0.78rem;color:#6b7280">Date</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;font-size:0.75rem;color:#9ca3af;margin-top:8px">
+      Generated by Latin Launchpad Flashcards
+    </div>
+  </div>
+</div>
+
+
+<script src="word-banks.js"></script>
+<script>
+// ═══════════════════════════════════════
+//  STORAGE
+// ═══════════════════════════════════════
+const STORE = 'latinFlashcards_v2';
+function load() { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch { return {}; } }
+function save(d) { localStorage.setItem(STORE, JSON.stringify(d)); }
+function getData() {
+  const d = load();
+  return {
+    name:            d.name            || '',
+    sessions:        d.sessions        || 0,
+    bestPct:         d.bestPct         || null,
+    streak:          d.streak          || 0,
+    lastSessionDate: d.lastSessionDate || null,
+    weekData:        d.weekData        || {},
+    sessionLog:      d.sessionLog      || [],
+    missedWords:     d.missedWords     || {},
+    grade:           d.grade           || 3,
+    mode:            d.mode            || 5,
+    sessionType:     d.sessionType     || 'visual',
+  };
+}
+
+// ═══════════════════════════════════════
+//  WEEK HELPERS
+// ═══════════════════════════════════════
+function isoWeekKey(date) {
+  const d = new Date(date); d.setHours(0,0,0,0);
+  d.setDate(d.getDate() + 3 - ((d.getDay()+6) % 7));
+  const w1 = new Date(d.getFullYear(), 0, 4);
+  const wn = 1 + Math.round(((d - w1) / 86400000 - 3 + ((w1.getDay()+6)%7)) / 7);
+  return `${d.getFullYear()}-W${String(wn).padStart(2,'0')}`;
+}
+function todayStr() { return new Date().toISOString().slice(0,10); }
+function currentWeekDays(wd) { return wd[isoWeekKey(new Date())] || []; }
+function markTodayDone(wd) {
+  const key = isoWeekKey(new Date());
+  const days = new Set(wd[key] || []);
+  days.add(todayStr());
+  wd[key] = [...days];
+  return wd;
+}
+function buildWeekDotData(wd) {
+  const labels = ['Mo','Tu','We','Th','Fr','Sa','Su'];
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dow = (today.getDay()+6)%7;
+  const start = new Date(today); start.setDate(today.getDate()-dow);
+  const key = isoWeekKey(today);
+  const done = new Set(wd[key]||[]);
+  return labels.map((label,i) => {
+    const d = new Date(start); d.setDate(start.getDate()+i);
+    const s = d.toISOString().slice(0,10);
+    return { label, date: s, done: done.has(s), today: s===todayStr() };
+  });
+}
+function renderWeekDots(id, wd, large) {
+  const dots = buildWeekDotData(wd);
+  document.getElementById(id).innerHTML = dots.map(d =>
+    `<div class="day-dot${d.done?' done':''}${d.today?' today':''}"
+          style="${large?'width:44px;height:44px;font-size:0.75rem':''}">
+       ${d.done?'✓':d.label}
+     </div>`
+  ).join('');
+}
+function weekMsg(wd) {
+  const n = currentWeekDays(wd).length, r = Math.max(0,4-n);
+  if (n>=4) return '🎯 Weekly goal reached!';
+  if (r===1) return 'One more session to hit your goal!';
+  return `${r} more session${r>1?'s':''} to reach your 4-day goal.`;
+}
+function getWeekRange() {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const dow = (today.getDay()+6)%7;
+  const mon = new Date(today); mon.setDate(today.getDate()-dow);
+  const sun = new Date(mon);   sun.setDate(mon.getDate()+6);
+  const fmt = d => d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  return `${fmt(mon)} – ${fmt(sun)}, ${sun.getFullYear()}`;
+}
+
+// ═══════════════════════════════════════
+//  NAME
+// ═══════════════════════════════════════
+function saveName() {
+  const v = document.getElementById('studentName').value.trim();
+  if (!v) return;
+  const d = getData(); d.name = v; save(d);
+  showNameDisplay(v);
+}
+function showNameDisplay(name) {
+  document.getElementById('nameInputRow').style.display = 'none';
+  document.getElementById('nameDisplay').style.display  = 'block';
+  document.getElementById('nameDisplay').textContent    = name;
+  document.getElementById('nameEditBtn').style.display  = 'inline';
+}
+function toggleNameEdit() {
+  document.getElementById('nameInputRow').style.display = 'flex';
+  document.getElementById('nameDisplay').style.display  = 'none';
+  document.getElementById('nameEditBtn').style.display  = 'none';
+  document.getElementById('studentName').focus();
+}
+
+// ═══════════════════════════════════════
+//  SPEECH SYNTHESIS
+// ═══════════════════════════════════════
+const synth = window.speechSynthesis;
+let latinVoice = null;
+
+function loadVoices() {
+  const voices = synth.getVoices();
+  // Prefer a Latin voice if available, else pick a clear English voice
+  latinVoice = voices.find(v => v.lang === 'la') ||
+               voices.find(v => v.lang.startsWith('en') && v.name.includes('Google')) ||
+               voices.find(v => v.lang.startsWith('en')) ||
+               null;
+}
+if (synth) {
+  loadVoices();
+  synth.onvoiceschanged = loadVoices;
+}
+
+function speak(text, rate = 0.8, onEnd) {
+  if (!synth) { if (onEnd) onEnd(); return; }
+  synth.cancel();
+  const utt = new SpeechSynthesisUtterance(text);
+  if (latinVoice) utt.voice = latinVoice;
+  utt.rate  = rate;
+  utt.pitch = 1;
+  if (onEnd) utt.onend = onEnd;
+  synth.speak(utt);
+}
+
+// ═══════════════════════════════════════
+//  SPEECH RECOGNITION
+// ═══════════════════════════════════════
+const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition || null;
+let recognition  = null;
+let micActive    = false;
+
+function setupRecognition() {
+  if (!SpeechRec) return;
+  recognition = new SpeechRec();
+  recognition.lang = 'en-US';
+  recognition.interimResults = true;
+  recognition.maxAlternatives = 3;
+
+  recognition.onresult = (e) => {
+    const interim = Array.from(e.results).map(r => r[0].transcript).join('');
+    document.getElementById('micTranscript').textContent = '🎤 ' + interim;
+    if (e.results[e.results.length - 1].isFinal) {
+      const finals = Array.from(e.results[e.results.length-1])
+        .map(alt => alt.transcript);
+      stopMic();
+      processAnswer(finals);
+    }
+  };
+  recognition.onerror = (e) => {
+    stopMic();
+    if (e.error === 'no-speech') {
+      document.getElementById('micStatus').textContent = 'No speech detected — try again';
+    } else {
+      document.getElementById('micStatus').textContent = `Error: ${e.error}. Try again.`;
+    }
+  };
+  recognition.onend = () => {
+    if (micActive) stopMic();
+  };
+}
+
+function toggleMic() {
+  if (!recognition) {
+    // Fallback: show self-mark buttons
+    document.getElementById('micSection').style.display = 'none';
+    // reveal the word
+    document.getElementById('audioTag').textContent = '👁️ Answer';
+    document.getElementById('audioEmoji').textContent = state.deck[state.index].emoji || '🏛️';
+    document.getElementById('audioLatin').textContent = state.deck[state.index].english;
+    document.getElementById('fallbackRow').style.display = 'flex';
+    return;
+  }
+  if (micActive) { stopMic(); return; }
+  startMic();
+}
+
+function startMic() {
+  micActive = true;
+  const btn = document.getElementById('micBtn');
+  btn.classList.add('listening');
+  btn.textContent = '⏹';
+  document.getElementById('micStatus').textContent    = 'Listening…';
+  document.getElementById('micTranscript').textContent = '';
+  try { recognition.start(); } catch(e) {}
+}
+
+function stopMic() {
+  micActive = false;
+  const btn = document.getElementById('micBtn');
+  btn.classList.remove('listening');
+  btn.classList.remove('processing');
+  btn.textContent = '🎤';
+  try { recognition.stop(); } catch(e) {}
+}
+
+// ═══════════════════════════════════════
+//  ANSWER MATCHING
+// ═══════════════════════════════════════
+function normalise(s) {
+  return s.toLowerCase().replace(/[^a-z\s]/g, '').trim();
+}
+
+function checkAnswer(spokenAlts, correctEnglish) {
+  const correct = normalise(correctEnglish);
+  // Split by / or , for multiple acceptable answers
+  const alts = correct.split(/[\/,]/).map(s => s.trim()).filter(Boolean);
+
+  for (const spoken of spokenAlts) {
+    const s = normalise(spoken);
+    for (const alt of alts) {
+      const altWords = alt.split(/\s+/).filter(w => w.length > 2);
+      // Exact or near match
+      if (s === alt) return true;
+      if (s.includes(alt) || alt.includes(s)) return true;
+      // Any key word match (words > 3 chars)
+      if (altWords.some(w => w.length > 3 && s.includes(w))) return true;
+    }
+  }
+  return false;
+}
+
+// ═══════════════════════════════════════
+//  APP STATE
+// ═══════════════════════════════════════
+let state = {
+  mode: 5, sessionType: 'visual', grade: 3,
+  deck: [], index: 0, correct: 0, missed: 0,
+  results: [], flipped: false,
+  timerInterval: null, secondsLeft: 0,
+  currentWord: null,
+};
+
+// ═══════════════════════════════════════
+//  HOME
+// ═══════════════════════════════════════
+function renderHome() {
+  const data = getData();
+  state.mode        = data.mode;
+  state.sessionType = data.sessionType;
+  state.grade       = data.grade;
+
+  if (data.name) { document.getElementById('studentName').value = data.name; showNameDisplay(data.name); }
+
+  const grades = Object.keys(GRADE_WORDS).map(Number).sort((a,b)=>a-b);
+  document.getElementById('gradeRow').innerHTML = grades.map(g =>
+    `<div class="grade-chip${g===state.grade?' selected':''}" onclick="selectGrade(${g})">Grade ${g}</div>`
+  ).join('');
+
+  updateModeHighlight();
+  renderWeekDots('weekDots', data.weekData);
+  const days = currentWeekDays(data.weekData);
+  document.getElementById('weekGoalLabel').textContent = `${days.length} / 4 days`;
+  document.getElementById('weekMsg').textContent = weekMsg(data.weekData);
+  document.getElementById('homeBest').textContent     = data.bestPct !== null ? data.bestPct+'%' : '—';
+  document.getElementById('homeSessions').textContent = data.sessions;
+  document.getElementById('homeStreak').textContent   = data.streak;
+
+  if (!SpeechRec) document.getElementById('noSpeechBanner').classList.add('show');
+}
+
+function updateModeHighlight() {
+  document.getElementById('mode5').classList.remove('selected-visual','selected-audio');
+  document.getElementById('mode10').classList.remove('selected-visual','selected-audio');
+  document.getElementById('modeAudio').classList.remove('selected-visual','selected-audio');
+  if (state.sessionType === 'audio') {
+    document.getElementById('modeAudio').classList.add('selected-audio');
+  } else if (state.mode === 5) {
+    document.getElementById('mode5').classList.add('selected-visual');
+  } else {
+    document.getElementById('mode10').classList.add('selected-visual');
+  }
+  const btn = document.getElementById('startBtn');
+  btn.textContent = state.sessionType === 'audio' ? '🎙️ Start audio →' : 'Start →';
+  btn.className = 'btn ' + (state.sessionType === 'audio' ? 'btn-audio' : 'btn-primary');
+}
+
+function selectMode(m, type) {
+  state.mode = m;
+  state.sessionType = type;
+  updateModeHighlight();
+  const d = getData(); d.mode = m; d.sessionType = type; save(d);
+}
+
+function selectGrade(g) {
+  state.grade = g;
+  document.querySelectorAll('.grade-chip').forEach(el =>
+    el.classList.toggle('selected', parseInt(el.textContent.replace('Grade ',''))===g)
+  );
+  const d = getData(); d.grade = g; save(d);
+}
+
+// ═══════════════════════════════════════
+//  SESSION SETUP
+// ═══════════════════════════════════════
+function shuffle(arr) {
+  const a=[...arr];
+  for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function startSession() {
+  const words = GRADE_WORDS[state.grade] || [];
+  const count = state.mode === 5 ? 15 : 30;
+  state.deck    = shuffle(words).slice(0, count);
+  state.index   = 0; state.correct = 0; state.missed = 0;
+  state.results = []; state.flipped = false;
+  state.secondsLeft = (state.sessionType === 'audio' ? 10 : state.mode) * 60;
+
+  if (state.sessionType === 'audio') {
+    show('screenAudio');
+    renderAudioCard();
+  } else {
+    show('screenCard');
+    renderCard();
+  }
+  startTimer(state.sessionType === 'audio' ? 'audioTimerBadge' : 'timerBadge');
+}
+
+// ═══════════════════════════════════════
+//  VISUAL CARD
+// ═══════════════════════════════════════
+function renderCard() {
+  const word  = state.deck[state.index];
+  const total = state.deck.length;
+  document.getElementById('cardEmoji').textContent     = word.emoji||'🏛️';
+  document.getElementById('cardEmojiBack').textContent = word.emoji||'🏛️';
+  document.getElementById('cardFront').textContent     = word.latin;
+  document.getElementById('cardBack').textContent      = word.english;
+  document.getElementById('cardCounter').textContent   = `${state.index+1} / ${total}`;
+  document.getElementById('progressFill').style.width  = `${(state.index/total)*100}%`;
+  document.getElementById('flashcard').classList.remove('flipped');
+  state.flipped = false;
+  const row = document.getElementById('answerRow');
+  row.style.opacity = '0'; row.style.pointerEvents = 'none';
+  updateLiveScore('liveCorrect','liveMissed','livePct');
+}
+
+function speakWord() {
+  const word = state.deck[state.index];
+  if (word) speak(word.latin, 0.75);
+}
+
+function flipCard() {
+  if (state.flipped) return;
+  state.flipped = true;
+  document.getElementById('flashcard').classList.add('flipped');
+  const row = document.getElementById('answerRow');
+  row.style.opacity = '1'; row.style.pointerEvents = 'auto';
+}
+
+function markCard(got) {
+  state.results.push({ word: state.deck[state.index], got });
+  if (got) state.correct++; else state.missed++;
+  updateLiveScore('liveCorrect','liveMissed','livePct');
+  state.index++;
+  if (state.index >= state.deck.length) endSession();
+  else renderCard();
+}
+
+// ═══════════════════════════════════════
+//  AUDIO CARD
+// ═══════════════════════════════════════
+function renderAudioCard() {
+  const word  = state.deck[state.index];
+  const total = state.deck.length;
+  state.currentWord = word;
+
+  document.getElementById('audioEmoji').textContent  = word.emoji||'🏛️';
+  document.getElementById('audioLatin').textContent  = word.latin;
+  document.getElementById('audioTag').textContent    = '🔊 Listen & respond';
+  document.getElementById('audioCardCounter').textContent = `${state.index+1} / ${total}`;
+  document.getElementById('audioProgressFill').style.width = `${(state.index/total)*100}%`;
+
+  // Reset UI
+  document.getElementById('audioResult').className  = 'audio-result';
+  document.getElementById('audioNextBtn').style.display  = 'none';
+  document.getElementById('fallbackRow').style.display   = 'none';
+  document.getElementById('micSection').style.display    = 'flex';
+  document.getElementById('micStatus').textContent       = 'Tap the mic and say the English meaning';
+  document.getElementById('micTranscript').textContent   = '';
+
+  const btn = document.getElementById('micBtn');
+  btn.classList.remove('listening','processing');
+  btn.textContent = '🎤';
+
+  updateLiveScore('audioLiveCorrect','audioLiveMissed','audioLivePct');
+
+  // Auto-speak after a brief pause
+  setTimeout(() => speak(word.latin, 0.75), 400);
+}
+
+function speakAudioWord() {
+  speak(state.currentWord.latin, 0.75);
+}
+
+function processAnswer(spokenAlts) {
+  const word = state.currentWord;
+  const got  = checkAnswer(spokenAlts, word.english);
+  const best = spokenAlts[0] || '';
+
+  document.getElementById('micStatus').textContent      = '';
+  document.getElementById('micTranscript').textContent  = '';
+  document.getElementById('micSection').style.display   = 'none';
+
+  markAudioCard(got, best);
+}
+
+function markAudioCard(got, spokenText) {
+  state.results.push({ word: state.currentWord, got });
+  if (got) state.correct++; else state.missed++;
+  updateLiveScore('audioLiveCorrect','audioLiveMissed','audioLivePct');
+
+  const resultEl  = document.getElementById('audioResult');
+  const verdictEl = document.getElementById('resultVerdict');
+  const detailEl  = document.getElementById('resultDetail');
+
+  if (got) {
+    resultEl.className  = 'audio-result show res-correct';
+    verdictEl.className = 'result-verdict v-correct';
+    verdictEl.textContent = '✅ Correct!';
+    detailEl.innerHTML = spokenText !== 'self'
+      ? `You said: <strong>"${spokenText}"</strong><br>Answer: <strong>${state.currentWord.english}</strong>`
+      : `Answer: <strong>${state.currentWord.english}</strong>`;
+  } else {
+    resultEl.className  = 'audio-result show res-wrong';
+    verdictEl.className = 'result-verdict v-wrong';
+    verdictEl.textContent = '❌ Not quite';
+    detailEl.innerHTML = spokenText !== 'self'
+      ? `You said: <strong>"${spokenText}"</strong><br>Correct: <strong>${state.currentWord.english}</strong>`
+      : `Correct answer: <strong>${state.currentWord.english}</strong>`;
+  }
+
+  document.getElementById('audioNextBtn').style.display = 'block';
+}
+
+function audioNextCard() {
+  state.index++;
+  if (state.index >= state.deck.length) endSession();
+  else renderAudioCard();
+}
+
+// ═══════════════════════════════════════
+//  LIVE SCORE
+// ═══════════════════════════════════════
+function updateLiveScore(cId, mId, pId) {
+  document.getElementById(cId).textContent = state.correct;
+  document.getElementById(mId).textContent = state.missed;
+  const t = state.correct + state.missed;
+  document.getElementById(pId).textContent = t > 0 ? Math.round((state.correct/t)*100)+'%' : '—';
+}
+
+// ═══════════════════════════════════════
+//  TIMER
+// ═══════════════════════════════════════
+function startTimer(badgeId) {
+  clearInterval(state.timerInterval);
+  updateTimerDisplay(badgeId);
+  state.timerInterval = setInterval(() => {
+    state.secondsLeft--;
+    updateTimerDisplay(badgeId);
+    if (state.secondsLeft <= 0) endSession();
+  }, 1000);
+}
+function updateTimerDisplay(badgeId) {
+  const id = badgeId || (state.sessionType==='audio' ? 'audioTimerBadge' : 'timerBadge');
+  const m = Math.floor(state.secondsLeft/60), s = state.secondsLeft%60;
+  const el = document.getElementById(id);
+  el.textContent = `⏱ ${m}:${String(s).padStart(2,'0')}`;
+  el.classList.toggle('urgent', state.secondsLeft<=30);
+}
+
+// ═══════════════════════════════════════
+//  END SESSION
+// ═══════════════════════════════════════
+function endSession() {
+  clearInterval(state.timerInterval);
+  synth && synth.cancel();
+  micActive && stopMic();
+
+  const total = state.correct + state.missed;
+  const pct   = total > 0 ? Math.round((state.correct/total)*100) : 0;
+
+  let data = getData();
+  data.sessions++;
+  if (data.bestPct === null || pct > data.bestPct) data.bestPct = pct;
+  data.weekData = markTodayDone(data.weekData);
+
+  const today = todayStr();
+  if (data.lastSessionDate !== today) {
+    const yd = new Date(); yd.setDate(yd.getDate()-1);
+    const yStr = yd.toISOString().slice(0,10);
+    data.streak = (data.lastSessionDate===yStr) ? data.streak+1 : 1;
+    data.lastSessionDate = today;
+  }
+
+  data.sessionLog.push({
+    date: today, mode: state.mode, sessionType: state.sessionType,
+    correct: state.correct, missed: state.missed, pct, cards: total,
+  });
+  if (data.sessionLog.length > 60) data.sessionLog = data.sessionLog.slice(-60);
+
+  state.results.forEach(r => {
+    if (!r.got) {
+      const key = `${r.word.latin}|${r.word.english}`;
+      data.missedWords[key] = (data.missedWords[key]||0) + 1;
+    }
+  });
+  save(data);
+
+  // Summary
+  const days = currentWeekDays(data.weekData);
+  document.getElementById('sumCorrect').textContent = state.correct;
+  document.getElementById('sumMissed').textContent  = state.missed;
+  document.getElementById('sumPct').textContent     = pct + '%';
+
+  const hl=document.getElementById('summaryHeadline'), sub=document.getElementById('summarySubtitle');
+  if (pct>=90){hl.textContent='Outstanding! 🏆';sub.textContent='You\'re crushing it.';}
+  else if(pct>=70){hl.textContent='Great work! 🎉';sub.textContent='Keep that momentum going.';}
+  else if(pct>=50){hl.textContent='Good effort! 💪';sub.textContent='Review the missed words below.';}
+  else{hl.textContent='Keep at it! 📖';sub.textContent='Practice makes progress.';}
+
+  renderWeekDots('sumWeekDots', data.weekData);
+  document.getElementById('sumWeekLabel').textContent = `${days.length} / 4 days`;
+  document.getElementById('sumWeekMsg').textContent   = weekMsg(data.weekData);
+
+  document.getElementById('summaryList').innerHTML = state.results.map(r =>
+    `<div class="summary-item">
+       <span class="si-mark">${r.got?'✅':'❌'}</span>
+       <span class="si-latin">${r.word.latin}</span>
+       <span class="si-english">${r.word.english} ${r.word.emoji||''}</span>
+     </div>`
+  ).join('');
+
+  show('screenSummary');
+}
+
+// ═══════════════════════════════════════
+//  REPORT
+// ═══════════════════════════════════════
+function showReport() {
+  const data     = getData();
+  const weekKey  = isoWeekKey(new Date());
+  const weekDays = data.weekData[weekKey] || [];
+  const weekSet  = new Set(weekDays);
+  const wSess    = data.sessionLog.filter(s => weekSet.has(s.date));
+
+  const totalCards   = wSess.reduce((a,s)=>a+s.cards,0);
+  const totalCorrect = wSess.reduce((a,s)=>a+s.correct,0);
+  const totalMissed  = wSess.reduce((a,s)=>a+s.missed,0);
+  const avgPct  = wSess.length>0 ? Math.round(wSess.reduce((a,s)=>a+s.pct,0)/wSess.length) : null;
+  const bestPct = wSess.length>0 ? Math.max(...wSess.map(s=>s.pct)) : null;
+
+  document.getElementById('reportName').textContent     = data.name || '—';
+  document.getElementById('reportGrade').textContent    = `Grade ${data.grade}`;
+  document.getElementById('reportWeek').textContent     = getWeekRange();
+  document.getElementById('reportDayCount').textContent = `${weekDays.length} of 4`;
+  document.getElementById('reportDateRange').textContent= `Week of ${getWeekRange()}`;
+
+  const gb = document.getElementById('goalBanner');
+  if (weekDays.length>=4){ gb.textContent='🎯 Weekly goal met — 4 days practiced!'; gb.className='goal-banner goal-met'; }
+  else { gb.textContent=`📅 ${weekDays.length} of 4 days practiced this week`; gb.className='goal-banner goal-unmet'; }
+
+  renderWeekDots('reportWeekDots', data.weekData, true);
+
+  document.getElementById('rsSessions').textContent  = wSess.length;
+  document.getElementById('rsCards').textContent     = totalCards;
+  document.getElementById('rsAvg').textContent       = avgPct!==null ? avgPct+'%' : '—';
+  document.getElementById('rsBest').textContent      = bestPct!==null ? bestPct+'%' : '—';
+  document.getElementById('rsCorrect').textContent   = totalCorrect;
+  document.getElementById('rsMissedStat').textContent= totalMissed;
+
+  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const tbody = document.getElementById('sessionTableBody');
+  tbody.innerHTML = wSess.length===0
+    ? '<tr><td colspan="4" style="color:#9ca3af;padding:10px 8px">No sessions this week yet.</td></tr>'
+    : wSess.map(s => {
+        const d = new Date(s.date+'T12:00:00');
+        const label = `${dayNames[d.getDay()]} ${d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
+        const chip  = s.pct>=80?'pct-high':s.pct>=60?'pct-mid':'pct-low';
+        const modeLabel = s.sessionType==='audio' ? '🎙️ Audio' : `⚡ ${s.mode} min`;
+        return `<tr><td>${label}</td><td>${modeLabel}</td><td>${s.cards}</td><td><span class="pct-chip ${chip}">${s.pct}%</span></td></tr>`;
+      }).join('');
+
+  const missed = Object.entries(data.missedWords).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const mList = document.getElementById('missedWordsList');
+  const mNone = document.getElementById('missedNone');
+  if (missed.length===0){ mList.innerHTML=''; mNone.style.display='block'; }
+  else {
+    mNone.style.display='none';
+    mList.innerHTML = missed.map(([key,count]) => {
+      const [latin,english] = key.split('|');
+      return `<div class="missed-item"><span class="mi-latin">${latin}</span><span class="mi-eng">${english}</span><span class="mi-count">missed ${count}×</span></div>`;
+    }).join('');
+  }
+
+  show('screenReport');
+}
+
+// ═══════════════════════════════════════
+//  NAV
+// ═══════════════════════════════════════
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0,0);
+}
+function goHome() {
+  clearInterval(state.timerInterval);
+  synth && synth.cancel();
+  micActive && stopMic();
+  renderHome();
+  show('screenHome');
+}
+function confirmQuit() {
+  if (confirm('Quit this session? Your progress up to this card will be saved.')) endSession();
+}
+
+// ═══════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════
+setupRecognition();
+renderHome();
+</script>
+</body>
+</html>

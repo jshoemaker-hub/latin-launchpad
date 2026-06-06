@@ -1,0 +1,10 @@
+.DS_Store
+Thumbs.db
+
+# Local reference material used to author lessons, not needed by the website.
+ref/*.pdf
+
+# Tooling and deploy caches.
+.netlify/
+node_modules/
+npm-debug.log*

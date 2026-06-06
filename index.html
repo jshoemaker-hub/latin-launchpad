@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Latin Launchpad</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div>
+        <h1>Latin Launchpad</h1>
+        <p class="tagline">Play Latin vocabulary and grammar games and watch your progress grow.</p>
+      </div>
+      <div class="header-actions">
+        <button type="button" id="homeButton" class="pill-button">Home</button>
+        <button type="button" id="dashboardButton" class="pill-button">Dashboard</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="welcomePage" class="page active">
+        <div class="card">
+          <h2>Welcome explorer!</h2>
+          <p>Build your Latin vocabulary and grammar with short, fun lessons designed for your grade.</p>
+          <button id="startButton" class="primary-button">Start learning</button>
+        </div>
+      </section>
+
+      <section id="signupPage" class="page">
+        <div class="card">
+          <h2>Tell us your name</h2>
+          <p>We’ll keep your progress safe and show you the right lessons.</p>
+          <label>
+            Name
+            <input type="text" id="studentNameInput" placeholder="Your name" />
+          </label>
+          <button id="signupNextButton" class="primary-button">Next</button>
+        </div>
+      </section>
+
+      <section id="gradePage" class="page">
+        <div class="card">
+          <h2>Choose your grade</h2>
+          <p>Pick the grade that matches your Latin studies.</p>
+          <div class="grade-grid" id="gradeGrid"></div>
+        </div>
+      </section>
+
+      <section id="lessonListPage" class="page">
+        <div class="card lesson-list-card">
+          <div class="page-header">
+            <div>
+              <h2 id="lessonListTitle">Lessons</h2>
+              <p id="lessonListSubtitle">Choose a lesson to practice Latin.</p>
+            </div>
+            <button id="changeGradeButton" class="secondary-button">Change grade</button>
+          </div>
+          <div id="objectivesCard" class="objectives-card"></div>
+          <div id="lessonCards" class="lesson-grid"></div>
+        </div>
+      </section>
+
+      <section id="lessonPage" class="page">
+        <div class="card lesson-card">
+          <div class="page-header">
+            <div>
+              <h2 id="lessonTitle"></h2>
+              <p id="lessonDescription"></p>
+            </div>
+            <button id="backToLessons" class="secondary-button">Back</button>
+          </div>
+
+          <div id="storyScene" class="story-scene"></div>
+          <div id="lessonNotes" class="lesson-notes"></div>
+          <div id="wordPreview" class="word-preview"></div>
+          <div id="endingHint" class="ending-hint"></div>
+          <div id="questionArea" class="question-area"></div>
+          <div class="lesson-actions">
+            <button id="nextQuestionButton" class="primary-button">Next</button>
+          </div>
+          <div id="lessonResult" class="lesson-result"></div>
+        </div>
+      </section>
+
+      <section id="dashboardPage" class="page">
+        <div class="card">
+          <div class="page-header">
+            <div>
+              <h2>Progress dashboard</h2>
+              <p>See your lesson progress, points, and mastery.</p>
+            </div>
+            <button id="backToLessonsFromDashboard" class="secondary-button">Back</button>
+          </div>
+          <div class="dashboard-grid">
+            <div class="stat-card">
+              <h3>Points</h3>
+              <div id="pointsValue" class="stat-value">0</div>
+            </div>
+            <div class="stat-card">
+              <h3>Lessons done</h3>
+              <div id="lessonsCompleteValue" class="stat-value">0</div>
+            </div>
+            <div class="stat-card">
+              <h3>Skills mastered</h3>
+              <div id="wordsMasteredValue" class="stat-value">0</div>
+            </div>
+          </div>
+          <div class="progress-card">
+            <h3>Lesson progress</h3>
+            <div id="progressList" class="progress-list"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="word-banks.js"></script>
+  <script src="latin-stories.js"></script>
+  <script src="learning-objectives.js"></script>
+  <script src="grammar-lessons.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
