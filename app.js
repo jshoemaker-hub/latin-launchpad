@@ -43,6 +43,17 @@ const ENDING_HINTS = [
 const STORAGE_KEY = 'latinLaunchpadState';
 const PROFILES_STORAGE_KEY = 'latinLaunchpadProfiles';
 const GUEST_PROFILE_ID = 'guest';
+
+const SUPABASE_URL = 'https://fmwdkpjetpftuuposmog.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_c7bs4AqY2ni-el3GqKxGuA_HbaUA_fJ';
+let _supabaseClient = null;
+
+function getSupabase() {
+  if (window.supabase && !_supabaseClient) {
+    _supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+  return _supabaseClient;
+}
 const VALID_GRADES = [3, 4, 5, 6, 7, 8];
 const PUZZLE_CACHE = new Map();
 
@@ -329,6 +340,7 @@ function saveState() {
     const snapshot = createStateSnapshot();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
     persistProfileSnapshot(snapshot);
+    if (isEmailAccount()) supabaseSaveState().catch(() => {});
   } catch (error) {
     console.warn('Unable to save Latin Launchpad progress.', error);
   }
@@ -349,6 +361,122 @@ function loadState() {
   if (!isPlainObject(storedState)) return;
   applyStoredState(storedState);
 }
+
+// ── Supabase sync ──────────────────────────────────────────────────────────
+
+async function supabaseLoadProfile(email) {
+  const db = getSupabase();
+  if (!db) return null;
+  try {
+    const [profileRes, progressRes, wordsRes, badgesRes] = await Promise.all([
+      db.from('user_profiles').select('*').eq('email', email).single(),
+      db.from('lesson_progress').select('*').eq('email', email),
+      db.from('words_mastered').select('*').eq('email', email),
+      db.from('badges').select('*').eq('email', email)
+    ]);
+
+    // PGRST116 = row not found — new user, that's ok
+    if (profileRes.error && profileRes.error.code !== 'PGRST116') {
+      console.warn('Supabase profile fetch error:', profileRes.error);
+      return null;
+    }
+
+    const profile = profileRes.data;
+    const progress = {
+      points: profile?.points ?? 0,
+      lessons: {},
+      wordsMastered: {}
+    };
+
+    for (const row of progressRes.data ?? []) {
+      progress.lessons[row.lesson_id] = {
+        completedAt: row.completed_at,
+        score: row.score ?? 0,
+        lastScore: row.last_score ?? 0,
+        maxScore: row.max_score ?? 0
+      };
+    }
+    for (const row of wordsRes.data ?? []) {
+      progress.wordsMastered[row.word] = true;
+    }
+
+    const badges = {};
+    for (const row of badgesRes.data ?? []) {
+      badges[row.badge_id] = row.earned_at;
+    }
+
+    return {
+      account: createEmailAccount(email),
+      studentName: profile?.student_name ?? '',
+      grade: VALID_GRADES.includes(profile?.grade) ? profile.grade : null,
+      selectedLesson: null,
+      currentQuestionIndex: 0,
+      selectedOption: null,
+      answerChecked: false,
+      currentLessonCorrect: 0,
+      progress,
+      badges
+    };
+  } catch (err) {
+    console.warn('Supabase load error:', err);
+    return null;
+  }
+}
+
+async function supabaseSaveState() {
+  if (!isEmailAccount()) return;
+  const db = getSupabase();
+  if (!db) return;
+  const email = AppState.account.email;
+  try {
+    const progress = normalizeProgress(AppState.progress);
+    const now = new Date().toISOString();
+
+    await db.from('user_profiles').upsert({
+      email,
+      student_name: AppState.studentName,
+      grade: AppState.grade,
+      points: progress.points,
+      updated_at: now
+    });
+
+    const lessonRows = Object.entries(progress.lessons).map(([lessonId, lp]) => ({
+      email,
+      lesson_id: lessonId,
+      score: lp.score ?? 0,
+      max_score: lp.maxScore ?? 0,
+      last_score: lp.lastScore ?? 0,
+      completed_at: lp.completedAt ?? now,
+      updated_at: now
+    }));
+    if (lessonRows.length > 0) {
+      await db.from('lesson_progress').upsert(lessonRows);
+    }
+
+    const wordRows = Object.keys(progress.wordsMastered).map((word) => ({
+      email,
+      word,
+      mastered_at: now
+    }));
+    if (wordRows.length > 0) {
+      await db.from('words_mastered').upsert(wordRows, { onConflict: 'email,word', ignoreDuplicates: true });
+    }
+
+    const badges = normalizeBadges(AppState.badges);
+    const badgeRows = Object.entries(badges).map(([badgeId, earnedAt]) => ({
+      email,
+      badge_id: badgeId,
+      earned_at: earnedAt
+    }));
+    if (badgeRows.length > 0) {
+      await db.from('badges').upsert(badgeRows, { onConflict: 'email,badge_id', ignoreDuplicates: true });
+    }
+  } catch (err) {
+    console.warn('Supabase save error:', err);
+  }
+}
+
+// ── End Supabase sync ──────────────────────────────────────────────────────
 
 function showPage(page) {
   if (!pages[page]) {
@@ -492,23 +620,33 @@ function showBestLearningPage() {
   showPage('lessonList');
 }
 
-function signInWithEmail(email) {
+async function signInWithEmail(email) {
   const normalizedEmail = normalizeEmail(email);
   if (!isValidEmail(normalizedEmail)) {
     setAccountMessage('Enter a valid email address.', 'error');
     return;
   }
 
+  const submitButton = document.getElementById('emailLoginButton');
+  if (submitButton) submitButton.disabled = true;
+  setAccountMessage('Signing in…', 'neutral');
+
   saveState();
   const account = createEmailAccount(normalizedEmail);
-  const existingProfile = getStoredProfile(account.profileId);
-  const nextState = existingProfile || createStateSnapshot(AppState, account);
+
+  // Try Supabase first, fall back to localStorage profile
+  const remoteProfile = await supabaseLoadProfile(normalizedEmail);
+  const existingLocalProfile = getStoredProfile(account.profileId);
+  const isNew = !remoteProfile && !existingLocalProfile;
+  const nextState = remoteProfile || existingLocalProfile || createStateSnapshot(AppState, account);
+
   applyStoredState(nextState, account);
   AppState.account = account;
   evaluateBadges();
   saveState();
+  if (submitButton) submitButton.disabled = false;
   renderAfterProfileChange();
-  setAccountMessage(existingProfile ? 'Signed in.' : 'Account created.', 'success');
+  setAccountMessage(isNew ? 'Account created.' : 'Signed in.', 'success');
 }
 
 function continueAsGuest() {
@@ -534,7 +672,7 @@ function continueAsGuest() {
   setAccountMessage('Using guest mode.', 'success');
 }
 
-function init() {
+async function init() {
   loadState();
   renderAccountControls();
   if (AppState.studentName && AppState.grade) {
@@ -545,6 +683,23 @@ function init() {
   }
   renderGradeOptions();
   renderDashboard();
+
+  // Background refresh from Supabase for signed-in users
+  if (isEmailAccount()) {
+    const remote = await supabaseLoadProfile(AppState.account.email);
+    if (remote) {
+      const account = AppState.account;
+      applyStoredState(remote, account);
+      AppState.account = account;
+      evaluateBadges();
+      saveState();
+      renderAfterProfileChange();
+      if (AppState.studentName && VALID_GRADES.includes(AppState.grade)) {
+        renderLessonList();
+        showPage('lessonList');
+      }
+    }
+  }
 }
 
 function renderGradeOptions() {
