@@ -42,6 +42,8 @@ button, input {
 .header-actions {
   display: flex;
   gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
 .tagline {
@@ -107,10 +109,57 @@ input {
   outline: none;
 }
 
+.welcome-actions,
+.account-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.account-layout {
+  display: grid;
+  grid-template-columns: minmax(220px, 1fr) minmax(220px, 0.8fr);
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.account-panel {
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: #f8f9ff;
+}
+
+.account-panel h3 {
+  margin: 0;
+}
+
+.current-profile-panel {
+  background: #fffaf0;
+  border-color: #fed7aa;
+}
+
+.account-message {
+  min-height: 24px;
+  margin: 12px 0 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.account-message[data-tone="success"] {
+  color: #166534;
+}
+
+.account-message[data-tone="error"] {
+  color: #991b1b;
+}
+
 .grade-grid,
 .lesson-grid,
 .dashboard-grid,
-.progress-list {
+.progress-list,
+.badge-grid {
   display: grid;
   gap: 16px;
 }
@@ -274,6 +323,85 @@ input {
   padding: 18px;
   background: #eef2ff;
   border-radius: 18px;
+}
+
+.badge-card {
+  margin-top: 24px;
+  padding: 18px;
+  background: #fffaf0;
+  border: 1px solid #fed7aa;
+  border-radius: 18px;
+}
+
+.badge-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: baseline;
+  margin-bottom: 14px;
+}
+
+.badge-header h3,
+.badge-header p {
+  margin: 0;
+}
+
+.badge-header p {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.badge-grid {
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+}
+
+.badge-item {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  align-items: center;
+  min-height: 82px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.badge-item.locked {
+  opacity: 0.58;
+}
+
+.badge-item.earned {
+  border-color: #f59e0b;
+  box-shadow: 0 14px 30px rgba(245, 158, 11, 0.12);
+}
+
+.badge-mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #eef2ff;
+  color: var(--primary);
+  font-weight: 900;
+}
+
+.badge-item.earned .badge-mark {
+  background: #f59e0b;
+  color: #ffffff;
+}
+
+.badge-item h4,
+.badge-item p {
+  margin: 0;
+}
+
+.badge-item p {
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 700;
 }
 
 .page-header {
@@ -878,11 +1006,25 @@ input {
 
   .header-actions {
     flex-wrap: wrap;
+    justify-content: flex-start;
   }
 
   .page-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  .account-layout,
+  .badge-header {
+    grid-template-columns: 1fr;
+  }
+
+  .account-layout {
+    display: grid;
+  }
+
+  .badge-header {
+    display: grid;
   }
 
   .printables-panel {

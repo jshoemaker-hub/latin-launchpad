@@ -17,6 +17,7 @@
       <div class="header-actions">
         <button type="button" id="homeButton" class="pill-button">Home</button>
         <button type="button" id="dashboardButton" class="pill-button">Dashboard</button>
+        <button type="button" id="accountButton" class="pill-button">Account</button>
       </div>
     </header>
 
@@ -25,7 +26,41 @@
         <div class="card">
           <h2>Welcome explorer!</h2>
           <p>Build your Latin vocabulary and grammar with short, fun lessons designed for your grade.</p>
-          <button id="startButton" class="primary-button">Start learning</button>
+          <div class="welcome-actions">
+            <button id="startButton" class="primary-button">Start learning</button>
+            <button id="welcomeAccountButton" class="secondary-button">Email login</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="accountPage" class="page">
+        <div class="card account-card">
+          <div class="page-header">
+            <div>
+              <h2>Account</h2>
+              <p id="accountSummary">Guest progress is saved on this device.</p>
+            </div>
+            <button id="accountBackButton" class="secondary-button">Back</button>
+          </div>
+          <div class="account-layout">
+            <form id="accountForm" class="account-panel">
+              <h3>Email login</h3>
+              <label>
+                Email
+                <input type="email" id="accountEmailInput" placeholder="student@example.com" autocomplete="email" />
+              </label>
+              <button id="emailLoginButton" type="submit" class="primary-button">Sign in</button>
+              <p id="accountMessage" class="account-message" aria-live="polite"></p>
+            </form>
+            <div class="account-panel current-profile-panel">
+              <h3 id="currentProfileTitle">Guest learner</h3>
+              <p id="currentProfileDetail">No email account connected.</p>
+              <div class="account-actions">
+                <button id="continueGuestButton" type="button" class="secondary-button">Continue as guest</button>
+                <button id="signOutButton" type="button" class="secondary-button">Sign out</button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -109,6 +144,13 @@
               <h3>Skills mastered</h3>
               <div id="wordsMasteredValue" class="stat-value">0</div>
             </div>
+          </div>
+          <div class="badge-card">
+            <div class="badge-header">
+              <h3>Badges</h3>
+              <p id="badgeSubtitle">Sign in with email to collect badges.</p>
+            </div>
+            <div id="badgeGrid" class="badge-grid"></div>
           </div>
           <div class="progress-card">
             <h3>Lesson progress</h3>

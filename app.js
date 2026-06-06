@@ -40,7 +40,66 @@ const ENDING_HINTS = [
   { suffix: 'es', hint: 'In second-conjugation verbs, -es means “you ___” (singular).' }
 ];
 
+const STORAGE_KEY = 'latinLaunchpadState';
+const PROFILES_STORAGE_KEY = 'latinLaunchpadProfiles';
+const GUEST_PROFILE_ID = 'guest';
+const VALID_GRADES = [3, 4, 5, 6, 7, 8];
+const PUZZLE_CACHE = new Map();
+
+const BADGE_DEFINITIONS = [
+  {
+    id: 'first-lesson',
+    name: 'First Lesson',
+    mark: 'I',
+    description: 'Complete any lesson.',
+    criteria: (state) => getCompletedLessons(state).length >= 1
+  },
+  {
+    id: 'perfect-lesson',
+    name: 'Perfect Score',
+    mark: 'X',
+    description: 'Score every question in a lesson.',
+    criteria: (state) => getCompletedLessons(state).some((entry) => entry.score >= entry.maxScore && entry.maxScore > 0)
+  },
+  {
+    id: 'century-points',
+    name: 'Century',
+    mark: 'C',
+    description: 'Earn 100 points.',
+    criteria: (state) => state.progress.points >= 100
+  },
+  {
+    id: 'word-builder',
+    name: 'Word Builder',
+    mark: 'V',
+    description: 'Master 25 Latin skills.',
+    criteria: (state) => Object.keys(state.progress.wordsMastered).length >= 25
+  },
+  {
+    id: 'grammar-starter',
+    name: 'Grammar Starter',
+    mark: 'G',
+    description: 'Complete a grammar lesson.',
+    criteria: (state) => getCompletedLessonModels(state).some((lesson) => lesson.kind === 'grammar')
+  },
+  {
+    id: 'story-scholar',
+    name: 'Story Scholar',
+    mark: 'S',
+    description: 'Complete a story lesson.',
+    criteria: (state) => getCompletedLessonModels(state).some((lesson) => lesson.story)
+  },
+  {
+    id: 'steady-learner',
+    name: 'Steady Learner',
+    mark: 'L',
+    description: 'Complete five lessons.',
+    criteria: (state) => getCompletedLessons(state).length >= 5
+  }
+];
+
 const AppState = {
+  account: createGuestAccount(),
   studentName: '',
   grade: null,
   selectedLesson: null,
@@ -48,15 +107,13 @@ const AppState = {
   selectedOption: null,
   answerChecked: false,
   currentLessonCorrect: 0,
-  progress: {
-    points: 0,
-    lessons: {},
-    wordsMastered: {}
-  }
+  progress: getDefaultProgress(),
+  badges: {}
 };
 
 const pages = {
   welcome: document.getElementById('welcomePage'),
+  account: document.getElementById('accountPage'),
   signup: document.getElementById('signupPage'),
   grade: document.getElementById('gradePage'),
   lessonList: document.getElementById('lessonListPage'),
@@ -66,6 +123,17 @@ const pages = {
 
 const elements = {
   startButton: document.getElementById('startButton'),
+  welcomeAccountButton: document.getElementById('welcomeAccountButton'),
+  accountButton: document.getElementById('accountButton'),
+  accountBackButton: document.getElementById('accountBackButton'),
+  accountForm: document.getElementById('accountForm'),
+  accountEmailInput: document.getElementById('accountEmailInput'),
+  accountSummary: document.getElementById('accountSummary'),
+  accountMessage: document.getElementById('accountMessage'),
+  currentProfileTitle: document.getElementById('currentProfileTitle'),
+  currentProfileDetail: document.getElementById('currentProfileDetail'),
+  continueGuestButton: document.getElementById('continueGuestButton'),
+  signOutButton: document.getElementById('signOutButton'),
   signupNextButton: document.getElementById('signupNextButton'),
   studentNameInput: document.getElementById('studentNameInput'),
   gradeGrid: document.getElementById('gradeGrid'),
@@ -93,12 +161,11 @@ const elements = {
   pointsValue: document.getElementById('pointsValue'),
   lessonsCompleteValue: document.getElementById('lessonsCompleteValue'),
   wordsMasteredValue: document.getElementById('wordsMasteredValue'),
+  badgeSubtitle: document.getElementById('badgeSubtitle'),
+  badgeGrid: document.getElementById('badgeGrid'),
   progressList: document.getElementById('progressList')
 };
 
-const STORAGE_KEY = 'latinLaunchpadState';
-const VALID_GRADES = [3, 4, 5, 6, 7, 8];
-const PUZZLE_CACHE = new Map();
 const OnlinePuzzleState = {
   lessonId: null,
   mode: 'crossword',
@@ -112,6 +179,66 @@ function isPlainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
 }
 
+function getDefaultProgress() {
+  return {
+    points: 0,
+    lessons: {},
+    wordsMastered: {}
+  };
+}
+
+function createGuestAccount() {
+  return {
+    mode: 'guest',
+    profileId: GUEST_PROFILE_ID,
+    email: '',
+    signedInAt: null
+  };
+}
+
+function normalizeEmail(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+function getEmailProfileId(email) {
+  return `email:${normalizeEmail(email)}`;
+}
+
+function createEmailAccount(email, signedInAt = new Date().toISOString()) {
+  const normalizedEmail = normalizeEmail(email);
+  return {
+    mode: 'email',
+    profileId: getEmailProfileId(normalizedEmail),
+    email: normalizedEmail,
+    signedInAt
+  };
+}
+
+function normalizeAccount(account, fallbackAccount = createGuestAccount()) {
+  const safeAccount = isPlainObject(account) ? account : {};
+  const email = normalizeEmail(safeAccount.email);
+  if (safeAccount.mode === 'email' && isValidEmail(email)) {
+    return createEmailAccount(
+      email,
+      typeof safeAccount.signedInAt === 'string' ? safeAccount.signedInAt : new Date().toISOString()
+    );
+  }
+
+  const fallbackEmail = normalizeEmail(fallbackAccount.email);
+  if (fallbackAccount.mode === 'email' && isValidEmail(fallbackEmail)) {
+    return createEmailAccount(
+      fallbackEmail,
+      typeof fallbackAccount.signedInAt === 'string' ? fallbackAccount.signedInAt : new Date().toISOString()
+    );
+  }
+
+  return createGuestAccount();
+}
+
 function normalizeProgress(progress) {
   const safeProgress = isPlainObject(progress) ? progress : {};
   return {
@@ -121,9 +248,87 @@ function normalizeProgress(progress) {
   };
 }
 
+function normalizeBadges(badges) {
+  if (!isPlainObject(badges)) return {};
+  const badgeIds = new Set(BADGE_DEFINITIONS.map((badge) => badge.id));
+  return Object.fromEntries(
+    Object.entries(badges)
+      .filter(([id, earnedAt]) => badgeIds.has(id) && typeof earnedAt === 'string')
+  );
+}
+
+function createStateSnapshot(state = AppState, accountOverride = state.account) {
+  return {
+    account: normalizeAccount(accountOverride),
+    studentName: typeof state.studentName === 'string' ? state.studentName : '',
+    grade: VALID_GRADES.includes(state.grade) ? state.grade : null,
+    selectedLesson: typeof state.selectedLesson === 'string' ? state.selectedLesson : null,
+    currentQuestionIndex: Number.isInteger(state.currentQuestionIndex)
+      ? Math.max(0, state.currentQuestionIndex)
+      : 0,
+    selectedOption: typeof state.selectedOption === 'string' ? state.selectedOption : null,
+    answerChecked: Boolean(state.answerChecked),
+    currentLessonCorrect: Number.isInteger(state.currentLessonCorrect)
+      ? Math.max(0, state.currentLessonCorrect)
+      : 0,
+    progress: normalizeProgress(state.progress),
+    badges: normalizeBadges(state.badges)
+  };
+}
+
+function applyStoredState(storedState, fallbackAccount = createGuestAccount()) {
+  if (!isPlainObject(storedState)) return;
+  AppState.account = normalizeAccount(storedState.account, fallbackAccount);
+  AppState.studentName = typeof storedState.studentName === 'string' ? storedState.studentName : '';
+  AppState.grade = VALID_GRADES.includes(storedState.grade) ? storedState.grade : null;
+  AppState.selectedLesson = typeof storedState.selectedLesson === 'string' ? storedState.selectedLesson : null;
+  AppState.currentQuestionIndex = Number.isInteger(storedState.currentQuestionIndex)
+    ? Math.max(0, storedState.currentQuestionIndex)
+    : 0;
+  AppState.selectedOption = typeof storedState.selectedOption === 'string' ? storedState.selectedOption : null;
+  AppState.answerChecked = false;
+  AppState.currentLessonCorrect = Number.isInteger(storedState.currentLessonCorrect)
+    ? Math.max(0, storedState.currentLessonCorrect)
+    : 0;
+  AppState.progress = normalizeProgress(storedState.progress);
+  AppState.badges = normalizeBadges(storedState.badges);
+}
+
+function loadProfiles() {
+  try {
+    const stored = localStorage.getItem(PROFILES_STORAGE_KEY);
+    if (!stored) return {};
+    const profiles = JSON.parse(stored);
+    return isPlainObject(profiles) ? profiles : {};
+  } catch (error) {
+    console.warn('Stored Latin Launchpad profiles were invalid and have been reset.', error);
+    localStorage.removeItem(PROFILES_STORAGE_KEY);
+    return {};
+  }
+}
+
+function saveProfiles(profiles) {
+  localStorage.setItem(PROFILES_STORAGE_KEY, JSON.stringify(profiles));
+}
+
+function getStoredProfile(profileId) {
+  const profiles = loadProfiles();
+  const profile = profiles[profileId];
+  return isPlainObject(profile) ? profile : null;
+}
+
+function persistProfileSnapshot(snapshot) {
+  const profiles = loadProfiles();
+  profiles[snapshot.account.profileId] = snapshot;
+  saveProfiles(profiles);
+}
+
 function saveState() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(AppState));
+    if (isEmailAccount()) evaluateBadges();
+    const snapshot = createStateSnapshot();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
+    persistProfileSnapshot(snapshot);
   } catch (error) {
     console.warn('Unable to save Latin Launchpad progress.', error);
   }
@@ -142,18 +347,7 @@ function loadState() {
   }
 
   if (!isPlainObject(storedState)) return;
-  AppState.studentName = typeof storedState.studentName === 'string' ? storedState.studentName : '';
-  AppState.grade = VALID_GRADES.includes(storedState.grade) ? storedState.grade : null;
-  AppState.selectedLesson = typeof storedState.selectedLesson === 'string' ? storedState.selectedLesson : null;
-  AppState.currentQuestionIndex = Number.isInteger(storedState.currentQuestionIndex)
-    ? Math.max(0, storedState.currentQuestionIndex)
-    : 0;
-  AppState.selectedOption = typeof storedState.selectedOption === 'string' ? storedState.selectedOption : null;
-  AppState.answerChecked = false;
-  AppState.currentLessonCorrect = Number.isInteger(storedState.currentLessonCorrect)
-    ? Math.max(0, storedState.currentLessonCorrect)
-    : 0;
-  AppState.progress = normalizeProgress(storedState.progress);
+  applyStoredState(storedState);
 }
 
 function showPage(page) {
@@ -166,8 +360,183 @@ function showPage(page) {
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+function isEmailAccount(state = AppState) {
+  return state.account?.mode === 'email' && isValidEmail(state.account.email);
+}
+
+function getCompletedLessons(state = AppState) {
+  const lessons = normalizeProgress(state.progress).lessons;
+  return Object.entries(lessons)
+    .filter(([, lessonProgress]) => isPlainObject(lessonProgress))
+    .map(([id, lessonProgress]) => ({
+      id,
+      completedAt: typeof lessonProgress.completedAt === 'string' ? lessonProgress.completedAt : '',
+      score: Number.isFinite(lessonProgress.score) ? lessonProgress.score : 0,
+      maxScore: Number.isFinite(lessonProgress.maxScore) ? lessonProgress.maxScore : 0
+    }))
+    .filter((lessonProgress) => lessonProgress.completedAt || lessonProgress.score > 0);
+}
+
+function getCompletedLessonModels(state = AppState) {
+  const completedIds = new Set(getCompletedLessons(state).map((lessonProgress) => lessonProgress.id));
+  return LESSONS.filter((lesson) => completedIds.has(lesson.id));
+}
+
+function evaluateBadges(state = AppState) {
+  if (!isEmailAccount(state)) return [];
+  const earnedBadges = normalizeBadges(state.badges);
+  const badgeState = {
+    ...state,
+    progress: normalizeProgress(state.progress),
+    badges: earnedBadges
+  };
+  const now = new Date().toISOString();
+  const newlyEarned = [];
+
+  BADGE_DEFINITIONS.forEach((badge) => {
+    if (!earnedBadges[badge.id] && badge.criteria(badgeState)) {
+      earnedBadges[badge.id] = now;
+      newlyEarned.push(badge);
+    }
+  });
+
+  if (state === AppState) {
+    AppState.badges = earnedBadges;
+  } else {
+    state.badges = earnedBadges;
+  }
+
+  return newlyEarned;
+}
+
+function renderAccountControls() {
+  const signedIn = isEmailAccount();
+  const name = AppState.studentName || 'Learner';
+  const summary = signedIn
+    ? `${name} is signed in as ${AppState.account.email}.`
+    : `${name} is learning as a guest.`;
+
+  if (elements.accountSummary) elements.accountSummary.textContent = summary;
+  if (elements.currentProfileTitle) {
+    elements.currentProfileTitle.textContent = signedIn ? 'Email account' : 'Guest learner';
+  }
+  if (elements.currentProfileDetail) {
+    elements.currentProfileDetail.textContent = signedIn
+      ? AppState.account.email
+      : 'Progress is saved on this device.';
+  }
+  if (elements.signOutButton) elements.signOutButton.hidden = !signedIn;
+  if (elements.continueGuestButton) elements.continueGuestButton.hidden = !signedIn;
+  if (elements.accountEmailInput && signedIn) {
+    elements.accountEmailInput.value = AppState.account.email;
+  }
+  if (elements.studentNameInput) {
+    elements.studentNameInput.value = AppState.studentName;
+  }
+}
+
+function renderBadges() {
+  if (!elements.badgeGrid || !elements.badgeSubtitle) return;
+  const signedIn = isEmailAccount();
+  if (signedIn) evaluateBadges();
+  const earnedBadges = signedIn ? normalizeBadges(AppState.badges) : {};
+  const earnedCount = Object.keys(earnedBadges).length;
+
+  elements.badgeSubtitle.textContent = signedIn
+    ? `${earnedCount}/${BADGE_DEFINITIONS.length} earned for ${AppState.account.email}.`
+    : 'Sign in with email to collect badges.';
+  elements.badgeGrid.innerHTML = BADGE_DEFINITIONS.map((badge) => {
+    const earnedAt = earnedBadges[badge.id];
+    const earned = Boolean(earnedAt);
+    return `
+      <div class="badge-item${earned ? ' earned' : ' locked'}">
+        <span class="badge-mark" aria-hidden="true">${escapeHtml(badge.mark)}</span>
+        <div>
+          <h4>${escapeHtml(badge.name)}</h4>
+          <p>${escapeHtml(earned ? getBadgeDateLabel(earnedAt) : badge.description)}</p>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function getBadgeDateLabel(earnedAt) {
+  const earnedDate = new Date(earnedAt);
+  if (Number.isNaN(earnedDate.getTime())) return 'Earned';
+  return `Earned ${earnedDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
+}
+
+function setAccountMessage(message, tone = 'neutral') {
+  if (!elements.accountMessage) return;
+  elements.accountMessage.textContent = message;
+  elements.accountMessage.dataset.tone = tone;
+}
+
+function renderAfterProfileChange() {
+  renderAccountControls();
+  renderGradeOptions();
+  if (VALID_GRADES.includes(AppState.grade)) renderLessonList();
+  renderDashboard();
+}
+
+function showBestLearningPage() {
+  if (!AppState.studentName) {
+    showPage('welcome');
+    return;
+  }
+  if (!VALID_GRADES.includes(AppState.grade)) {
+    showPage('grade');
+    return;
+  }
+  renderLessonList();
+  showPage('lessonList');
+}
+
+function signInWithEmail(email) {
+  const normalizedEmail = normalizeEmail(email);
+  if (!isValidEmail(normalizedEmail)) {
+    setAccountMessage('Enter a valid email address.', 'error');
+    return;
+  }
+
+  saveState();
+  const account = createEmailAccount(normalizedEmail);
+  const existingProfile = getStoredProfile(account.profileId);
+  const nextState = existingProfile || createStateSnapshot(AppState, account);
+  applyStoredState(nextState, account);
+  AppState.account = account;
+  evaluateBadges();
+  saveState();
+  renderAfterProfileChange();
+  setAccountMessage(existingProfile ? 'Signed in.' : 'Account created.', 'success');
+}
+
+function continueAsGuest() {
+  saveState();
+  const guestAccount = createGuestAccount();
+  const existingGuestProfile = getStoredProfile(GUEST_PROFILE_ID);
+  const nextState = existingGuestProfile || {
+    account: guestAccount,
+    studentName: '',
+    grade: null,
+    selectedLesson: null,
+    currentQuestionIndex: 0,
+    selectedOption: null,
+    answerChecked: false,
+    currentLessonCorrect: 0,
+    progress: getDefaultProgress(),
+    badges: {}
+  };
+  applyStoredState(nextState, guestAccount);
+  AppState.account = guestAccount;
+  saveState();
+  renderAfterProfileChange();
+  setAccountMessage('Using guest mode.', 'success');
+}
+
 function init() {
   loadState();
+  renderAccountControls();
   if (AppState.studentName && AppState.grade) {
     renderLessonList();
     showPage('lessonList');
@@ -1466,6 +1835,7 @@ function renderDashboard() {
   const lessonsCompleted = Object.keys(AppState.progress.lessons).length;
   elements.lessonsCompleteValue.textContent = lessonsCompleted;
   elements.wordsMasteredValue.textContent = Object.keys(AppState.progress.wordsMastered).length;
+  renderBadges();
   const visibleLessons = VALID_GRADES.includes(AppState.grade)
     ? LESSONS.filter((lesson) => lesson.grade === AppState.grade)
     : LESSONS;
@@ -1497,12 +1867,28 @@ function showLessonListOrOnboarding() {
 }
 
 function setupEvents() {
-  elements.startButton.addEventListener('click', () => showPage('signup'));
+  elements.startButton.addEventListener('click', showLessonListOrOnboarding);
+  elements.welcomeAccountButton.addEventListener('click', () => {
+    renderAccountControls();
+    showPage('account');
+  });
+  elements.accountButton.addEventListener('click', () => {
+    renderAccountControls();
+    showPage('account');
+  });
+  elements.accountBackButton.addEventListener('click', showBestLearningPage);
+  elements.accountForm.addEventListener('submit', (event) => {
+    event.preventDefault();
+    signInWithEmail(elements.accountEmailInput.value);
+  });
+  elements.continueGuestButton.addEventListener('click', continueAsGuest);
+  elements.signOutButton.addEventListener('click', continueAsGuest);
   elements.signupNextButton.addEventListener('click', () => {
     const name = elements.studentNameInput.value.trim();
     if (!name) return;
     AppState.studentName = name;
     saveState();
+    renderAccountControls();
     showPage('grade');
   });
   elements.changeGradeButton.addEventListener('click', () => {
