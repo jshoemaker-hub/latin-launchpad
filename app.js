@@ -83,6 +83,9 @@ const elements = {
   changeGradeButton: document.getElementById('changeGradeButton'),
   objectivesCard: document.getElementById('objectivesCard'),
   backToLessons: document.getElementById('backToLessons'),
+  lessonPrintables: document.getElementById('lessonPrintables'),
+  lessonPuzzles: document.getElementById('lessonPuzzles'),
+  printArea: document.getElementById('printArea'),
   homeButton: document.getElementById('homeButton'),
   dashboardButton: document.getElementById('dashboardButton'),
   backToLessonsFromDashboard: document.getElementById('backToLessonsFromDashboard'),
@@ -95,6 +98,15 @@ const elements = {
 
 const STORAGE_KEY = 'latinLaunchpadState';
 const VALID_GRADES = [3, 4, 5, 6, 7, 8];
+const PUZZLE_CACHE = new Map();
+const OnlinePuzzleState = {
+  lessonId: null,
+  mode: 'crossword',
+  crosswordDirection: 'across',
+  wordFindStart: null,
+  wordFindFound: new Set(),
+  wordFindStatus: ''
+};
 
 function isPlainObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -271,6 +283,8 @@ function renderLesson() {
   elements.lessonDescription.textContent = lesson.description;
   renderStoryScene(lesson.story);
   renderLessonNotes(lesson);
+  renderLessonPrintables(lesson);
+  renderLessonPuzzles(lesson);
   elements.wordPreview.innerHTML = lesson.words
     .map((word) => {
       const label = word.preview || word.latin;
@@ -285,6 +299,907 @@ function renderLesson() {
     })
     .join('');
   renderQuestion();
+}
+
+function renderLessonPuzzles(lesson) {
+  if (!elements.lessonPuzzles) return;
+  const { terms } = getLessonPuzzles(lesson);
+  if (terms.length === 0) {
+    elements.lessonPuzzles.innerHTML = '';
+    return;
+  }
+
+  if (OnlinePuzzleState.lessonId !== lesson.id) {
+    OnlinePuzzleState.lessonId = lesson.id;
+    OnlinePuzzleState.mode = 'crossword';
+    OnlinePuzzleState.crosswordDirection = 'across';
+    OnlinePuzzleState.wordFindStart = null;
+    OnlinePuzzleState.wordFindFound = new Set();
+    OnlinePuzzleState.wordFindStatus = '';
+  }
+
+  elements.lessonPuzzles.innerHTML = `
+    <section class="online-puzzles-panel" aria-label="Online puzzles">
+      <div class="online-puzzles-header">
+        <div>
+          <span class="printables-eyebrow">Online puzzles</span>
+          <h3>Play on screen</h3>
+        </div>
+        <div class="puzzle-mode-tabs" role="tablist" aria-label="Puzzle type">
+          ${renderPuzzleModeButton('crossword', 'Crossword')}
+          ${renderPuzzleModeButton('word-find', 'Word find')}
+        </div>
+      </div>
+      <div class="online-puzzle-stage" id="onlinePuzzleStage"></div>
+    </section>
+  `;
+  renderOnlinePuzzle(lesson);
+}
+
+function renderPuzzleModeButton(mode, label) {
+  const selected = OnlinePuzzleState.mode === mode;
+  return `
+    <button
+      type="button"
+      class="puzzle-mode-button${selected ? ' active' : ''}"
+      role="tab"
+      aria-selected="${selected ? 'true' : 'false'}"
+      data-puzzle-mode="${escapeHtml(mode)}"
+    >${escapeHtml(label)}</button>
+  `;
+}
+
+function renderOnlinePuzzle(lesson) {
+  const stage = document.getElementById('onlinePuzzleStage');
+  if (!stage) return;
+  stage.innerHTML = OnlinePuzzleState.mode === 'word-find'
+    ? renderOnlineWordFind(lesson)
+    : renderOnlineCrossword(lesson);
+}
+
+function renderOnlineCrossword(lesson) {
+  const { crossword } = getLessonPuzzles(lesson);
+  const entries = getCrosswordEntries(crossword);
+  return `
+    <div class="online-crossword">
+      <div class="online-puzzle-grid-wrap">
+        ${renderOnlineCrosswordGrid(crossword)}
+      </div>
+      <div class="online-puzzle-side">
+        <div class="online-puzzle-actions">
+          <button type="button" class="secondary-button" data-crossword-action="reset">Reset</button>
+          <button type="button" class="secondary-button" data-crossword-action="reveal">Reveal</button>
+          <button type="button" class="primary-button" data-crossword-action="check">Check</button>
+        </div>
+        <p class="online-puzzle-status" id="crosswordStatus" aria-live="polite"></p>
+        ${renderOnlineCrosswordClues('Across', entries.filter((entry) => entry.direction === 'across'))}
+        ${renderOnlineCrosswordClues('Down', entries.filter((entry) => entry.direction === 'down'))}
+      </div>
+    </div>
+  `;
+}
+
+function renderOnlineCrosswordGrid(crossword) {
+  const rows = crossword.grid.map((row, rowIndex) => {
+    const cells = row.map((letter, colIndex) => {
+      if (!letter) return '<td class="online-crossword-block"></td>';
+      const number = crossword.cellNumbers.get(`${rowIndex},${colIndex}`);
+      const numberHtml = number ? `<span class="cell-number">${number}</span>` : '';
+      return `
+        <td class="online-crossword-cell">
+          ${numberHtml}
+          <input
+            class="online-crossword-input"
+            type="text"
+            inputmode="text"
+            maxlength="1"
+            autocomplete="off"
+            autocapitalize="characters"
+            spellcheck="false"
+            aria-label="Row ${rowIndex + 1}, column ${colIndex + 1}"
+            data-crossword-cell
+            data-row="${rowIndex}"
+            data-col="${colIndex}"
+            data-answer="${escapeHtml(letter)}"
+          />
+        </td>
+      `;
+    }).join('');
+    return `<tr>${cells}</tr>`;
+  }).join('');
+  return `<table class="online-crossword-grid" aria-label="Crossword puzzle"><tbody>${rows}</tbody></table>`;
+}
+
+function renderOnlineCrosswordClues(title, entries) {
+  if (entries.length === 0) return '';
+  return `
+    <section class="online-clue-section">
+      <h4>${escapeHtml(title)}</h4>
+      <ol class="online-clue-list">
+        ${entries.map((entry) => `
+          <li value="${entry.number}">
+            <button type="button" data-crossword-entry="${escapeHtml(entry.id)}">
+              ${escapeHtml(entry.term.clue)}
+            </button>
+          </li>
+        `).join('')}
+      </ol>
+    </section>
+  `;
+}
+
+function getCrosswordEntries(crossword) {
+  return [...crossword.across, ...crossword.down]
+    .map((placement) => ({
+      id: `${placement.direction}-${placement.number}`,
+      number: placement.number,
+      direction: placement.direction,
+      term: placement.term,
+      cells: getPlacementCells(placement)
+    }))
+    .sort((a, b) => a.number - b.number || a.direction.localeCompare(b.direction));
+}
+
+function getPlacementCells(placement) {
+  const down = placement.direction === 'down';
+  return Array.from({ length: placement.term.answer.length }, (_, index) => ({
+    row: placement.row + (down ? index : 0),
+    col: placement.col + (down ? 0 : index),
+    letter: placement.term.answer[index]
+  }));
+}
+
+function getCrosswordEntryById(entryId) {
+  const lesson = getSelectedLesson();
+  if (!lesson) return null;
+  const { crossword } = getLessonPuzzles(lesson);
+  return getCrosswordEntries(crossword).find((entry) => entry.id === entryId) || null;
+}
+
+function focusCrosswordEntry(entryId) {
+  const entry = getCrosswordEntryById(entryId);
+  if (!entry) return;
+  OnlinePuzzleState.crosswordDirection = entry.direction;
+  const firstOpenCell = entry.cells.find((cell) => {
+    const input = getCrosswordInput(cell.row, cell.col);
+    return input && !input.value;
+  }) || entry.cells[0];
+  getCrosswordInput(firstOpenCell.row, firstOpenCell.col)?.focus();
+}
+
+function getCrosswordInput(row, col) {
+  return elements.lessonPuzzles?.querySelector(`[data-crossword-cell][data-row="${row}"][data-col="${col}"]`) || null;
+}
+
+function handleCrosswordInput(input) {
+  const value = normalizePuzzleAnswer(input.value).slice(0, 1);
+  input.value = value;
+  input.classList.remove('correct', 'wrong');
+  if (value) moveCrosswordFocus(input, 1);
+}
+
+function handleCrosswordKeydown(event, input) {
+  const keyDirections = {
+    ArrowRight: ['across', 1],
+    ArrowLeft: ['across', -1],
+    ArrowDown: ['down', 1],
+    ArrowUp: ['down', -1]
+  };
+
+  if (keyDirections[event.key]) {
+    event.preventDefault();
+    const [direction, step] = keyDirections[event.key];
+    OnlinePuzzleState.crosswordDirection = direction;
+    moveCrosswordFocus(input, step, direction);
+    return;
+  }
+
+  if (event.key === 'Backspace' && !input.value) {
+    event.preventDefault();
+    moveCrosswordFocus(input, -1);
+  }
+}
+
+function moveCrosswordFocus(input, step, direction = OnlinePuzzleState.crosswordDirection) {
+  const row = Number(input.dataset.row);
+  const col = Number(input.dataset.col);
+  const dr = direction === 'down' ? step : 0;
+  const dc = direction === 'across' ? step : 0;
+  let nextRow = row + dr;
+  let nextCol = col + dc;
+
+  while (nextRow >= 0 && nextCol >= 0) {
+    const nextInput = getCrosswordInput(nextRow, nextCol);
+    if (nextInput) {
+      nextInput.focus();
+      return;
+    }
+    nextRow += dr;
+    nextCol += dc;
+    if (nextRow > 25 || nextCol > 25) return;
+  }
+}
+
+function checkOnlineCrossword(reveal = false) {
+  const lesson = getSelectedLesson();
+  if (!lesson || !elements.lessonPuzzles) return;
+  const { crossword } = getLessonPuzzles(lesson);
+  const entries = getCrosswordEntries(crossword);
+  const inputs = Array.from(elements.lessonPuzzles.querySelectorAll('[data-crossword-cell]'));
+
+  inputs.forEach((input) => {
+    if (reveal) input.value = input.dataset.answer;
+    input.classList.remove('correct', 'wrong');
+    if (!input.value) return;
+    input.classList.add(input.value.toUpperCase() === input.dataset.answer ? 'correct' : 'wrong');
+  });
+
+  let completeEntries = 0;
+  entries.forEach((entry) => {
+    const complete = entry.cells.every((cell) => {
+      const input = getCrosswordInput(cell.row, cell.col);
+      return input && input.value.toUpperCase() === cell.letter;
+    });
+    if (complete) completeEntries += 1;
+    elements.lessonPuzzles
+      .querySelector(`[data-crossword-entry="${entry.id}"]`)
+      ?.classList.toggle('complete', complete);
+  });
+
+  const status = document.getElementById('crosswordStatus');
+  if (status) {
+    status.textContent = completeEntries === entries.length
+      ? `Complete: ${completeEntries}/${entries.length}`
+      : `Solved: ${completeEntries}/${entries.length}`;
+  }
+}
+
+function resetOnlineCrossword() {
+  if (!elements.lessonPuzzles) return;
+  elements.lessonPuzzles.querySelectorAll('[data-crossword-cell]').forEach((input) => {
+    input.value = '';
+    input.classList.remove('correct', 'wrong');
+  });
+  elements.lessonPuzzles.querySelectorAll('[data-crossword-entry]').forEach((button) => {
+    button.classList.remove('complete');
+  });
+  const status = document.getElementById('crosswordStatus');
+  if (status) status.textContent = '';
+}
+
+function renderOnlineWordFind(lesson) {
+  const { terms, wordFind } = getLessonPuzzles(lesson);
+  const foundCells = getFoundWordFindCellKeys(wordFind);
+  const selectedKeys = OnlinePuzzleState.wordFindStart
+    ? new Set([getCellKey(OnlinePuzzleState.wordFindStart.row, OnlinePuzzleState.wordFindStart.col)])
+    : new Set();
+  const rows = wordFind.grid.map((row, rowIndex) => {
+    const cells = row.map((letter, colIndex) => {
+      const key = getCellKey(rowIndex, colIndex);
+      const classes = [
+        'word-find-button',
+        foundCells.has(key) ? 'found' : '',
+        selectedKeys.has(key) ? 'selected' : ''
+      ].filter(Boolean).join(' ');
+      return `
+        <td>
+          <button
+            type="button"
+            class="${classes}"
+            data-word-find-cell
+            data-row="${rowIndex}"
+            data-col="${colIndex}"
+            aria-label="Row ${rowIndex + 1}, column ${colIndex + 1}, ${escapeHtml(letter)}"
+          >${escapeHtml(letter)}</button>
+        </td>
+      `;
+    }).join('');
+    return `<tr>${cells}</tr>`;
+  }).join('');
+  const foundCount = OnlinePuzzleState.wordFindFound.size;
+  const status = OnlinePuzzleState.wordFindStatus || `Found: ${foundCount}/${terms.length}`;
+
+  return `
+    <div class="online-word-find">
+      <div class="online-puzzle-grid-wrap">
+        <table class="online-word-find-grid" aria-label="Word find puzzle"><tbody>${rows}</tbody></table>
+      </div>
+      <div class="online-puzzle-side">
+        <div class="online-puzzle-actions">
+          <button type="button" class="secondary-button" data-word-find-action="reset">Reset</button>
+          <button type="button" class="secondary-button" data-word-find-action="reveal">Reveal</button>
+        </div>
+        <p class="online-puzzle-status" aria-live="polite">${escapeHtml(status)}</p>
+        <section class="online-word-bank">
+          <h4>Latin terms</h4>
+          <ul>
+            ${terms.map((term) => `
+              <li class="${OnlinePuzzleState.wordFindFound.has(term.answer) ? 'found' : ''}">
+                ${escapeHtml(term.display)}
+              </li>
+            `).join('')}
+          </ul>
+        </section>
+      </div>
+    </div>
+  `;
+}
+
+function getFoundWordFindCellKeys(wordFind) {
+  const keys = new Set();
+  wordFind.placements.forEach((placement) => {
+    if (!OnlinePuzzleState.wordFindFound.has(placement.term.answer)) return;
+    getWordFindPlacementCells(placement).forEach((cell) => keys.add(getCellKey(cell.row, cell.col)));
+  });
+  return keys;
+}
+
+function getWordFindPlacementCells(placement) {
+  return Array.from({ length: placement.term.answer.length }, (_, index) => ({
+    row: placement.row + placement.dr * index,
+    col: placement.col + placement.dc * index,
+    letter: placement.term.answer[index]
+  }));
+}
+
+function getCellKey(row, col) {
+  return `${row},${col}`;
+}
+
+function handleWordFindCellClick(button) {
+  const lesson = getSelectedLesson();
+  if (!lesson) return;
+  const cell = {
+    row: Number(button.dataset.row),
+    col: Number(button.dataset.col)
+  };
+
+  if (!OnlinePuzzleState.wordFindStart) {
+    OnlinePuzzleState.wordFindStart = cell;
+    OnlinePuzzleState.wordFindStatus = `Found: ${OnlinePuzzleState.wordFindFound.size}/${getLessonPuzzles(lesson).terms.length}`;
+    renderOnlinePuzzle(lesson);
+    return;
+  }
+
+  const result = selectWordFindLine(OnlinePuzzleState.wordFindStart, cell);
+  OnlinePuzzleState.wordFindStart = null;
+  OnlinePuzzleState.wordFindStatus = result;
+  renderOnlinePuzzle(lesson);
+}
+
+function selectWordFindLine(start, end) {
+  const lesson = getSelectedLesson();
+  if (!lesson) return '';
+  const { terms, wordFind } = getLessonPuzzles(lesson);
+  const cells = getStraightLineCells(start, end);
+  if (cells.length === 0) return `Found: ${OnlinePuzzleState.wordFindFound.size}/${terms.length}`;
+  const word = cells.map((cell) => wordFind.grid[cell.row]?.[cell.col] || '').join('');
+  const reversed = word.split('').reverse().join('');
+  const match = terms.find((term) => term.answer === word || term.answer === reversed);
+
+  if (!match) return `Found: ${OnlinePuzzleState.wordFindFound.size}/${terms.length}`;
+  OnlinePuzzleState.wordFindFound.add(match.answer);
+  return OnlinePuzzleState.wordFindFound.size === terms.length
+    ? `Complete: ${OnlinePuzzleState.wordFindFound.size}/${terms.length}`
+    : `Found: ${OnlinePuzzleState.wordFindFound.size}/${terms.length}`;
+}
+
+function getStraightLineCells(start, end) {
+  const rowDelta = end.row - start.row;
+  const colDelta = end.col - start.col;
+  if (rowDelta === 0 && colDelta === 0) return [];
+  if (!(rowDelta === 0 || colDelta === 0 || Math.abs(rowDelta) === Math.abs(colDelta))) return [];
+  const steps = Math.max(Math.abs(rowDelta), Math.abs(colDelta));
+  const rowStep = Math.sign(rowDelta);
+  const colStep = Math.sign(colDelta);
+  return Array.from({ length: steps + 1 }, (_, index) => ({
+    row: start.row + rowStep * index,
+    col: start.col + colStep * index
+  }));
+}
+
+function resetOnlineWordFind() {
+  const lesson = getSelectedLesson();
+  if (!lesson) return;
+  OnlinePuzzleState.wordFindStart = null;
+  OnlinePuzzleState.wordFindFound = new Set();
+  OnlinePuzzleState.wordFindStatus = '';
+  renderOnlinePuzzle(lesson);
+}
+
+function revealOnlineWordFind() {
+  const lesson = getSelectedLesson();
+  if (!lesson) return;
+  const { terms } = getLessonPuzzles(lesson);
+  OnlinePuzzleState.wordFindFound = new Set(terms.map((term) => term.answer));
+  OnlinePuzzleState.wordFindStatus = `Complete: ${OnlinePuzzleState.wordFindFound.size}/${terms.length}`;
+  renderOnlinePuzzle(lesson);
+}
+
+function getSelectedLesson() {
+  return LESSONS.find((item) => item.id === AppState.selectedLesson) || null;
+}
+
+function renderLessonPrintables(lesson) {
+  if (!elements.lessonPrintables) return;
+  const puzzleTerms = getLessonPuzzleTerms(lesson);
+  const puzzleDisabled = puzzleTerms.length < 1;
+  const puzzleTermLabel = getPuzzleTermLabel(puzzleTerms.length);
+  elements.lessonPrintables.innerHTML = `
+    <section class="printables-panel" aria-label="Practice printables">
+      <div>
+        <span class="printables-eyebrow">Printables</span>
+        <h3>Practice sheets</h3>
+      </div>
+      <div class="printable-actions">
+        ${renderPrintableButton('summary', 'Lesson summary', 'One-page recap', false)}
+        ${renderPrintableButton('crossword', 'Crossword', puzzleTermLabel, puzzleDisabled)}
+        ${renderPrintableButton('word-find', 'Word find', puzzleTermLabel, puzzleDisabled)}
+      </div>
+    </section>
+  `;
+  elements.lessonPrintables.querySelectorAll('[data-printable]').forEach((button) => {
+    button.addEventListener('click', () => printLessonResource(button.dataset.printable));
+  });
+}
+
+function renderPrintableButton(type, title, detail, disabled) {
+  return `
+    <button type="button" class="printable-button" data-printable="${escapeHtml(type)}" ${disabled ? 'disabled' : ''}>
+      <span>${escapeHtml(title)}</span>
+      <strong>${escapeHtml(detail)}</strong>
+    </button>
+  `;
+}
+
+function getPuzzleTermLabel(count) {
+  return `${count} ${count === 1 ? 'term' : 'terms'}`;
+}
+
+function getLessonPuzzleTerms(lesson) {
+  const seen = new Set();
+  return lesson.words
+    .map((word, index) => {
+      const answer = normalizePuzzleAnswer(word.puzzleAnswer || word.latin);
+      if (answer.length < 3 || answer.length > 14 || seen.has(answer)) return null;
+      seen.add(answer);
+      return {
+        answer,
+        display: word.latin,
+        clue: getPuzzleClue(word, index),
+        english: word.previewAnswer || word.english
+      };
+    })
+    .filter(Boolean)
+    .slice(0, 10);
+}
+
+function normalizePuzzleAnswer(value) {
+  return String(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/[^A-Z]/g, '');
+}
+
+function getPuzzleClue(word, index) {
+  const meaning = word.previewAnswer || word.english || `term ${index + 1}`;
+  if (word.context) return `${word.context} ${meaning}`;
+  return `Latin for "${meaning}"`;
+}
+
+function getLessonPuzzles(lesson) {
+  if (!PUZZLE_CACHE.has(lesson.id)) {
+    const terms = getLessonPuzzleTerms(lesson);
+    PUZZLE_CACHE.set(lesson.id, {
+      terms,
+      crossword: buildCrossword(terms),
+      wordFind: buildWordFind(terms, lesson.id)
+    });
+  }
+  return PUZZLE_CACHE.get(lesson.id);
+}
+
+function buildCrossword(terms) {
+  const words = terms
+    .slice()
+    .sort((a, b) => b.answer.length - a.answer.length || a.answer.localeCompare(b.answer));
+  const longest = words.reduce((max, term) => Math.max(max, term.answer.length), 0);
+  const size = Math.max(13, Math.min(19, Math.max(15, longest + 2)));
+  const grid = Array.from({ length: size }, () => Array(size).fill(null));
+  const directions = Array.from({ length: size }, () =>
+    Array.from({ length: size }, () => new Set())
+  );
+  const placements = [];
+  const unused = [];
+
+  function inBounds(row, col) {
+    return row >= 0 && col >= 0 && row < size && col < size;
+  }
+
+  function canPlace(answer, row, col, direction, requireIntersection) {
+    const down = direction === 'down';
+    const dr = down ? 1 : 0;
+    const dc = down ? 0 : 1;
+    const beforeRow = row - dr;
+    const beforeCol = col - dc;
+    const afterRow = row + dr * answer.length;
+    const afterCol = col + dc * answer.length;
+
+    if (!inBounds(row, col) || !inBounds(row + dr * (answer.length - 1), col + dc * (answer.length - 1))) {
+      return null;
+    }
+    if (inBounds(beforeRow, beforeCol) && grid[beforeRow][beforeCol]) return null;
+    if (inBounds(afterRow, afterCol) && grid[afterRow][afterCol]) return null;
+
+    let intersections = 0;
+    for (let index = 0; index < answer.length; index += 1) {
+      const cellRow = row + dr * index;
+      const cellCol = col + dc * index;
+      const existing = grid[cellRow][cellCol];
+      if (existing) {
+        if (existing !== answer[index] || directions[cellRow][cellCol].has(direction)) return null;
+        intersections += 1;
+        continue;
+      }
+
+      if (down) {
+        if (inBounds(cellRow, cellCol - 1) && grid[cellRow][cellCol - 1]) return null;
+        if (inBounds(cellRow, cellCol + 1) && grid[cellRow][cellCol + 1]) return null;
+      } else {
+        if (inBounds(cellRow - 1, cellCol) && grid[cellRow - 1][cellCol]) return null;
+        if (inBounds(cellRow + 1, cellCol) && grid[cellRow + 1][cellCol]) return null;
+      }
+    }
+    if (requireIntersection && intersections === 0) return null;
+    return intersections;
+  }
+
+  function placeTerm(term, row, col, direction) {
+    const down = direction === 'down';
+    const dr = down ? 1 : 0;
+    const dc = down ? 0 : 1;
+    for (let index = 0; index < term.answer.length; index += 1) {
+      const cellRow = row + dr * index;
+      const cellCol = col + dc * index;
+      grid[cellRow][cellCol] = term.answer[index];
+      directions[cellRow][cellCol].add(direction);
+    }
+    placements.push({ term, row, col, direction, number: 0 });
+  }
+
+  function findBestPlacement(term, requireIntersection) {
+    let best = null;
+    const center = (size - 1) / 2;
+    for (let row = 0; row < size; row += 1) {
+      for (let col = 0; col < size; col += 1) {
+        ['across', 'down'].forEach((direction) => {
+          const intersections = canPlace(term.answer, row, col, direction, requireIntersection);
+          if (intersections === null) return;
+          const endRow = row + (direction === 'down' ? term.answer.length - 1 : 0);
+          const endCol = col + (direction === 'across' ? term.answer.length - 1 : 0);
+          const distance = Math.abs((row + endRow) / 2 - center) + Math.abs((col + endCol) / 2 - center);
+          const score = intersections * 40 - distance;
+          if (!best || score > best.score) {
+            best = { row, col, direction, score };
+          }
+        });
+      }
+    }
+    return best;
+  }
+
+  words.forEach((term, index) => {
+    if (index === 0) {
+      const row = Math.floor(size / 2);
+      const col = Math.max(0, Math.floor((size - term.answer.length) / 2));
+      placeTerm(term, row, col, 'across');
+      return;
+    }
+
+    const connected = findBestPlacement(term, true);
+    const placement = connected || findBestPlacement(term, false);
+    if (placement) {
+      placeTerm(term, placement.row, placement.col, placement.direction);
+    } else {
+      unused.push(term);
+    }
+  });
+
+  const cellNumbers = new Map();
+  let nextNumber = 1;
+  placements
+    .slice()
+    .sort((a, b) => a.row - b.row || a.col - b.col || a.direction.localeCompare(b.direction))
+    .forEach((placement) => {
+      const key = `${placement.row},${placement.col}`;
+      if (!cellNumbers.has(key)) {
+        cellNumbers.set(key, nextNumber);
+        nextNumber += 1;
+      }
+      placement.number = cellNumbers.get(key);
+    });
+
+  return {
+    size,
+    grid,
+    cellNumbers,
+    across: placements.filter((placement) => placement.direction === 'across').sort((a, b) => a.number - b.number),
+    down: placements.filter((placement) => placement.direction === 'down').sort((a, b) => a.number - b.number),
+    unused
+  };
+}
+
+function buildWordFind(terms, lessonId) {
+  const words = terms
+    .slice()
+    .sort((a, b) => b.answer.length - a.answer.length || a.answer.localeCompare(b.answer));
+  const longest = words.reduce((max, term) => Math.max(max, term.answer.length), 0);
+  const totalLetters = words.reduce((total, term) => total + term.answer.length, 0);
+  let size = Math.max(12, Math.min(18, Math.max(longest + 2, Math.ceil(Math.sqrt(totalLetters) * 4))));
+
+  while (size <= 20) {
+    const puzzle = tryBuildWordFind(words, size, makeSeededRandom(`${lessonId}-${size}`));
+    if (puzzle) return puzzle;
+    size += 1;
+  }
+
+  return tryBuildWordFind(words, 20, makeSeededRandom(`${lessonId}-fallback`));
+}
+
+function tryBuildWordFind(words, size, random) {
+  const grid = Array.from({ length: size }, () => Array(size).fill(''));
+  const placements = [];
+  const directionList = [
+    [0, 1],
+    [1, 0],
+    [1, 1],
+    [-1, 1],
+    [0, -1],
+    [1, -1]
+  ];
+
+  function fits(answer, row, col, dr, dc) {
+    let overlap = 0;
+    for (let index = 0; index < answer.length; index += 1) {
+      const cellRow = row + dr * index;
+      const cellCol = col + dc * index;
+      if (cellRow < 0 || cellCol < 0 || cellRow >= size || cellCol >= size) return null;
+      const existing = grid[cellRow][cellCol];
+      if (existing && existing !== answer[index]) return null;
+      if (existing) overlap += 1;
+    }
+    return overlap;
+  }
+
+  for (const term of words) {
+    const candidates = [];
+    for (let row = 0; row < size; row += 1) {
+      for (let col = 0; col < size; col += 1) {
+        directionList.forEach(([dr, dc]) => {
+          const overlap = fits(term.answer, row, col, dr, dc);
+          if (overlap === null) return;
+          candidates.push({ row, col, dr, dc, score: overlap * 30 + Math.floor(random() * 20) });
+        });
+      }
+    }
+    if (candidates.length === 0) return null;
+    candidates.sort((a, b) => b.score - a.score);
+    const placement = candidates[0];
+    for (let index = 0; index < term.answer.length; index += 1) {
+      grid[placement.row + placement.dr * index][placement.col + placement.dc * index] = term.answer[index];
+    }
+    placements.push({ term, ...placement });
+  }
+
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  for (let row = 0; row < size; row += 1) {
+    for (let col = 0; col < size; col += 1) {
+      if (!grid[row][col]) {
+        grid[row][col] = alphabet[Math.floor(random() * alphabet.length)];
+      }
+    }
+  }
+
+  return { size, grid, placements };
+}
+
+function makeSeededRandom(seedText) {
+  let seed = 2166136261;
+  for (let index = 0; index < seedText.length; index += 1) {
+    seed ^= seedText.charCodeAt(index);
+    seed = Math.imul(seed, 16777619);
+  }
+  return function random() {
+    seed += 0x6D2B79F5;
+    let value = seed;
+    value = Math.imul(value ^ (value >>> 15), value | 1);
+    value ^= value + Math.imul(value ^ (value >>> 7), value | 61);
+    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function printLessonResource(type) {
+  const lesson = LESSONS.find((item) => item.id === AppState.selectedLesson);
+  if (!lesson || !elements.printArea) return;
+  const printers = {
+    summary: renderLessonSummaryPrint,
+    crossword: renderCrosswordPrint,
+    'word-find': renderWordFindPrint
+  };
+  const renderPrint = printers[type];
+  if (!renderPrint) return;
+
+  elements.printArea.innerHTML = `
+    <div class="print-preview-toolbar">
+      <div>
+        <span class="printables-eyebrow">Printable preview</span>
+        <h2>${escapeHtml(lesson.title)}</h2>
+      </div>
+      <div class="print-preview-actions">
+        <button type="button" class="secondary-button" data-print-action="close">Close</button>
+        <button type="button" class="primary-button" data-print-action="print">Print</button>
+      </div>
+    </div>
+    ${renderPrint(lesson)}
+  `;
+  elements.printArea.classList.add('active');
+  elements.printArea.setAttribute('role', 'dialog');
+  elements.printArea.setAttribute('aria-label', 'Printable preview');
+  elements.printArea.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('print-preview-open');
+  elements.printArea.querySelector('[data-print-action="print"]')?.focus();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function closePrintPreview() {
+  if (!elements.printArea) return;
+  elements.printArea.classList.remove('active');
+  elements.printArea.setAttribute('aria-hidden', 'true');
+  elements.printArea.innerHTML = '';
+  document.body.classList.remove('print-preview-open');
+}
+
+function printCurrentPreview() {
+  if (!elements.printArea?.classList.contains('active')) return;
+  elements.printArea.offsetHeight;
+  window.print();
+}
+
+function renderLessonSummaryPrint(lesson) {
+  const focusItems = Array.isArray(lesson.focus)
+    ? lesson.focus.map((item) => `<li>${escapeHtml(item)}</li>`).join('')
+    : '';
+  const sourceNote = lesson.sourceNote ? `<p>${escapeHtml(lesson.sourceNote)}</p>` : '';
+  const storyNote = lesson.story
+    ? `<p><strong>Story:</strong> ${escapeHtml(lesson.story.title)} - ${escapeHtml(lesson.story.summary)}</p>`
+    : '';
+  const rows = lesson.words.map((word) => {
+    const note = word.explanation || word.hint || word.prompt || '';
+    return `
+      <tr>
+        <td>${escapeHtml(word.latin)}</td>
+        <td>${escapeHtml(word.previewAnswer || word.english)}</td>
+        <td>${escapeHtml(truncateText(note, 96))}</td>
+      </tr>
+    `;
+  }).join('');
+
+  return `
+    <article class="print-sheet summary-sheet">
+      ${renderPrintHeader(lesson, 'Lesson Summary')}
+      <section class="print-section">
+        <h2>Big idea</h2>
+        <p>${escapeHtml(lesson.description)}</p>
+        ${sourceNote}
+        ${storyNote}
+      </section>
+      ${focusItems ? `<section class="print-section"><h2>Focus</h2><ul class="print-focus-list">${focusItems}</ul></section>` : ''}
+      <section class="print-section">
+        <h2>Key terms</h2>
+        <table class="summary-table">
+          <thead>
+            <tr>
+              <th>Latin</th>
+              <th>Meaning</th>
+              <th>Note</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </section>
+    </article>
+  `;
+}
+
+function renderCrosswordPrint(lesson) {
+  const { crossword } = getLessonPuzzles(lesson);
+  return `
+    <article class="print-sheet puzzle-sheet">
+      ${renderPrintHeader(lesson, 'Crossword')}
+      <div class="puzzle-layout crossword-layout">
+        <div>${renderCrosswordGrid(crossword, false)}</div>
+        <div class="clue-panel">
+          ${renderCrosswordClues('Across', crossword.across)}
+          ${renderCrosswordClues('Down', crossword.down)}
+        </div>
+      </div>
+    </article>
+  `;
+}
+
+function renderWordFindPrint(lesson) {
+  const { terms, wordFind } = getLessonPuzzles(lesson);
+  const words = terms
+    .map((term) => `<li>${escapeHtml(term.display)}</li>`)
+    .join('');
+  return `
+    <article class="print-sheet puzzle-sheet">
+      ${renderPrintHeader(lesson, 'Word Find')}
+      <div class="puzzle-layout word-find-layout">
+        <div>${renderWordFindGrid(wordFind)}</div>
+        <section class="word-bank">
+          <h2>Find these Latin terms</h2>
+          <ul>${words}</ul>
+        </section>
+      </div>
+    </article>
+  `;
+}
+
+function renderPrintHeader(lesson, sheetTitle) {
+  return `
+    <header class="print-header">
+      <div>
+        <p class="print-kicker">Grade ${lesson.grade} ${lesson.kind === 'grammar' ? 'Grammar' : 'Vocabulary'}</p>
+        <h1>${escapeHtml(sheetTitle)}: ${escapeHtml(lesson.title)}</h1>
+      </div>
+      <div class="print-name-lines">
+        <span>Name: ____________________</span>
+        <span>Date: ____________</span>
+      </div>
+    </header>
+  `;
+}
+
+function renderCrosswordGrid(crossword, showAnswers) {
+  const rows = crossword.grid.map((row, rowIndex) => {
+    const cells = row.map((letter, colIndex) => {
+      if (!letter) return '<td class="crossword-block"></td>';
+      const number = crossword.cellNumbers.get(`${rowIndex},${colIndex}`);
+      const numberHtml = number ? `<span class="cell-number">${number}</span>` : '';
+      const answerHtml = showAnswers ? `<span class="cell-answer">${escapeHtml(letter)}</span>` : '';
+      return `<td class="crossword-cell">${numberHtml}${answerHtml}</td>`;
+    }).join('');
+    return `<tr>${cells}</tr>`;
+  }).join('');
+  return `<table class="crossword-grid" aria-label="Crossword grid"><tbody>${rows}</tbody></table>`;
+}
+
+function renderCrosswordClues(title, clues) {
+  if (clues.length === 0) return '';
+  return `
+    <section class="clue-list-section">
+      <h2>${escapeHtml(title)}</h2>
+      <ol class="clue-list">
+        ${clues.map((placement) => `<li value="${placement.number}">${escapeHtml(placement.term.clue)}</li>`).join('')}
+      </ol>
+    </section>
+  `;
+}
+
+function renderWordFindGrid(wordFind) {
+  const rows = wordFind.grid.map((row) => {
+    const cells = row.map((letter) => `<td>${escapeHtml(letter)}</td>`).join('');
+    return `<tr>${cells}</tr>`;
+  }).join('');
+  return `<table class="word-find-grid" aria-label="Word find grid"><tbody>${rows}</tbody></table>`;
+}
+
+function truncateText(value, maxLength) {
+  const text = String(value || '').trim();
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength - 1).trim()}...`;
 }
 
 function escapeHtml(value) {
@@ -613,6 +1528,61 @@ function setupEvents() {
     showLessonListOrOnboarding();
   });
   elements.nextQuestionButton.addEventListener('click', nextQuestion);
+  elements.printArea?.addEventListener('click', (event) => {
+    const actionButton = event.target instanceof Element
+      ? event.target.closest('[data-print-action]')
+      : null;
+    if (!actionButton) return;
+    if (actionButton.dataset.printAction === 'close') closePrintPreview();
+    if (actionButton.dataset.printAction === 'print') printCurrentPreview();
+  });
+  elements.lessonPuzzles?.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const modeButton = target?.closest('[data-puzzle-mode]');
+    if (modeButton) {
+      const lesson = getSelectedLesson();
+      if (!lesson) return;
+      OnlinePuzzleState.mode = modeButton.dataset.puzzleMode;
+      OnlinePuzzleState.wordFindStart = null;
+      OnlinePuzzleState.wordFindStatus = '';
+      renderLessonPuzzles(lesson);
+      return;
+    }
+
+    const crosswordEntry = target?.closest('[data-crossword-entry]');
+    if (crosswordEntry) {
+      focusCrosswordEntry(crosswordEntry.dataset.crosswordEntry);
+      return;
+    }
+
+    const crosswordAction = target?.closest('[data-crossword-action]');
+    if (crosswordAction) {
+      if (crosswordAction.dataset.crosswordAction === 'reset') resetOnlineCrossword();
+      if (crosswordAction.dataset.crosswordAction === 'check') checkOnlineCrossword(false);
+      if (crosswordAction.dataset.crosswordAction === 'reveal') checkOnlineCrossword(true);
+      return;
+    }
+
+    const wordFindAction = target?.closest('[data-word-find-action]');
+    if (wordFindAction) {
+      if (wordFindAction.dataset.wordFindAction === 'reset') resetOnlineWordFind();
+      if (wordFindAction.dataset.wordFindAction === 'reveal') revealOnlineWordFind();
+      return;
+    }
+
+    const wordFindCell = target?.closest('[data-word-find-cell]');
+    if (wordFindCell) handleWordFindCellClick(wordFindCell);
+  });
+  elements.lessonPuzzles?.addEventListener('input', (event) => {
+    if (event.target instanceof HTMLInputElement && event.target.matches('[data-crossword-cell]')) {
+      handleCrosswordInput(event.target);
+    }
+  });
+  elements.lessonPuzzles?.addEventListener('keydown', (event) => {
+    if (event.target instanceof HTMLInputElement && event.target.matches('[data-crossword-cell]')) {
+      handleCrosswordKeydown(event, event.target);
+    }
+  });
 }
 
 window.addEventListener('DOMContentLoaded', () => {
