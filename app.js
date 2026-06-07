@@ -66,6 +66,12 @@ function getSupabase() {
 }
 const VALID_GRADES = [3, 4, 5, 6, 7, 8];
 const PUZZLE_CACHE = new Map();
+const QUESTION_COUNT_OPTIONS = [10, 25, 50, 100];
+const ASSESSMENT_TYPE_LABELS = {
+  vocabulary: 'Vocabulary',
+  grammar: 'Grammar',
+  phrase: 'Phrases'
+};
 
 const BADGE_DEFINITIONS = [
   {
@@ -132,12 +138,31 @@ const AppState = {
   badges: {}
 };
 
+const AssessmentState = {
+  mode: 'quiz',
+  quizGrade: null,
+  quizQuestionCount: 10,
+  testQuestionCount: 50,
+  testGrade: VALID_GRADES[0],
+  selectedChapterIds: new Set(),
+  questions: [],
+  responses: [],
+  currentQuestionIndex: 0,
+  selectedOption: null,
+  answerChecked: false,
+  correctCount: 0,
+  completed: false,
+  message: ''
+};
+
 const pages = {
   welcome: document.getElementById('welcomePage'),
+  home: document.getElementById('homePage'),
   account: document.getElementById('accountPage'),
   signup: document.getElementById('signupPage'),
   grade: document.getElementById('gradePage'),
   lessonList: document.getElementById('lessonListPage'),
+  assessments: document.getElementById('assessmentsPage'),
   lesson: document.getElementById('lessonPage'),
   dashboard: document.getElementById('dashboardPage')
 };
@@ -145,6 +170,21 @@ const pages = {
 const elements = {
   startButton: document.getElementById('startButton'),
   welcomeAccountButton: document.getElementById('welcomeAccountButton'),
+  homeGreeting: document.getElementById('homeGreeting'),
+  homeSummary: document.getElementById('homeSummary'),
+  homeGradePill: document.getElementById('homeGradePill'),
+  homePointsValue: document.getElementById('homePointsValue'),
+  homeLessonsValue: document.getElementById('homeLessonsValue'),
+  homeSkillsValue: document.getElementById('homeSkillsValue'),
+  homeContinueButton: document.getElementById('homeContinueButton'),
+  homeQuizButton: document.getElementById('homeQuizButton'),
+  homeNextTitle: document.getElementById('homeNextTitle'),
+  homeNextMeta: document.getElementById('homeNextMeta'),
+  homePathList: document.getElementById('homePathList'),
+  homeLessonsButton: document.getElementById('homeLessonsButton'),
+  homePracticeLessons: document.getElementById('homePracticeLessons'),
+  homePracticeAssessments: document.getElementById('homePracticeAssessments'),
+  homePracticeDashboard: document.getElementById('homePracticeDashboard'),
   accountButton: document.getElementById('accountButton'),
   accountBackButton: document.getElementById('accountBackButton'),
   accountForm: document.getElementById('accountForm'),
@@ -177,6 +217,11 @@ const elements = {
   lessonPuzzles: document.getElementById('lessonPuzzles'),
   printArea: document.getElementById('printArea'),
   homeButton: document.getElementById('homeButton'),
+  lessonsButton: document.getElementById('lessonsButton'),
+  assessmentsButton: document.getElementById('assessmentsButton'),
+  assessmentsBackButton: document.getElementById('assessmentsBackButton'),
+  assessmentBuilder: document.getElementById('assessmentBuilder'),
+  assessmentRunner: document.getElementById('assessmentRunner'),
   dashboardButton: document.getElementById('dashboardButton'),
   backToLessonsFromDashboard: document.getElementById('backToLessonsFromDashboard'),
   endingHint: document.getElementById('endingHint'),
@@ -496,7 +541,32 @@ function showPage(page) {
   }
   Object.values(pages).forEach((section) => section.classList.remove('active'));
   pages[page].classList.add('active');
+  updateNavState(page);
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function updateNavState(page) {
+  const activeButtonByPage = {
+    welcome: 'homeButton',
+    home: 'homeButton',
+    signup: 'lessonsButton',
+    grade: 'lessonsButton',
+    lessonList: 'lessonsButton',
+    lesson: 'lessonsButton',
+    assessments: 'assessmentsButton',
+    dashboard: 'dashboardButton',
+    account: 'accountButton'
+  };
+  [
+    elements.homeButton,
+    elements.lessonsButton,
+    elements.assessmentsButton,
+    elements.dashboardButton,
+    elements.accountButton
+  ].forEach((button) => {
+    if (!button) return;
+    button.classList.toggle('active', button.id === activeButtonByPage[page]);
+  });
 }
 
 function isEmailAccount(state = AppState) {
@@ -615,7 +685,9 @@ function renderAfterProfileChange() {
   renderAccountControls();
   renderGradeOptions();
   if (VALID_GRADES.includes(AppState.grade)) renderLessonList();
+  renderHome();
   renderDashboard();
+  renderAssessments();
 }
 
 function showBestLearningPage() {
@@ -627,8 +699,8 @@ function showBestLearningPage() {
     showPage('grade');
     return;
   }
-  renderLessonList();
-  showPage('lessonList');
+  renderHome();
+  showPage('home');
 }
 
 async function signInWithEmail(email) {
@@ -688,12 +760,14 @@ async function init() {
   renderAccountControls();
   if (AppState.studentName && AppState.grade) {
     renderLessonList();
-    showPage('lessonList');
+    renderHome();
+    showPage('home');
   } else {
     showPage('welcome');
   }
   renderGradeOptions();
   renderDashboard();
+  renderAssessments();
 
   // Background refresh from Supabase for signed-in users
   if (isEmailAccount()) {
@@ -707,7 +781,8 @@ async function init() {
       renderAfterProfileChange();
       if (AppState.studentName && VALID_GRADES.includes(AppState.grade)) {
         renderLessonList();
-        showPage('lessonList');
+        renderHome();
+        showPage('home');
       }
     }
   }
@@ -730,7 +805,9 @@ function selectGrade(grade) {
   saveState();
   renderGradeOptions();
   renderLessonList();
-  showPage('lessonList');
+  renderHome();
+  renderAssessments();
+  showPage('home');
 }
 
 function renderLessonList() {
@@ -2065,6 +2142,7 @@ function nextQuestion() {
 function awardPoints(amount) {
   AppState.progress.points += amount;
   saveState();
+  renderHome();
   renderDashboard();
 }
 
@@ -2085,6 +2163,7 @@ function completeLesson(lesson) {
   AppState.answerChecked = false;
   AppState.selectedOption = null;
   saveState();
+  renderHome();
   renderDashboard();
   elements.lessonResult.textContent = `Lesson complete! You scored ${score}/${lesson.words.length}.`;
   elements.lessonListSubtitle.textContent = `Nice work, ${AppState.studentName}!`;
@@ -2117,6 +2196,86 @@ function renderDashboard() {
   }).join('');
 }
 
+function getCurrentGradeLessons() {
+  return VALID_GRADES.includes(AppState.grade)
+    ? LESSONS.filter((lesson) => lesson.grade === AppState.grade)
+    : [];
+}
+
+function getLessonProgressLabel(lesson) {
+  const lessonProgress = AppState.progress.lessons[lesson.id];
+  if (!lessonProgress) return 'Not started';
+  return `Best ${lessonProgress.score}/${lessonProgress.maxScore ?? lesson.words.length}`;
+}
+
+function getNextLesson() {
+  const lessons = getCurrentGradeLessons();
+  return lessons.find((lesson) => !AppState.progress.lessons[lesson.id]) || lessons[0] || null;
+}
+
+function renderHome() {
+  if (!elements.homeGreeting) return;
+  const name = AppState.studentName || 'Learner';
+  const gradeLabel = VALID_GRADES.includes(AppState.grade) ? `Grade ${AppState.grade}` : 'Latin practice';
+  const lessons = getCurrentGradeLessons();
+  const completedCount = lessons.filter((lesson) => AppState.progress.lessons[lesson.id]).length;
+  const nextLesson = getNextLesson();
+
+  elements.homeGradePill.textContent = gradeLabel;
+  elements.homeGreeting.textContent = `Welcome back, ${name}.`;
+  elements.homeSummary.textContent = lessons.length > 0
+    ? `${completedCount}/${lessons.length} chapters complete. Keep lessons, quizzes, and tests in one place.`
+    : 'Choose a grade to unlock your Latin learning path.';
+  elements.homePointsValue.textContent = AppState.progress.points;
+  elements.homeLessonsValue.textContent = Object.keys(AppState.progress.lessons).length;
+  elements.homeSkillsValue.textContent = Object.keys(AppState.progress.wordsMastered).length;
+
+  if (nextLesson) {
+    elements.homeNextTitle.textContent = nextLesson.title;
+    elements.homeNextMeta.textContent = `${getLessonCountLabel(nextLesson)} · ${getLessonProgressLabel(nextLesson)}`;
+    elements.homeContinueButton.disabled = false;
+  } else {
+    elements.homeNextTitle.textContent = 'Choose your grade';
+    elements.homeNextMeta.textContent = 'Pick a grade before starting lessons or assessments.';
+    elements.homeContinueButton.disabled = false;
+  }
+
+  elements.homePathList.innerHTML = lessons.slice(0, 6).map((lesson) => {
+    const complete = Boolean(AppState.progress.lessons[lesson.id]);
+    const current = nextLesson?.id === lesson.id;
+    const type = lesson.kind === 'grammar' ? 'Grammar' : 'Vocabulary';
+    return `
+      <button type="button" class="home-path-item${complete ? ' complete' : ''}${current ? ' current' : ''}" data-home-lesson-id="${escapeHtml(lesson.id)}">
+        <span>${escapeHtml(type)}</span>
+        <strong>${escapeHtml(lesson.title)}</strong>
+        <small>${escapeHtml(getLessonProgressLabel(lesson))}</small>
+      </button>
+    `;
+  }).join('');
+}
+
+function showHomeOrWelcome() {
+  if (!AppState.studentName || !VALID_GRADES.includes(AppState.grade)) {
+    showPage('welcome');
+    return;
+  }
+  renderHome();
+  showPage('home');
+}
+
+function showDashboardOrOnboarding() {
+  if (!AppState.studentName) {
+    showPage('signup');
+    return;
+  }
+  if (!VALID_GRADES.includes(AppState.grade)) {
+    showPage('grade');
+    return;
+  }
+  renderDashboard();
+  showPage('dashboard');
+}
+
 function showLessonListOrOnboarding() {
   if (!AppState.studentName) {
     showPage('signup');
@@ -2130,11 +2289,433 @@ function showLessonListOrOnboarding() {
   showPage('lessonList');
 }
 
+function showAssessmentsOrOnboarding() {
+  if (!AppState.studentName) {
+    showPage('signup');
+    return;
+  }
+  if (!VALID_GRADES.includes(AppState.grade)) {
+    showPage('grade');
+    return;
+  }
+  renderAssessments();
+  showPage('assessments');
+}
+
+function ensureAssessmentDefaults() {
+  if (!VALID_GRADES.includes(AppState.grade)) {
+    AssessmentState.quizGrade = null;
+    AssessmentState.selectedChapterIds = new Set();
+    if (!VALID_GRADES.includes(AssessmentState.testGrade)) {
+      AssessmentState.testGrade = VALID_GRADES[0];
+    }
+    return;
+  }
+
+  const activeGrade = AppState.grade;
+  if (!VALID_GRADES.includes(AssessmentState.testGrade)) {
+    AssessmentState.testGrade = activeGrade;
+  }
+
+  const chapters = getQuizChapters();
+  if (AssessmentState.quizGrade !== activeGrade) {
+    AssessmentState.quizGrade = activeGrade;
+    AssessmentState.selectedChapterIds = new Set(chapters.map((lesson) => lesson.id));
+    return;
+  }
+
+  const validIds = new Set(chapters.map((lesson) => lesson.id));
+  const selectedIds = Array.from(AssessmentState.selectedChapterIds).filter((id) => validIds.has(id));
+  AssessmentState.selectedChapterIds = new Set(selectedIds);
+}
+
+function getQuizChapters() {
+  return getCurrentGradeLessons();
+}
+
+function getSelectedQuizLessons() {
+  const selectedIds = AssessmentState.selectedChapterIds;
+  return getQuizChapters().filter((lesson) => selectedIds.has(lesson.id));
+}
+
+function getTestLessons() {
+  const testGrade = VALID_GRADES.includes(AssessmentState.testGrade)
+    ? AssessmentState.testGrade
+    : AppState.grade;
+  return LESSONS.filter((lesson) => lesson.grade <= testGrade);
+}
+
+function getAssessmentType(question, lesson) {
+  if (lesson.kind === 'grammar') return 'grammar';
+  if (question.isPhrase) return 'phrase';
+  return 'vocabulary';
+}
+
+function getAssessmentBank(lessons) {
+  return lessons.flatMap((lesson) => {
+    return lesson.words.map((question, index) => ({
+      ...question,
+      assessmentId: `${lesson.id}-${index}`,
+      assessmentType: getAssessmentType(question, lesson),
+      sourceLessonId: lesson.id,
+      sourceLessonTitle: lesson.title,
+      sourceGrade: lesson.grade
+    }));
+  });
+}
+
+function shuffleItems(items) {
+  return items
+    .map((item) => ({ item, order: Math.random() }))
+    .sort((a, b) => a.order - b.order)
+    .map(({ item }) => item);
+}
+
+function getBalancedQuestionSet(bank, requestedCount) {
+  const groups = ['vocabulary', 'grammar', 'phrase'].map((type) =>
+    shuffleItems(bank.filter((question) => question.assessmentType === type))
+  );
+  const selected = [];
+  while (selected.length < requestedCount && groups.some((group) => group.length > 0)) {
+    groups.forEach((group) => {
+      if (group.length > 0 && selected.length < requestedCount) selected.push(group.shift());
+    });
+  }
+  return shuffleItems(selected).map((question) => ({
+    ...question,
+    assessmentChoices: createChoices(question, bank)
+  }));
+}
+
+function getAssessmentTypeSummary(bank) {
+  const counts = bank.reduce((summary, question) => {
+    summary[question.assessmentType] = (summary[question.assessmentType] || 0) + 1;
+    return summary;
+  }, {});
+  return ['vocabulary', 'grammar', 'phrase']
+    .filter((type) => counts[type])
+    .map((type) => `${ASSESSMENT_TYPE_LABELS[type]} ${counts[type]}`)
+    .join(' · ');
+}
+
+function renderQuestionCountButtons(mode) {
+  const selectedCount = mode === 'quiz'
+    ? AssessmentState.quizQuestionCount
+    : AssessmentState.testQuestionCount;
+  return QUESTION_COUNT_OPTIONS.map((count) => `
+    <button
+      type="button"
+      class="segmented-button${selectedCount === count ? ' active' : ''}"
+      data-assessment-count="${count}"
+      data-count-mode="${escapeHtml(mode)}"
+    >${count}</button>
+  `).join('');
+}
+
+function renderAssessments() {
+  if (!elements.assessmentBuilder || !elements.assessmentRunner) return;
+  ensureAssessmentDefaults();
+  const quizChapters = getQuizChapters();
+  const selectedQuizLessons = getSelectedQuizLessons();
+  const quizBank = getAssessmentBank(selectedQuizLessons);
+  const testLessons = getTestLessons();
+  const testBank = getAssessmentBank(testLessons);
+
+  elements.assessmentBuilder.innerHTML = `
+    <div class="assessment-mode-tabs" role="tablist" aria-label="Assessment type">
+      <button type="button" class="segmented-button${AssessmentState.mode === 'quiz' ? ' active' : ''}" data-assessment-mode="quiz">Quiz</button>
+      <button type="button" class="segmented-button${AssessmentState.mode === 'test' ? ' active' : ''}" data-assessment-mode="test">Test</button>
+    </div>
+    ${AssessmentState.mode === 'quiz'
+      ? renderQuizBuilder(quizChapters, quizBank)
+      : renderTestBuilder(testBank)}
+    <p class="assessment-message" aria-live="polite">${escapeHtml(AssessmentState.message)}</p>
+    <button type="button" class="primary-button assessment-start-button" data-assessment-action="start">
+      Start ${AssessmentState.mode === 'quiz' ? 'quiz' : 'test'}
+    </button>
+  `;
+  renderAssessmentRunner();
+}
+
+function renderQuizBuilder(chapters, bank) {
+  const chapterCards = chapters.map((lesson, index) => {
+    const selected = AssessmentState.selectedChapterIds.has(lesson.id);
+    const type = lesson.kind === 'grammar' ? 'Grammar' : 'Vocabulary';
+    const detail = getLessonCountLabel(lesson);
+    return `
+      <button type="button" class="chapter-option${selected ? ' selected' : ''}" data-chapter-id="${escapeHtml(lesson.id)}">
+        <span>Chapter ${index + 1} · ${escapeHtml(type)}</span>
+        <strong>${escapeHtml(lesson.title)}</strong>
+        <small>${escapeHtml(detail)}</small>
+      </button>
+    `;
+  }).join('');
+
+  return `
+    <section class="assessment-setup-panel">
+      <h3>Quiz setup</h3>
+      <label class="field-label">Questions</label>
+      <div class="segmented-control">${renderQuestionCountButtons('quiz')}</div>
+      <div class="chapter-toolbar">
+        <label class="field-label">Chapters</label>
+        <div>
+          <button type="button" class="text-button" data-assessment-action="select-all">Select all</button>
+          <button type="button" class="text-button" data-assessment-action="clear-chapters">Clear</button>
+        </div>
+      </div>
+      <div class="chapter-grid">${chapterCards}</div>
+      <p class="assessment-summary">${escapeHtml(getAssessmentTypeSummary(bank) || 'Select chapters to build a quiz.')}</p>
+    </section>
+  `;
+}
+
+function renderTestBuilder(bank) {
+  const gradeButtons = VALID_GRADES.map((grade) => `
+    <button
+      type="button"
+      class="segmented-button${AssessmentState.testGrade === grade ? ' active' : ''}"
+      data-test-grade="${grade}"
+    >Grade ${grade}</button>
+  `).join('');
+  return `
+    <section class="assessment-setup-panel">
+      <h3>Test setup</h3>
+      <label class="field-label">Level</label>
+      <div class="grade-segmented-control">${gradeButtons}</div>
+      <label class="field-label">Questions</label>
+      <div class="segmented-control">${renderQuestionCountButtons('test')}</div>
+      <p class="assessment-summary">
+        Covers grades 3-${AssessmentState.testGrade}: ${escapeHtml(getAssessmentTypeSummary(bank) || 'no questions available')}.
+      </p>
+    </section>
+  `;
+}
+
+function renderAssessmentRunner() {
+  if (!elements.assessmentRunner) return;
+  if (AssessmentState.completed) {
+    elements.assessmentRunner.innerHTML = renderAssessmentResult();
+    return;
+  }
+
+  if (AssessmentState.questions.length === 0) {
+    elements.assessmentRunner.innerHTML = `
+      <section class="assessment-empty">
+        <span class="section-kicker">Ready when you are</span>
+        <h3>Build an assessment.</h3>
+        <p>Quizzes use selected chapters. Tests use all content through the level you choose.</p>
+      </section>
+    `;
+    return;
+  }
+
+  const question = AssessmentState.questions[AssessmentState.currentQuestionIndex];
+  const choices = question.assessmentChoices || createChoices(question, AssessmentState.questions);
+  const promptHtml = question.prompt
+    ? escapeHtml(question.prompt)
+    : `What does <span>${escapeHtml(question.latin)}</span> mean?`;
+  const contextHtml = question.context
+    ? `<p class="question-context">${escapeHtml(question.context)}</p>`
+    : '';
+  const typeLabel = ASSESSMENT_TYPE_LABELS[question.assessmentType] || 'Question';
+
+  elements.assessmentRunner.innerHTML = `
+    <section class="assessment-question-card">
+      <div class="assessment-question-header">
+        <span>${escapeHtml(typeLabel)}</span>
+        <strong>${AssessmentState.currentQuestionIndex + 1}/${AssessmentState.questions.length}</strong>
+      </div>
+      <p class="assessment-source">${escapeHtml(question.sourceLessonTitle)} · Grade ${question.sourceGrade}</p>
+      ${contextHtml}
+      <h3>${promptHtml}</h3>
+      <div class="options-grid assessment-options-grid">
+        ${choices.map((choice) => `
+          <button type="button" class="option-button" data-assessment-option="${escapeHtml(choice)}">${escapeHtml(choice)}</button>
+        `).join('')}
+      </div>
+      <p class="lesson-result assessment-result" data-assessment-result></p>
+      <div class="assessment-runner-actions">
+        <button type="button" class="secondary-button" data-assessment-action="reset">Reset</button>
+        <button type="button" class="primary-button" data-assessment-action="next">
+          ${AssessmentState.answerChecked
+            ? (AssessmentState.currentQuestionIndex < AssessmentState.questions.length - 1 ? 'Next question' : 'Finish')
+            : 'Check answer'}
+        </button>
+      </div>
+    </section>
+  `;
+  if (AssessmentState.selectedOption) {
+    selectAssessmentOption(AssessmentState.selectedOption);
+  }
+}
+
+function renderAssessmentResult() {
+  const total = AssessmentState.questions.length;
+  const percent = total > 0 ? Math.round((AssessmentState.correctCount / total) * 100) : 0;
+  const modeLabel = AssessmentState.mode === 'quiz' ? 'Quiz' : 'Test';
+  const breakdown = renderAssessmentBreakdown();
+  return `
+    <section class="assessment-result-card">
+      <span class="section-kicker">${escapeHtml(modeLabel)} complete</span>
+      <h3>${AssessmentState.correctCount}/${total}</h3>
+      <p>${percent}% correct</p>
+      ${breakdown}
+      <div class="assessment-runner-actions">
+        <button type="button" class="secondary-button" data-assessment-action="reset">Build another</button>
+        <button type="button" class="primary-button" data-assessment-action="start">Try again</button>
+      </div>
+    </section>
+  `;
+}
+
+function renderAssessmentBreakdown() {
+  const groups = AssessmentState.questions.reduce((summary, question, index) => {
+    const type = question.assessmentType;
+    if (!summary[type]) summary[type] = { correct: 0, total: 0 };
+    summary[type].total += 1;
+    if (AssessmentState.responses[index]?.correct) summary[type].correct += 1;
+    return summary;
+  }, {});
+  const rows = ['vocabulary', 'grammar', 'phrase']
+    .filter((type) => groups[type])
+    .map((type) => `
+      <div>
+        <span>${ASSESSMENT_TYPE_LABELS[type]}</span>
+        <strong>${groups[type].correct}/${groups[type].total}</strong>
+      </div>
+    `).join('');
+  return rows ? `<div class="assessment-breakdown">${rows}</div>` : '';
+}
+
+function startAssessment() {
+  ensureAssessmentDefaults();
+  const requestedCount = AssessmentState.mode === 'quiz'
+    ? AssessmentState.quizQuestionCount
+    : AssessmentState.testQuestionCount;
+  const lessons = AssessmentState.mode === 'quiz' ? getSelectedQuizLessons() : getTestLessons();
+  const bank = getAssessmentBank(lessons);
+
+  if (bank.length === 0) {
+    AssessmentState.message = AssessmentState.mode === 'quiz'
+      ? 'Select at least one chapter with questions.'
+      : 'No questions are available for this level.';
+    renderAssessments();
+    return;
+  }
+
+  const questions = getBalancedQuestionSet(bank, requestedCount);
+  AssessmentState.questions = questions;
+  AssessmentState.responses = [];
+  AssessmentState.currentQuestionIndex = 0;
+  AssessmentState.selectedOption = null;
+  AssessmentState.answerChecked = false;
+  AssessmentState.correctCount = 0;
+  AssessmentState.completed = false;
+  AssessmentState.message = questions.length < requestedCount
+    ? `Using all ${questions.length} available questions from this selection.`
+    : '';
+  renderAssessments();
+}
+
+function resetAssessment() {
+  AssessmentState.questions = [];
+  AssessmentState.responses = [];
+  AssessmentState.currentQuestionIndex = 0;
+  AssessmentState.selectedOption = null;
+  AssessmentState.answerChecked = false;
+  AssessmentState.correctCount = 0;
+  AssessmentState.completed = false;
+  AssessmentState.message = '';
+  renderAssessments();
+}
+
+function selectAssessmentOption(value) {
+  if (AssessmentState.answerChecked || !elements.assessmentRunner) return;
+  AssessmentState.selectedOption = value;
+  elements.assessmentRunner.querySelectorAll('[data-assessment-option]').forEach((button) => {
+    button.classList.toggle('selected', button.textContent === value);
+  });
+}
+
+function checkAssessmentAnswer() {
+  if (AssessmentState.answerChecked) return;
+  const question = AssessmentState.questions[AssessmentState.currentQuestionIndex];
+  if (!question) return;
+  const result = elements.assessmentRunner?.querySelector('[data-assessment-result]');
+  if (!AssessmentState.selectedOption) {
+    if (result) result.textContent = 'Choose an answer first.';
+    return;
+  }
+
+  const correct = AssessmentState.selectedOption === question.english;
+  elements.assessmentRunner.querySelectorAll('[data-assessment-option]').forEach((button) => {
+    if (button.textContent === question.english) button.classList.add('correct');
+    if (button.textContent === AssessmentState.selectedOption && !correct) button.classList.add('wrong');
+    button.disabled = true;
+  });
+
+  AssessmentState.responses[AssessmentState.currentQuestionIndex] = {
+    selected: AssessmentState.selectedOption,
+    correct,
+    type: question.assessmentType
+  };
+  AssessmentState.correctCount = AssessmentState.responses.filter((response) => response?.correct).length;
+  AssessmentState.answerChecked = true;
+
+  if (result) {
+    result.textContent = question.explanation
+      ? `${correct ? 'Correct.' : 'Correct answer: ' + question.english + '.'} ${question.explanation}`
+      : correct
+        ? `${question.latin} means ${question.english}.`
+        : `${question.latin} means ${question.english}.`;
+  }
+
+  const nextButton = elements.assessmentRunner?.querySelector('[data-assessment-action="next"]');
+  if (nextButton) {
+    nextButton.textContent = AssessmentState.currentQuestionIndex < AssessmentState.questions.length - 1
+      ? 'Next question'
+      : 'Finish';
+  }
+}
+
+function nextAssessmentQuestion() {
+  if (!AssessmentState.answerChecked) {
+    checkAssessmentAnswer();
+    return;
+  }
+  if (AssessmentState.currentQuestionIndex < AssessmentState.questions.length - 1) {
+    AssessmentState.currentQuestionIndex += 1;
+    AssessmentState.selectedOption = null;
+    AssessmentState.answerChecked = false;
+    renderAssessmentRunner();
+    return;
+  }
+  AssessmentState.completed = true;
+  renderAssessments();
+}
+
 function setupEvents() {
   elements.startButton.addEventListener('click', showLessonListOrOnboarding);
   elements.welcomeAccountButton.addEventListener('click', () => {
     renderAccountControls();
     showPage('account');
+  });
+  elements.homeContinueButton.addEventListener('click', () => {
+    const nextLesson = getNextLesson();
+    if (nextLesson) {
+      openLesson(nextLesson.id);
+      return;
+    }
+    showLessonListOrOnboarding();
+  });
+  elements.homeQuizButton.addEventListener('click', showAssessmentsOrOnboarding);
+  elements.homeLessonsButton.addEventListener('click', showLessonListOrOnboarding);
+  elements.homePracticeLessons.addEventListener('click', showLessonListOrOnboarding);
+  elements.homePracticeAssessments.addEventListener('click', showAssessmentsOrOnboarding);
+  elements.homePracticeDashboard.addEventListener('click', showDashboardOrOnboarding);
+  elements.homePathList.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target.closest('[data-home-lesson-id]') : null;
+    if (target) openLesson(target.dataset.homeLessonId);
   });
   elements.accountButton.addEventListener('click', () => {
     renderAccountControls();
@@ -2161,23 +2742,92 @@ function setupEvents() {
   elements.backToLessons.addEventListener('click', () => {
     showLessonListOrOnboarding();
   });
-  elements.homeButton.addEventListener('click', () => showPage('welcome'));
-  elements.dashboardButton.addEventListener('click', () => {
-    if (!AppState.studentName) {
-      showPage('signup');
-      return;
-    }
-    if (!VALID_GRADES.includes(AppState.grade)) {
-      showPage('grade');
-      return;
-    }
-    renderDashboard();
-    showPage('dashboard');
-  });
+  elements.homeButton.addEventListener('click', showHomeOrWelcome);
+  elements.lessonsButton.addEventListener('click', showLessonListOrOnboarding);
+  elements.assessmentsButton.addEventListener('click', showAssessmentsOrOnboarding);
+  elements.dashboardButton.addEventListener('click', showDashboardOrOnboarding);
+  elements.assessmentsBackButton.addEventListener('click', showHomeOrWelcome);
   elements.backToLessonsFromDashboard.addEventListener('click', () => {
-    showLessonListOrOnboarding();
+    showHomeOrWelcome();
   });
   elements.nextQuestionButton.addEventListener('click', nextQuestion);
+  elements.assessmentBuilder?.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const modeButton = target?.closest('[data-assessment-mode]');
+    if (modeButton) {
+      AssessmentState.mode = modeButton.dataset.assessmentMode;
+      AssessmentState.message = '';
+      resetAssessment();
+      return;
+    }
+
+    const countButton = target?.closest('[data-assessment-count]');
+    if (countButton) {
+      const count = Number(countButton.dataset.assessmentCount);
+      if (QUESTION_COUNT_OPTIONS.includes(count)) {
+        if (countButton.dataset.countMode === 'test') {
+          AssessmentState.testQuestionCount = count;
+        } else {
+          AssessmentState.quizQuestionCount = count;
+        }
+        AssessmentState.message = '';
+        resetAssessment();
+      }
+      return;
+    }
+
+    const gradeButton = target?.closest('[data-test-grade]');
+    if (gradeButton) {
+      const grade = Number(gradeButton.dataset.testGrade);
+      if (VALID_GRADES.includes(grade)) {
+        AssessmentState.testGrade = grade;
+        AssessmentState.message = '';
+        resetAssessment();
+      }
+      return;
+    }
+
+    const chapterButton = target?.closest('[data-chapter-id]');
+    if (chapterButton) {
+      const chapterId = chapterButton.dataset.chapterId;
+      if (AssessmentState.selectedChapterIds.has(chapterId)) {
+        AssessmentState.selectedChapterIds.delete(chapterId);
+      } else {
+        AssessmentState.selectedChapterIds.add(chapterId);
+      }
+      AssessmentState.message = '';
+      resetAssessment();
+      return;
+    }
+
+    const actionButton = target?.closest('[data-assessment-action]');
+    if (!actionButton) return;
+    if (actionButton.dataset.assessmentAction === 'select-all') {
+      AssessmentState.selectedChapterIds = new Set(getQuizChapters().map((lesson) => lesson.id));
+      AssessmentState.message = '';
+      resetAssessment();
+    }
+    if (actionButton.dataset.assessmentAction === 'clear-chapters') {
+      AssessmentState.selectedChapterIds = new Set();
+      AssessmentState.message = '';
+      resetAssessment();
+    }
+    if (actionButton.dataset.assessmentAction === 'start') startAssessment();
+  });
+  elements.assessmentRunner?.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const optionButton = target?.closest('[data-assessment-option]');
+    if (optionButton) {
+      selectAssessmentOption(optionButton.dataset.assessmentOption);
+      return;
+    }
+
+    const actionButton = target?.closest('[data-assessment-action]');
+    if (!actionButton) return;
+    if (actionButton.dataset.assessmentAction === 'next') nextAssessmentQuestion();
+    if (actionButton.dataset.assessmentAction === 'reset') resetAssessment();
+    if (actionButton.dataset.assessmentAction === 'start') startAssessment();
+  });
   elements.printArea?.addEventListener('click', (event) => {
     const actionButton = event.target instanceof Element
       ? event.target.closest('[data-print-action]')

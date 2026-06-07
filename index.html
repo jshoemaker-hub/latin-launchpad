@@ -16,6 +16,8 @@
       </div>
       <div class="header-actions">
         <button type="button" id="homeButton" class="pill-button">Home</button>
+        <button type="button" id="lessonsButton" class="pill-button">Lessons</button>
+        <button type="button" id="assessmentsButton" class="pill-button">Tests &amp; Quizzes</button>
         <button type="button" id="dashboardButton" class="pill-button">Dashboard</button>
         <button type="button" id="accountButton" class="pill-button">Account</button>
       </div>
@@ -23,12 +25,101 @@
 
     <main>
       <section id="welcomePage" class="page active">
-        <div class="card">
-          <h2>Welcome explorer!</h2>
-          <p>Build your Latin vocabulary and grammar with short, fun lessons designed for your grade.</p>
-          <div class="welcome-actions">
-            <button id="startButton" class="primary-button">Start learning</button>
-            <button id="welcomeAccountButton" class="secondary-button">Email login</button>
+        <div class="login-layout">
+          <div class="login-copy">
+            <span class="section-kicker">Latin Launchpad</span>
+            <h2>Focused Latin practice for every class day.</h2>
+            <p>Build vocabulary, grammar, and phrase fluency with grade-level lessons, quick checks, and progress that stays organized.</p>
+            <div class="welcome-actions">
+              <button id="startButton" class="primary-button">Start learning</button>
+              <button id="welcomeAccountButton" class="secondary-button">Email login</button>
+            </div>
+          </div>
+          <div class="login-preview-panel" aria-label="Learning preview">
+            <div class="preview-row">
+              <span>V</span>
+              <div>
+                <strong>Vocabulary</strong>
+                <p>Short chapters with Latin terms and meanings.</p>
+              </div>
+            </div>
+            <div class="preview-row">
+              <span>G</span>
+              <div>
+                <strong>Grammar</strong>
+                <p>Endings, cases, verbs, and sentence jobs.</p>
+              </div>
+            </div>
+            <div class="preview-row">
+              <span>P</span>
+              <div>
+                <strong>Phrases</strong>
+                <p>Popular Latin phrases tied to each word bank.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="homePage" class="page">
+        <div class="home-layout">
+          <section class="home-hero-panel">
+            <div>
+              <span id="homeGradePill" class="section-kicker">Latin practice</span>
+              <h2 id="homeGreeting">Welcome back.</h2>
+              <p id="homeSummary">Pick up your next lesson or build a quiz from your chapters.</p>
+              <div class="home-actions">
+                <button id="homeContinueButton" type="button" class="primary-button">Continue</button>
+                <button id="homeQuizButton" type="button" class="secondary-button">Build quiz</button>
+              </div>
+            </div>
+            <div class="home-stats" aria-label="Progress summary">
+              <div>
+                <strong id="homePointsValue">0</strong>
+                <span>Points</span>
+              </div>
+              <div>
+                <strong id="homeLessonsValue">0</strong>
+                <span>Lessons</span>
+              </div>
+              <div>
+                <strong id="homeSkillsValue">0</strong>
+                <span>Skills</span>
+              </div>
+            </div>
+          </section>
+
+          <div class="home-grid">
+            <section class="home-panel next-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="section-kicker">Next up</span>
+                  <h3 id="homeNextTitle">Choose a grade</h3>
+                </div>
+                <button id="homeLessonsButton" type="button" class="secondary-button">Lessons</button>
+              </div>
+              <p id="homeNextMeta">Lessons unlock after you choose a grade.</p>
+              <div id="homePathList" class="home-path-list"></div>
+            </section>
+
+            <section class="home-panel practice-panel">
+              <span class="section-kicker">Practice</span>
+              <h3>Today's center</h3>
+              <div class="practice-links">
+                <button id="homePracticeLessons" type="button" class="practice-link">
+                  <strong>Lessons</strong>
+                  <span>Practice a chapter.</span>
+                </button>
+                <button id="homePracticeAssessments" type="button" class="practice-link">
+                  <strong>Tests &amp; Quizzes</strong>
+                  <span>Build a chapter quiz or level test.</span>
+                </button>
+                <button id="homePracticeDashboard" type="button" class="practice-link">
+                  <strong>Dashboard</strong>
+                  <span>Review progress and badges.</span>
+                </button>
+              </div>
+            </section>
           </div>
         </div>
       </section>
@@ -95,6 +186,22 @@
           </div>
           <div id="objectivesCard" class="objectives-card"></div>
           <div id="lessonCards" class="lesson-grid"></div>
+        </div>
+      </section>
+
+      <section id="assessmentsPage" class="page">
+        <div class="card assessment-card">
+          <div class="page-header">
+            <div>
+              <h2>Tests &amp; Quizzes</h2>
+              <p>Build chapter quizzes or cumulative level tests from vocabulary, grammar, and phrases.</p>
+            </div>
+            <button id="assessmentsBackButton" class="secondary-button">Home</button>
+          </div>
+          <div class="assessment-layout">
+            <div id="assessmentBuilder" class="assessment-builder"></div>
+            <div id="assessmentRunner" class="assessment-runner"></div>
+          </div>
         </div>
       </section>
 
