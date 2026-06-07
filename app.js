@@ -164,7 +164,9 @@ const pages = {
   lessonList: document.getElementById('lessonListPage'),
   assessments: document.getElementById('assessmentsPage'),
   lesson: document.getElementById('lessonPage'),
-  dashboard: document.getElementById('dashboardPage')
+  dashboard: document.getElementById('dashboardPage'),
+  resetPassword: document.getElementById('resetPasswordPage'),
+  contact: document.getElementById('contactPage')
 };
 
 const elements = {
@@ -186,9 +188,25 @@ const elements = {
   homePracticeAssessments: document.getElementById('homePracticeAssessments'),
   homePracticeDashboard: document.getElementById('homePracticeDashboard'),
   accountButton: document.getElementById('accountButton'),
+  contactButton: document.getElementById('contactButton'),
   accountBackButton: document.getElementById('accountBackButton'),
+  contactBackButton: document.getElementById('contactBackButton'),
   accountForm: document.getElementById('accountForm'),
   accountEmailInput: document.getElementById('accountEmailInput'),
+  accountPasswordInput: document.getElementById('accountPasswordInput'),
+  authTabSignIn: document.getElementById('authTabSignIn'),
+  authTabSignUp: document.getElementById('authTabSignUp'),
+  forgotPasswordButton: document.getElementById('forgotPasswordButton'),
+  forgotPasswordForm: document.getElementById('forgotPasswordForm'),
+  resetEmailInput: document.getElementById('resetEmailInput'),
+  cancelResetButton: document.getElementById('cancelResetButton'),
+  resetMessage: document.getElementById('resetMessage'),
+  resetPasswordForm: document.getElementById('resetPasswordForm'),
+  newPasswordInput: document.getElementById('newPasswordInput'),
+  confirmPasswordInput: document.getElementById('confirmPasswordInput'),
+  resetPasswordMessage: document.getElementById('resetPasswordMessage'),
+  contactForm: document.getElementById('contactForm'),
+  contactFormMessage: document.getElementById('contactFormMessage'),
   accountSummary: document.getElementById('accountSummary'),
   accountMessage: document.getElementById('accountMessage'),
   currentProfileTitle: document.getElementById('currentProfileTitle'),
@@ -555,14 +573,17 @@ function updateNavState(page) {
     lesson: 'lessonsButton',
     assessments: 'assessmentsButton',
     dashboard: 'dashboardButton',
-    account: 'accountButton'
+    account: 'accountButton',
+    resetPassword: 'accountButton',
+    contact: 'contactButton'
   };
   [
     elements.homeButton,
     elements.lessonsButton,
     elements.assessmentsButton,
     elements.dashboardButton,
-    elements.accountButton
+    elements.accountButton,
+    elements.contactButton
   ].forEach((button) => {
     if (!button) return;
     button.classList.toggle('active', button.id === activeButtonByPage[page]);
@@ -703,10 +724,54 @@ function showBestLearningPage() {
   showPage('home');
 }
 
-async function signInWithEmail(email) {
+// ── Auth mode toggle ─────────────────────────────────────────────────────────
+
+let _authMode = 'signin'; // 'signin' | 'signup'
+
+function setAuthMode(mode) {
+  _authMode = mode;
+  const isSignIn = mode === 'signin';
+  if (elements.authTabSignIn) {
+    elements.authTabSignIn.classList.toggle('active', isSignIn);
+    elements.authTabSignIn.setAttribute('aria-selected', String(isSignIn));
+  }
+  if (elements.authTabSignUp) {
+    elements.authTabSignUp.classList.toggle('active', !isSignIn);
+    elements.authTabSignUp.setAttribute('aria-selected', String(!isSignIn));
+  }
+  if (elements.accountForm) {
+    elements.accountForm.dataset.authMode = mode;
+    const submitButton = document.getElementById('emailLoginButton');
+    if (submitButton) submitButton.textContent = isSignIn ? 'Sign in' : 'Create account';
+  }
+  // Update autocomplete hint on password field
+  if (elements.accountPasswordInput) {
+    elements.accountPasswordInput.setAttribute(
+      'autocomplete',
+      isSignIn ? 'current-password' : 'new-password'
+    );
+  }
+  setAccountMessage('', 'neutral');
+}
+
+function showForgotPasswordForm(show) {
+  if (elements.accountForm) elements.accountForm.hidden = show;
+  if (elements.forgotPasswordForm) elements.forgotPasswordForm.hidden = !show;
+  if (show && elements.resetEmailInput && elements.accountEmailInput) {
+    elements.resetEmailInput.value = elements.accountEmailInput.value;
+  }
+}
+
+// ── Email + password sign-in ─────────────────────────────────────────────────
+
+async function signInWithEmail(email, password) {
   const normalizedEmail = normalizeEmail(email);
   if (!isValidEmail(normalizedEmail)) {
     setAccountMessage('Enter a valid email address.', 'error');
+    return;
+  }
+  if (!password || password.length < 8) {
+    setAccountMessage('Password must be at least 8 characters.', 'error');
     return;
   }
 
@@ -714,26 +779,184 @@ async function signInWithEmail(email) {
   if (submitButton) submitButton.disabled = true;
   setAccountMessage('Signing in…', 'neutral');
 
-  saveState();
-  const account = createEmailAccount(normalizedEmail);
+  const db = getSupabase();
+  if (db) {
+    try {
+      const { data, error } = await db.auth.signInWithPassword({ email: normalizedEmail, password });
+      if (error) {
+        setAccountMessage(error.message || 'Sign-in failed. Check your email and password.', 'error');
+        if (submitButton) submitButton.disabled = false;
+        return;
+      }
+      // Auth success — onAuthStateChange will handle the profile load
+      setAccountMessage('Signed in.', 'success');
+    } catch (err) {
+      console.warn('Sign-in error:', err);
+      setAccountMessage('Sign-in failed. Please try again.', 'error');
+    }
+  } else {
+    // Supabase unavailable — fall back to email-only profile
+    const account = createEmailAccount(normalizedEmail);
+    const existingLocalProfile = getStoredProfile(account.profileId);
+    applyStoredState(existingLocalProfile || createStateSnapshot(AppState, account), account);
+    AppState.account = account;
+    evaluateBadges();
+    saveState();
+    renderAfterProfileChange();
+    setAccountMessage('Signed in (offline mode).', 'success');
+  }
 
-  // Try Supabase first, fall back to localStorage profile
-  const remoteProfile = await supabaseLoadProfile(normalizedEmail);
-  const existingLocalProfile = getStoredProfile(account.profileId);
-  const isNew = !remoteProfile && !existingLocalProfile;
-  const nextState = remoteProfile || existingLocalProfile || createStateSnapshot(AppState, account);
-
-  applyStoredState(nextState, account);
-  AppState.account = account;
-  evaluateBadges();
-  saveState();
   if (submitButton) submitButton.disabled = false;
-  renderAfterProfileChange();
-  setAccountMessage(isNew ? 'Account created.' : 'Signed in.', 'success');
+}
+
+// ── Email + password sign-up ─────────────────────────────────────────────────
+
+async function signUpWithEmail(email, password) {
+  const normalizedEmail = normalizeEmail(email);
+  if (!isValidEmail(normalizedEmail)) {
+    setAccountMessage('Enter a valid email address.', 'error');
+    return;
+  }
+  if (!password || password.length < 8) {
+    setAccountMessage('Password must be at least 8 characters.', 'error');
+    return;
+  }
+
+  const submitButton = document.getElementById('emailLoginButton');
+  if (submitButton) submitButton.disabled = true;
+  setAccountMessage('Creating account…', 'neutral');
+
+  const db = getSupabase();
+  if (db) {
+    try {
+      const { data, error } = await db.auth.signUp({
+        email: normalizedEmail,
+        password,
+        options: { emailRedirectTo: 'https://latin-launchpad.netlify.app/' }
+      });
+      if (error) {
+        setAccountMessage(error.message || 'Sign-up failed. Please try again.', 'error');
+        if (submitButton) submitButton.disabled = false;
+        return;
+      }
+      if (data.user && !data.session) {
+        // Email confirmation required
+        setAccountMessage('Check your email to confirm your account, then sign in.', 'success');
+      } else {
+        // Auto-confirmed (e.g. email confirmations disabled in Supabase)
+        setAccountMessage('Account created. Welcome!', 'success');
+      }
+    } catch (err) {
+      console.warn('Sign-up error:', err);
+      setAccountMessage('Sign-up failed. Please try again.', 'error');
+    }
+  } else {
+    setAccountMessage('Unable to connect. Please try again later.', 'error');
+  }
+
+  if (submitButton) submitButton.disabled = false;
+}
+
+// ── Forgot / reset password ───────────────────────────────────────────────────
+
+async function sendPasswordReset(email) {
+  const normalizedEmail = normalizeEmail(email);
+  if (!isValidEmail(normalizedEmail)) {
+    if (elements.resetMessage) {
+      elements.resetMessage.textContent = 'Enter a valid email address.';
+      elements.resetMessage.dataset.tone = 'error';
+    }
+    return;
+  }
+
+  const submitButton = elements.forgotPasswordForm?.querySelector('[type="submit"]');
+  if (submitButton) submitButton.disabled = true;
+
+  const db = getSupabase();
+  if (db) {
+    try {
+      const { error } = await db.auth.resetPasswordForEmail(normalizedEmail, {
+        redirectTo: 'https://latin-launchpad.netlify.app/'
+      });
+      if (error) {
+        if (elements.resetMessage) {
+          elements.resetMessage.textContent = error.message || 'Could not send reset email.';
+          elements.resetMessage.dataset.tone = 'error';
+        }
+      } else {
+        if (elements.resetMessage) {
+          elements.resetMessage.textContent = 'Reset link sent! Check your inbox.';
+          elements.resetMessage.dataset.tone = 'success';
+        }
+      }
+    } catch (err) {
+      console.warn('Password reset error:', err);
+      if (elements.resetMessage) {
+        elements.resetMessage.textContent = 'Failed to send reset email. Try again.';
+        elements.resetMessage.dataset.tone = 'error';
+      }
+    }
+  } else {
+    if (elements.resetMessage) {
+      elements.resetMessage.textContent = 'Unable to connect. Please try again later.';
+      elements.resetMessage.dataset.tone = 'error';
+    }
+  }
+
+  if (submitButton) submitButton.disabled = false;
+}
+
+async function updatePassword(newPassword, confirmPassword) {
+  if (newPassword !== confirmPassword) {
+    if (elements.resetPasswordMessage) {
+      elements.resetPasswordMessage.textContent = 'Passwords do not match.';
+      elements.resetPasswordMessage.dataset.tone = 'error';
+    }
+    return;
+  }
+  if (!newPassword || newPassword.length < 8) {
+    if (elements.resetPasswordMessage) {
+      elements.resetPasswordMessage.textContent = 'Password must be at least 8 characters.';
+      elements.resetPasswordMessage.dataset.tone = 'error';
+    }
+    return;
+  }
+
+  const submitButton = elements.resetPasswordForm?.querySelector('[type="submit"]');
+  if (submitButton) submitButton.disabled = true;
+
+  const db = getSupabase();
+  if (db) {
+    try {
+      const { error } = await db.auth.updateUser({ password: newPassword });
+      if (error) {
+        if (elements.resetPasswordMessage) {
+          elements.resetPasswordMessage.textContent = error.message || 'Could not update password.';
+          elements.resetPasswordMessage.dataset.tone = 'error';
+        }
+      } else {
+        if (elements.resetPasswordMessage) {
+          elements.resetPasswordMessage.textContent = 'Password updated! You are now signed in.';
+          elements.resetPasswordMessage.dataset.tone = 'success';
+        }
+        setTimeout(() => showBestLearningPage(), 1500);
+      }
+    } catch (err) {
+      console.warn('Update password error:', err);
+      if (elements.resetPasswordMessage) {
+        elements.resetPasswordMessage.textContent = 'Failed to update password. Try again.';
+        elements.resetPasswordMessage.dataset.tone = 'error';
+      }
+    }
+  }
+
+  if (submitButton) submitButton.disabled = false;
 }
 
 function continueAsGuest() {
   saveState();
+  const db = getSupabase();
+  if (db) db.auth.signOut().catch(() => {});
   const guestAccount = createGuestAccount();
   const existingGuestProfile = getStoredProfile(GUEST_PROFILE_ID);
   const nextState = existingGuestProfile || {
@@ -756,8 +979,64 @@ function continueAsGuest() {
 }
 
 async function init() {
+  // Handle Supabase password-recovery token in URL hash
+  // Supabase appends #access_token=...&type=recovery to the redirect URL
+  const hashParams = new URLSearchParams(window.location.hash.slice(1));
+  if (hashParams.get('type') === 'recovery') {
+    // Supabase client automatically consumes the token from the hash
+    window.history.replaceState(null, '', window.location.pathname);
+    loadState();
+    renderAccountControls();
+    showPage('resetPassword');
+    return;
+  }
+
   loadState();
   renderAccountControls();
+
+  // Set up Supabase auth state listener — fires on sign-in / sign-out
+  const db = getSupabase();
+  if (db) {
+    db.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user?.email) {
+        const email = session.user.email;
+        const account = createEmailAccount(email);
+        const remote = await supabaseLoadProfile(email);
+        const existingLocal = getStoredProfile(account.profileId);
+        const nextState = remote || existingLocal || createStateSnapshot(AppState, account);
+        applyStoredState(nextState, account);
+        AppState.account = account;
+        evaluateBadges();
+        saveState();
+        renderAfterProfileChange();
+        // Redirect to home if the user is on the account page
+        const currentActive = Object.entries(pages).find(([, el]) => el?.classList.contains('active'));
+        if (currentActive && ['account', 'welcome'].includes(currentActive[0])) {
+          showBestLearningPage();
+        }
+      } else if (event === 'SIGNED_OUT') {
+        // Already handled by continueAsGuest()
+      } else if (event === 'PASSWORD_RECOVERY') {
+        showPage('resetPassword');
+      }
+    });
+
+    // Check for an existing session (returning visitor)
+    const { data: { session } } = await db.auth.getSession();
+    if (session?.user?.email && !isEmailAccount()) {
+      const email = session.user.email;
+      const account = createEmailAccount(email);
+      const remote = await supabaseLoadProfile(email);
+      const existingLocal = getStoredProfile(account.profileId);
+      const nextState = remote || existingLocal || createStateSnapshot(AppState, account);
+      applyStoredState(nextState, account);
+      AppState.account = account;
+      evaluateBadges();
+      saveState();
+      renderAfterProfileChange();
+    }
+  }
+
   if (AppState.studentName && AppState.grade) {
     renderLessonList();
     renderHome();
@@ -768,24 +1047,6 @@ async function init() {
   renderGradeOptions();
   renderDashboard();
   renderAssessments();
-
-  // Background refresh from Supabase for signed-in users
-  if (isEmailAccount()) {
-    const remote = await supabaseLoadProfile(AppState.account.email);
-    if (remote) {
-      const account = AppState.account;
-      applyStoredState(remote, account);
-      AppState.account = account;
-      evaluateBadges();
-      saveState();
-      renderAfterProfileChange();
-      if (AppState.studentName && VALID_GRADES.includes(AppState.grade)) {
-        renderLessonList();
-        renderHome();
-        showPage('home');
-      }
-    }
-  }
 }
 
 function renderGradeOptions() {
@@ -2719,13 +2980,80 @@ function setupEvents() {
   });
   elements.accountButton.addEventListener('click', () => {
     renderAccountControls();
+    showForgotPasswordForm(false);
     showPage('account');
   });
+  elements.contactButton?.addEventListener('click', () => {
+    showPage('contact');
+  });
+  elements.contactBackButton?.addEventListener('click', showBestLearningPage);
   elements.accountBackButton.addEventListener('click', showBestLearningPage);
+
+  // Auth mode tabs
+  elements.authTabSignIn?.addEventListener('click', () => setAuthMode('signin'));
+  elements.authTabSignUp?.addEventListener('click', () => setAuthMode('signup'));
+
+  // Sign-in / Sign-up form submit
   elements.accountForm.addEventListener('submit', (event) => {
     event.preventDefault();
-    signInWithEmail(elements.accountEmailInput.value);
+    const email = elements.accountEmailInput.value;
+    const password = elements.accountPasswordInput?.value || '';
+    if (_authMode === 'signup') {
+      signUpWithEmail(email, password);
+    } else {
+      signInWithEmail(email, password);
+    }
   });
+
+  // Forgot password
+  elements.forgotPasswordButton?.addEventListener('click', () => showForgotPasswordForm(true));
+  elements.cancelResetButton?.addEventListener('click', () => showForgotPasswordForm(false));
+  elements.forgotPasswordForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    sendPasswordReset(elements.resetEmailInput.value);
+  });
+
+  // Password reset page
+  elements.resetPasswordForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    updatePassword(
+      elements.newPasswordInput?.value || '',
+      elements.confirmPasswordInput?.value || ''
+    );
+  });
+
+  // Contact form
+  elements.contactForm?.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const submitButton = elements.contactForm.querySelector('[type="submit"]');
+    if (submitButton) submitButton.disabled = true;
+    if (elements.contactFormMessage) {
+      elements.contactFormMessage.textContent = 'Sending…';
+      elements.contactFormMessage.dataset.tone = 'neutral';
+    }
+    try {
+      const formData = new FormData(elements.contactForm);
+      formData.append('form-name', 'contact');
+      const res = await fetch('/', { method: 'POST', body: formData });
+      if (res.ok) {
+        if (elements.contactFormMessage) {
+          elements.contactFormMessage.textContent = 'Message sent! We\'ll be in touch.';
+          elements.contactFormMessage.dataset.tone = 'success';
+        }
+        elements.contactForm.reset();
+      } else {
+        throw new Error(`HTTP ${res.status}`);
+      }
+    } catch (err) {
+      console.warn('Contact form error:', err);
+      if (elements.contactFormMessage) {
+        elements.contactFormMessage.textContent = 'Could not send message. Please email us directly.';
+        elements.contactFormMessage.dataset.tone = 'error';
+      }
+    }
+    if (submitButton) submitButton.disabled = false;
+  });
+
   elements.continueGuestButton.addEventListener('click', continueAsGuest);
   elements.signOutButton.addEventListener('click', continueAsGuest);
   elements.signupNextButton.addEventListener('click', () => {

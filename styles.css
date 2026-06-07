@@ -1819,6 +1819,117 @@ input {
   }
 }
 
+/* ── Auth tabs (sign in / sign up) ─────────────────────────────────────────── */
+
+.auth-mode-tabs {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: #f8fafc;
+  margin-bottom: 16px;
+}
+
+.auth-tab {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 9px 16px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.auth-tab.active {
+  border-color: var(--primary);
+  background: #ffffff;
+  color: var(--primary);
+  box-shadow: 0 8px 18px rgba(47, 59, 112, 0.08);
+}
+
+.auth-form {
+  display: grid;
+  gap: 0;
+}
+
+.auth-form label {
+  margin-top: 14px;
+}
+
+.auth-form .primary-button {
+  margin-top: 18px;
+}
+
+.auth-forgot {
+  margin-top: 8px;
+  font-size: 0.9rem;
+  color: var(--muted);
+  text-align: left;
+}
+
+.auth-hint {
+  margin: 0 0 4px;
+  color: var(--muted);
+}
+
+/* ── Contact page ───────────────────────────────────────────────────────────── */
+
+.contact-card {
+  max-width: 700px;
+}
+
+.contact-form {
+  display: grid;
+  gap: 0;
+  margin-top: 22px;
+}
+
+.contact-form label {
+  margin-top: 14px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.contact-form textarea {
+  width: 100%;
+  margin-top: 8px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px 16px;
+  outline: none;
+  font: inherit;
+  resize: vertical;
+  min-height: 120px;
+}
+
+.contact-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.contact-actions {
+  margin-top: 18px;
+}
+
+.contact-alt {
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.contact-alt a {
+  color: var(--primary);
+}
+
+@media (max-width: 520px) {
+  .contact-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .print-area {
   display: none;
 }

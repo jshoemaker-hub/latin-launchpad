@@ -5,4 +5,22 @@
 [[headers]]
   for = "/*"
   [headers.values]
+    # Prevent MIME-type sniffing
     X-Content-Type-Options = "nosniff"
+    # Block clickjacking
+    X-Frame-Options = "DENY"
+    # Strict referrer for cross-origin requests
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    # Limit browser feature access
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
+    # Force HTTPS for 1 year (Netlify already enforces HTTPS, this adds the header for browsers)
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    # Content Security Policy
+    # - default-src 'self': only load from same origin by default
+    # - script-src: allow same-origin + the Supabase CDN (jsdelivr)
+    # - connect-src: allow API calls to Supabase
+    # - style-src: same-origin only (no inline styles needed beyond what's in the CSS file)
+    # - img-src: same-origin + data: URIs (for the SVG favicon)
+    # - font-src: same-origin
+    # - frame-ancestors 'none': no framing (redundant with X-Frame-Options but belt-and-suspenders)
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co https://*.supabase.net; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-ancestors 'none'; form-action 'self';"

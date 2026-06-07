@@ -45,8 +45,32 @@ ALTER TABLE lesson_progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE words_mastered  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE badges          ENABLE ROW LEVEL SECURITY;
 
--- Allow anonymous (public) read/write — appropriate for a kids' learning app
-CREATE POLICY "anon_all" ON user_profiles   FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "anon_all" ON lesson_progress FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "anon_all" ON words_mastered  FOR ALL TO anon USING (true) WITH CHECK (true);
-CREATE POLICY "anon_all" ON badges          FOR ALL TO anon USING (true) WITH CHECK (true);
+-- ── Option A: Open anon access (original — anyone can read/write any row) ────
+-- Suitable only for testing or fully public data. Remove these if using Auth.
+-- CREATE POLICY "anon_all" ON user_profiles   FOR ALL TO anon USING (true) WITH CHECK (true);
+-- CREATE POLICY "anon_all" ON lesson_progress FOR ALL TO anon USING (true) WITH CHECK (true);
+-- CREATE POLICY "anon_all" ON words_mastered  FOR ALL TO anon USING (true) WITH CHECK (true);
+-- CREATE POLICY "anon_all" ON badges          FOR ALL TO anon USING (true) WITH CHECK (true);
+
+-- ── Option B: Auth-scoped policies (recommended now that email+password is used)
+-- Users can only read/write their own rows.  auth.email() returns the verified
+-- email of the signed-in user from the JWT.  Run these after enabling Supabase Auth.
+CREATE POLICY "owner_all" ON user_profiles
+  FOR ALL TO authenticated
+  USING  (email = auth.email())
+  WITH CHECK (email = auth.email());
+
+CREATE POLICY "owner_all" ON lesson_progress
+  FOR ALL TO authenticated
+  USING  (email = auth.email())
+  WITH CHECK (email = auth.email());
+
+CREATE POLICY "owner_all" ON words_mastered
+  FOR ALL TO authenticated
+  USING  (email = auth.email())
+  WITH CHECK (email = auth.email());
+
+CREATE POLICY "owner_all" ON badges
+  FOR ALL TO authenticated
+  USING  (email = auth.email())
+  WITH CHECK (email = auth.email());

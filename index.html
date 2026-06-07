@@ -3,8 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Latin Launchpad</title>
-  <link rel="icon" href="data:,">
+  <title>Latin Launchpad — Latin Practice for Grades 3–8</title>
+
+  <!-- SEO -->
+  <meta name="description" content="Latin Launchpad is a free Latin practice site for grades 3–8. Build vocabulary, master grammar, and explore popular Latin phrases with interactive lessons, quizzes, and printable worksheets.">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://latin-launchpad.netlify.app/">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://latin-launchpad.netlify.app/">
+  <meta property="og:title" content="Latin Launchpad — Latin Practice for Grades 3–8">
+  <meta property="og:description" content="Free Latin lessons, quizzes, and printables for grades 3–8. Vocabulary, grammar, and popular Latin phrases — all in one place.">
+  <meta property="og:image" content="https://latin-launchpad.netlify.app/og-image.png">
+  <meta property="og:site_name" content="Latin Launchpad">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Latin Launchpad — Latin Practice for Grades 3–8">
+  <meta name="twitter:description" content="Free Latin lessons, quizzes, and printables for grades 3–8.">
+  <meta name="twitter:image" content="https://latin-launchpad.netlify.app/og-image.png">
+
+  <!-- Favicon (SVG inline data URI) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232563eb'/%3E%3Ctext x='32' y='46' font-family='Georgia%2C serif' font-size='38' font-weight='bold' fill='white' text-anchor='middle'%3EL%3C/text%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232563eb'/%3E%3Ctext x='32' y='46' font-family='Georgia%2C serif' font-size='38' font-weight='bold' fill='white' text-anchor='middle'%3EL%3C/text%3E%3C/svg%3E">
+
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -20,6 +44,7 @@
         <button type="button" id="assessmentsButton" class="pill-button">Tests &amp; Quizzes</button>
         <button type="button" id="dashboardButton" class="pill-button">Dashboard</button>
         <button type="button" id="accountButton" class="pill-button">Account</button>
+        <button type="button" id="contactButton" class="pill-button">Contact</button>
       </div>
     </header>
 
@@ -134,15 +159,41 @@
             <button id="accountBackButton" class="secondary-button">Back</button>
           </div>
           <div class="account-layout">
-            <form id="accountForm" class="account-panel">
-              <h3>Email login</h3>
-              <label>
-                Email
-                <input type="email" id="accountEmailInput" placeholder="student@example.com" autocomplete="email" />
-              </label>
-              <button id="emailLoginButton" type="submit" class="primary-button">Sign in</button>
-              <p id="accountMessage" class="account-message" aria-live="polite"></p>
-            </form>
+            <!-- Sign-in / Sign-up panel -->
+            <div class="account-panel" id="authPanel">
+              <div class="auth-mode-tabs" role="tablist">
+                <button type="button" id="authTabSignIn" class="auth-tab active" role="tab" aria-selected="true">Sign in</button>
+                <button type="button" id="authTabSignUp" class="auth-tab" role="tab" aria-selected="false">Sign up</button>
+              </div>
+
+              <!-- Sign-in form -->
+              <form id="accountForm" class="auth-form" data-auth-mode="signin">
+                <label>
+                  Email
+                  <input type="email" id="accountEmailInput" placeholder="student@example.com" autocomplete="email" />
+                </label>
+                <label>
+                  Password
+                  <input type="password" id="accountPasswordInput" placeholder="Your password" autocomplete="current-password" minlength="8" />
+                </label>
+                <button id="emailLoginButton" type="submit" class="primary-button">Sign in</button>
+                <button type="button" id="forgotPasswordButton" class="text-button auth-forgot">Forgot password?</button>
+                <p id="accountMessage" class="account-message" aria-live="polite"></p>
+              </form>
+
+              <!-- Forgot-password sub-form (hidden by default) -->
+              <form id="forgotPasswordForm" class="auth-form" hidden>
+                <p class="auth-hint">Enter your email and we'll send a reset link.</p>
+                <label>
+                  Email
+                  <input type="email" id="resetEmailInput" placeholder="student@example.com" autocomplete="email" />
+                </label>
+                <button type="submit" class="primary-button">Send reset link</button>
+                <button type="button" id="cancelResetButton" class="text-button">Back to sign in</button>
+                <p id="resetMessage" class="account-message" aria-live="polite"></p>
+              </form>
+            </div>
+
             <div class="account-panel current-profile-panel">
               <h3 id="currentProfileTitle">Guest learner</h3>
               <p id="currentProfileDetail">No email account connected.</p>
@@ -152,6 +203,30 @@
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- Password-reset page (user lands here after clicking the Supabase reset link) -->
+      <section id="resetPasswordPage" class="page">
+        <div class="card account-card">
+          <div class="page-header">
+            <div>
+              <h2>Set new password</h2>
+              <p>Choose a new password for your account.</p>
+            </div>
+          </div>
+          <form id="resetPasswordForm" class="auth-form" style="max-width:380px; margin-top:8px;">
+            <label>
+              New password
+              <input type="password" id="newPasswordInput" placeholder="At least 8 characters" autocomplete="new-password" minlength="8" />
+            </label>
+            <label>
+              Confirm password
+              <input type="password" id="confirmPasswordInput" placeholder="Repeat password" autocomplete="new-password" minlength="8" />
+            </label>
+            <button type="submit" class="primary-button">Update password</button>
+            <p id="resetPasswordMessage" class="account-message" aria-live="polite"></p>
+          </form>
         </div>
       </section>
 
@@ -263,6 +338,55 @@
           <div class="progress-card">
             <h3>Lesson progress</h3>
             <div id="progressList" class="progress-list"></div>
+          </div>
+        </div>
+      </section>
+      <section id="contactPage" class="page">
+        <div class="card contact-card">
+          <div class="page-header">
+            <div>
+              <h2>Contact Us</h2>
+              <p>Have a question, suggestion, or bug report? We'd love to hear from you.</p>
+            </div>
+            <button id="contactBackButton" class="secondary-button">Back</button>
+          </div>
+
+          <!-- Netlify Forms: this hidden form registers the schema at build time -->
+          <form name="contact" data-netlify="true" hidden>
+            <input type="text" name="name" />
+            <input type="email" name="email" />
+            <input type="text" name="subject" />
+            <textarea name="message"></textarea>
+          </form>
+
+          <!-- The visible form that submits via JS fetch -->
+          <form id="contactForm" class="contact-form" novalidate>
+            <div class="contact-form-grid">
+              <label>
+                Name
+                <input type="text" id="contactName" name="name" placeholder="Your name" autocomplete="name" required />
+              </label>
+              <label>
+                Email
+                <input type="email" id="contactEmail" name="email" placeholder="you@example.com" autocomplete="email" required />
+              </label>
+            </div>
+            <label>
+              Subject
+              <input type="text" id="contactSubject" name="subject" placeholder="What's this about?" required />
+            </label>
+            <label>
+              Message
+              <textarea id="contactMessage" name="message" rows="5" placeholder="Tell us more…" required></textarea>
+            </label>
+            <div class="contact-actions">
+              <button type="submit" class="primary-button">Send message</button>
+            </div>
+            <p id="contactFormMessage" class="account-message" aria-live="polite"></p>
+          </form>
+
+          <div class="contact-alt">
+            <p>You can also reach us by email at <a href="mailto:jshoemakerhwc@gmail.com">jshoemakerhwc@gmail.com</a>.</p>
           </div>
         </div>
       </section>
