@@ -3,14 +3,24 @@ const VOCAB_LESSONS = Object.entries(GRADE_WORDS).flatMap(([grade, words]) => {
   return Array.from({ length: Math.ceil(words.length / LESSON_CHUNK_SIZE) }, (_, index) => {
     const start = index * LESSON_CHUNK_SIZE;
     const lessonWords = words.slice(start, start + LESSON_CHUNK_SIZE);
+    const phrases = typeof getPhraseFocusForLesson === 'function'
+      ? getPhraseFocusForLesson(Number(grade), lessonWords)
+      : [];
+    const phraseQuestions = typeof getPhraseQuestionsForLesson === 'function'
+      ? getPhraseQuestionsForLesson(phrases)
+      : [];
     return {
       id: `grade${grade}-${index + 1}`,
       grade: Number(grade),
       kind: 'vocabulary',
       story: typeof getStorySceneForLesson === 'function' ? getStorySceneForLesson(Number(grade), index) : null,
       title: `Grade ${grade}: Lesson ${index + 1}`,
-      description: `Practice Latin vocabulary words ${start + 1}-${start + lessonWords.length}.`,
-      words: lessonWords
+      description: phrases.length > 0
+        ? `Practice Latin vocabulary words ${start + 1}-${start + lessonWords.length}, then connect them to popular Latin phrases.`
+        : `Practice Latin vocabulary words ${start + 1}-${start + lessonWords.length}.`,
+      vocabularyWords: lessonWords,
+      phrases,
+      words: [...lessonWords, ...phraseQuestions]
     };
   });
 });
@@ -153,6 +163,7 @@ const elements = {
   lessonDescription: document.getElementById('lessonDescription'),
   storyScene: document.getElementById('storyScene'),
   lessonNotes: document.getElementById('lessonNotes'),
+  phraseFocus: document.getElementById('phraseFocus'),
   wordPreview: document.getElementById('wordPreview'),
   questionArea: document.getElementById('questionArea'),
   nextQuestionButton: document.getElementById('nextQuestionButton'),
@@ -742,8 +753,11 @@ function renderLessonList() {
     const grammarTag = lesson.kind === 'grammar'
       ? '<span class="lesson-kind-tag">Grammar</span>'
       : '';
-    const tagsHtml = grammarTag || storyTag
-      ? `<div class="lesson-card-tags">${grammarTag}${storyTag}</div>`
+    const phraseTag = getLessonPhraseCount(lesson) > 0
+      ? `<span class="lesson-phrase-tag">${getLessonPhraseCount(lesson)} ${getLessonPhraseCount(lesson) === 1 ? 'phrase' : 'phrases'}</span>`
+      : '';
+    const tagsHtml = grammarTag || storyTag || phraseTag
+      ? `<div class="lesson-card-tags">${grammarTag}${storyTag}${phraseTag}</div>`
       : '';
     const card = document.createElement('div');
     card.className = 'lesson-card-item';
@@ -762,11 +776,26 @@ function renderLessonList() {
 }
 
 function getLessonCountLabel(lesson) {
-  const count = lesson.words.length;
   if (lesson.kind === 'grammar') {
+    const count = lesson.words.length;
     return `${count} ${count === 1 ? 'question' : 'questions'}`;
   }
-  return `${count} ${count === 1 ? 'word' : 'words'}`;
+  const vocabularyCount = getLessonVocabularyWords(lesson).length;
+  const phraseCount = getLessonPhraseCount(lesson);
+  if (phraseCount > 0) {
+    return `${vocabularyCount} ${vocabularyCount === 1 ? 'word' : 'words'} · ${phraseCount} ${phraseCount === 1 ? 'phrase' : 'phrases'}`;
+  }
+  return `${vocabularyCount} ${vocabularyCount === 1 ? 'word' : 'words'}`;
+}
+
+function getLessonVocabularyWords(lesson) {
+  return Array.isArray(lesson.vocabularyWords)
+    ? lesson.vocabularyWords
+    : lesson.words.filter((word) => !word.isPhrase);
+}
+
+function getLessonPhraseCount(lesson) {
+  return Array.isArray(lesson.phrases) ? lesson.phrases.length : 0;
 }
 
 function renderObjectives() {
@@ -807,9 +836,10 @@ function renderLesson() {
   elements.lessonDescription.textContent = lesson.description;
   renderStoryScene(lesson.story);
   renderLessonNotes(lesson);
+  renderPhraseFocus(lesson);
   renderLessonPrintables(lesson);
   renderLessonPuzzles(lesson);
-  elements.wordPreview.innerHTML = lesson.words
+  elements.wordPreview.innerHTML = getLessonVocabularyWords(lesson)
     .map((word) => {
       const label = word.preview || word.latin;
       const answer = word.previewAnswer || word.english;
@@ -1283,6 +1313,7 @@ function getPuzzleTermLabel(count) {
 function getLessonPuzzleTerms(lesson) {
   const seen = new Set();
   return lesson.words
+    .filter((word) => !word.excludeFromPuzzles && !word.isPhrase)
     .map((word, index) => {
       const answer = normalizePuzzleAnswer(word.puzzleAnswer || word.latin);
       if (answer.length < 3 || answer.length > 14 || seen.has(answer)) return null;
@@ -1594,11 +1625,24 @@ function renderLessonSummaryPrint(lesson) {
   const focusItems = Array.isArray(lesson.focus)
     ? lesson.focus.map((item) => `<li>${escapeHtml(item)}</li>`).join('')
     : '';
+  const phrases = Array.isArray(lesson.phrases) ? lesson.phrases : [];
+  const phraseRows = phrases.map((phrase) => {
+    const linkedWords = Array.isArray(phrase.matchedWords)
+      ? phrase.matchedWords.map((word) => `${word.latin} (${word.english})`).join(', ')
+      : '';
+    return `
+      <tr>
+        <td>${escapeHtml(phrase.latin)}</td>
+        <td>${escapeHtml(phrase.meaning)}</td>
+        <td>${escapeHtml(linkedWords || 'today\'s word bank')}</td>
+      </tr>
+    `;
+  }).join('');
   const sourceNote = lesson.sourceNote ? `<p>${escapeHtml(lesson.sourceNote)}</p>` : '';
   const storyNote = lesson.story
     ? `<p><strong>Story:</strong> ${escapeHtml(lesson.story.title)} - ${escapeHtml(lesson.story.summary)}</p>`
     : '';
-  const rows = lesson.words.map((word) => {
+  const rows = getLessonVocabularyWords(lesson).map((word) => {
     const note = word.explanation || word.hint || word.prompt || '';
     return `
       <tr>
@@ -1619,6 +1663,21 @@ function renderLessonSummaryPrint(lesson) {
         ${storyNote}
       </section>
       ${focusItems ? `<section class="print-section"><h2>Focus</h2><ul class="print-focus-list">${focusItems}</ul></section>` : ''}
+      ${phraseRows ? `
+        <section class="print-section">
+          <h2>Popular Latin phrases</h2>
+          <table class="summary-table">
+            <thead>
+              <tr>
+                <th>Phrase</th>
+                <th>Meaning</th>
+                <th>Linked words</th>
+              </tr>
+            </thead>
+            <tbody>${phraseRows}</tbody>
+          </table>
+        </section>
+      ` : ''}
       <section class="print-section">
         <h2>Key terms</h2>
         <table class="summary-table">
@@ -1755,6 +1814,56 @@ function renderLessonNotes(lesson) {
       ${focusItems ? `<ul>${focusItems}</ul>` : ''}
     </section>
   `;
+}
+
+function renderPhraseFocus(lesson) {
+  if (!elements.phraseFocus) return;
+  const phrases = Array.isArray(lesson.phrases) ? lesson.phrases : [];
+  if (phrases.length === 0) {
+    elements.phraseFocus.innerHTML = '';
+    return;
+  }
+
+  const phraseCards = phrases.map((phrase) => {
+    const matchedWords = Array.isArray(phrase.matchedWords) && phrase.matchedWords.length > 0
+      ? phrase.matchedWords
+        .map((word) => `<span>${escapeHtml(word.latin)} - ${escapeHtml(word.english)}</span>`)
+        .join('')
+      : '<span>today\'s word bank</span>';
+    return `
+      <article class="phrase-card">
+        <div class="phrase-mark" aria-hidden="true">${escapeHtml(phrase.icon || 'P')}</div>
+        <div>
+          <p class="phrase-latin">${escapeHtml(phrase.latin)}</p>
+          <p class="phrase-meaning">${escapeHtml(phrase.meaning)}</p>
+          <p class="phrase-note">${escapeHtml(phrase.note)}</p>
+          <div class="phrase-links" aria-label="Linked lesson words">${matchedWords}</div>
+        </div>
+      </article>
+    `;
+  }).join('');
+
+  const sources = renderPhraseSources();
+  elements.phraseFocus.innerHTML = `
+    <section class="phrase-focus-panel" aria-label="Popular Latin phrases">
+      <div class="phrase-focus-header">
+        <div>
+          <span class="phrase-eyebrow">Phrase focus</span>
+          <h3>Popular phrases from today's words</h3>
+        </div>
+        <p>${phrases.length} ${phrases.length === 1 ? 'phrase' : 'phrases'} in this lesson</p>
+      </div>
+      <div class="phrase-grid">${phraseCards}</div>
+      ${sources ? `<p class="phrase-source">Sources: ${sources}</p>` : ''}
+    </section>
+  `;
+}
+
+function renderPhraseSources() {
+  if (typeof LATIN_PHRASE_SOURCES === 'undefined') return '';
+  return LATIN_PHRASE_SOURCES
+    .map((source) => `<a href="${escapeHtml(source.url)}" target="_blank" rel="noopener">${escapeHtml(source.name)}</a>`)
+    .join(' and ');
 }
 
 

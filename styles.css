@@ -271,7 +271,8 @@ input {
 }
 
 .lesson-story-tag,
-.lesson-kind-tag {
+.lesson-kind-tag,
+.lesson-phrase-tag {
   display: inline-flex;
   align-items: center;
   width: fit-content;
@@ -288,6 +289,12 @@ input {
   background: #fff7ed;
   color: #9a3412;
   border-color: #fed7aa;
+}
+
+.lesson-phrase-tag {
+  background: #ecfdf5;
+  color: #0f766e;
+  border-color: #99f6e4;
 }
 
 .grammar-lesson {
@@ -455,6 +462,127 @@ input {
   background: #ffffff;
   color: var(--text);
   font-weight: 700;
+}
+
+.phrase-focus {
+  margin-top: 18px;
+}
+
+.phrase-focus:empty {
+  display: none;
+}
+
+.phrase-focus-panel {
+  padding: 18px;
+  border: 1px solid #99f6e4;
+  border-radius: 18px;
+  background: #f0fdfa;
+}
+
+.phrase-focus-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: baseline;
+  margin-bottom: 14px;
+}
+
+.phrase-focus-header h3,
+.phrase-focus-header p,
+.phrase-card p,
+.phrase-source {
+  margin: 0;
+}
+
+.phrase-focus-header p,
+.phrase-source {
+  color: #0f766e;
+  font-weight: 800;
+}
+
+.phrase-eyebrow {
+  display: inline-flex;
+  margin-bottom: 6px;
+  color: #0f766e;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.phrase-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+}
+
+.phrase-card {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px;
+  border: 1px solid #ccfbf1;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.phrase-mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #ccfbf1;
+  color: #0f766e;
+  font-weight: 900;
+}
+
+.phrase-latin {
+  color: var(--text);
+  font-size: 1.08rem;
+  font-weight: 900;
+}
+
+.phrase-meaning {
+  margin-top: 3px !important;
+  color: #0f766e;
+  font-weight: 800;
+}
+
+.phrase-note {
+  margin-top: 8px !important;
+  color: var(--muted);
+}
+
+.phrase-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.phrase-links span {
+  padding: 5px 8px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: var(--text);
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.phrase-source {
+  margin-top: 12px;
+  font-size: 0.86rem;
+}
+
+.phrase-source a {
+  color: #0f766e;
+  text-decoration: none;
+}
+
+.phrase-source a:hover {
+  text-decoration: underline;
 }
 
 .lesson-printables {
@@ -1031,12 +1159,14 @@ input {
     grid-template-columns: 1fr;
   }
 
+  .phrase-focus-header,
   .online-puzzles-header,
   .online-crossword,
   .online-word-find {
     grid-template-columns: 1fr;
   }
 
+  .phrase-focus-header,
   .online-puzzles-header {
     flex-direction: column;
     align-items: flex-start;
