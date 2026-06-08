@@ -979,25 +979,22 @@ function continueAsGuest() {
 }
 
 async function init() {
-  // Handle Supabase password-recovery token in URL hash
-  // Supabase appends #access_token=...&type=recovery to the redirect URL
-  const hashParams = new URLSearchParams(window.location.hash.slice(1));
-  if (hashParams.get('type') === 'recovery') {
-    // Supabase client automatically consumes the token from the hash
-    window.history.replaceState(null, '', window.location.pathname);
-    loadState();
-    renderAccountControls();
-    showPage('resetPassword');
-    return;
-  }
-
   loadState();
   renderAccountControls();
 
-  // Set up Supabase auth state listener — fires on sign-in / sign-out
   const db = getSupabase();
   if (db) {
+    // Set up auth listener FIRST — before getSession — so the Supabase client
+    // can read and consume any #access_token hash (including recovery tokens)
+    // from the URL before we do anything else with the page.
     db.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'PASSWORD_RECOVERY') {
+        // Supabase has validated the recovery token and established a session.
+        // Show the set-new-password form; updateUser() will now succeed.
+        showPage('resetPassword');
+        return;
+      }
+
       if (event === 'SIGNED_IN' && session?.user?.email) {
         const email = session.user.email;
         const account = createEmailAccount(email);
@@ -1009,19 +1006,16 @@ async function init() {
         evaluateBadges();
         saveState();
         renderAfterProfileChange();
-        // Redirect to home if the user is on the account page
+        // Navigate home if the user was on the account or welcome page
         const currentActive = Object.entries(pages).find(([, el]) => el?.classList.contains('active'));
         if (currentActive && ['account', 'welcome'].includes(currentActive[0])) {
           showBestLearningPage();
         }
-      } else if (event === 'SIGNED_OUT') {
-        // Already handled by continueAsGuest()
-      } else if (event === 'PASSWORD_RECOVERY') {
-        showPage('resetPassword');
       }
+      // SIGNED_OUT is handled by continueAsGuest()
     });
 
-    // Check for an existing session (returning visitor)
+    // Restore an existing session for returning visitors
     const { data: { session } } = await db.auth.getSession();
     if (session?.user?.email && !isEmailAccount()) {
       const email = session.user.email;
