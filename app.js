@@ -1207,13 +1207,27 @@ function normalizeSpeechText(value) {
     .trim();
 }
 
+function getSlowSpeechText(value) {
+  return normalizeSpeechText(value)
+    .split(/(\s+|[,.;:!?]+)/)
+    .map((part) => {
+      if (!/[A-Za-z]/.test(part)) return part;
+      const cue = getSyllableCue(part);
+      return cue ? cue.replace(/-/g, ' ... ') : part;
+    })
+    .join(' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function speakLatin(value, rate = 0.82) {
-  const text = normalizeSpeechText(value);
+  const slow = rate <= 0.55;
+  const text = slow ? getSlowSpeechText(value) : normalizeSpeechText(value);
   if (!text || !canSpeakLatin()) return false;
   const utterance = new SpeechSynthesisUtterance(text);
   const voice = getLatinVoice();
   utterance.lang = voice?.lang || 'la';
-  utterance.rate = rate;
+  utterance.rate = slow ? 0.42 : rate;
   utterance.pitch = 1;
   if (voice) utterance.voice = voice;
   window.speechSynthesis.cancel();
@@ -1264,7 +1278,7 @@ function getWordVisual(word) {
 
 function getSyllableCue(value) {
   const text = String(value || '').trim();
-  if (!/^[A-Za-z]+$/.test(text) || text.length < 6) return '';
+  if (!/^[A-Za-z]+$/.test(text) || text.length < 4) return '';
   const groups = text.match(/[^aeiouyAEIOUY]*[aeiouyAEIOUY]+(?:[^aeiouyAEIOUY](?![^aeiouyAEIOUY]*[aeiouyAEIOUY]))?/g);
   if (!groups || groups.length < 2) return '';
   return groups
@@ -1281,7 +1295,7 @@ function renderQuestionSoundControls(question) {
   return `
     <div class="sound-control-group">
       ${renderSpeakButton(question.latin, 'Hear')}
-      ${renderSpeakButton(question.latin, 'Slow', 0.58)}
+      ${renderSpeakButton(question.latin, 'Slow', 0.42)}
     </div>
   `;
 }
@@ -1422,7 +1436,7 @@ function renderWordIntroduction(lesson) {
         </div>
         <div class="intro-sound-controls">
           ${renderSpeakButton(word.latin, 'Hear')}
-          ${renderSpeakButton(word.latin, 'Slow', 0.58)}
+          ${renderSpeakButton(word.latin, 'Slow', 0.42)}
         </div>
       </article>
     `;
