@@ -130,6 +130,9 @@ const AppState = {
   studentName: '',
   grade: null,
   selectedLesson: null,
+  lessonPhase: 'intro',
+  activeResourceTab: 'overview',
+  speechAutoPlay: false,
   currentQuestionIndex: 0,
   selectedOption: null,
   answerChecked: false,
@@ -219,6 +222,10 @@ const elements = {
   lessonCards: document.getElementById('lessonCards'),
   lessonTitle: document.getElementById('lessonTitle'),
   lessonDescription: document.getElementById('lessonDescription'),
+  lessonPracticePanel: document.getElementById('lessonPracticePanel'),
+  lessonResources: document.getElementById('lessonResources'),
+  lessonResourceTabs: document.getElementById('lessonResourceTabs'),
+  lessonResourcePanels: document.getElementById('lessonResourcePanels'),
   storyScene: document.getElementById('storyScene'),
   lessonNotes: document.getElementById('lessonNotes'),
   phraseFocus: document.getElementById('phraseFocus'),
@@ -1148,14 +1155,219 @@ function renderObjectives() {
   `;
 }
 
-function openLesson(lessonId) {
-  const lesson = LESSONS.find((item) => item.id === lessonId);
-  if (!lesson) return;
-  AppState.selectedLesson = lessonId;
+function canSpeakLatin() {
+  return typeof window !== 'undefined'
+    && 'speechSynthesis' in window
+    && typeof SpeechSynthesisUtterance !== 'undefined';
+}
+
+function getLatinVoice() {
+  if (!canSpeakLatin()) return null;
+  const voices = window.speechSynthesis.getVoices();
+  return voices.find((voice) => voice.lang.toLowerCase().startsWith('la'))
+    || voices.find((voice) => /^(it|es|fr|ro)/i.test(voice.lang))
+    || null;
+}
+
+function normalizeSpeechText(value) {
+  return String(value || '')
+    .replace(/\//g, ' or ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function speakLatin(value) {
+  const text = normalizeSpeechText(value);
+  if (!text || !canSpeakLatin()) return false;
+  const utterance = new SpeechSynthesisUtterance(text);
+  const voice = getLatinVoice();
+  utterance.lang = voice?.lang || 'la';
+  utterance.rate = 0.82;
+  utterance.pitch = 1;
+  if (voice) utterance.voice = voice;
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utterance);
+  return true;
+}
+
+function speakCurrentQuestion() {
+  const lesson = getSelectedLesson();
+  const question = lesson?.words[AppState.currentQuestionIndex];
+  if (question) speakLatin(question.latin);
+}
+
+function renderSpeakButton(value, label = 'Listen') {
+  const disabled = canSpeakLatin() ? '' : ' disabled';
+  return `
+    <button
+      type="button"
+      class="sound-button"
+      data-speak-latin="${escapeHtml(value)}"
+      aria-label="Hear ${escapeHtml(value)}"
+      ${disabled}
+    >
+      <span aria-hidden="true">${escapeHtml(label)}</span>
+    </button>
+  `;
+}
+
+function renderAutoPlayToggle() {
+  const disabled = canSpeakLatin() ? '' : 'disabled';
+  return `
+    <label class="audio-toggle">
+      <input type="checkbox" data-audio-autoplay ${AppState.speechAutoPlay ? 'checked' : ''} ${disabled} />
+      <span>Auto-play</span>
+    </label>
+  `;
+}
+
+function getLessonIntroWords(lesson) {
+  const vocabularyWords = getLessonVocabularyWords(lesson);
+  return vocabularyWords.length > 0 ? vocabularyWords : lesson.words;
+}
+
+function getWordVisual(word) {
+  return word.emoji || String(word.latin || '?').trim().charAt(0).toUpperCase() || '?';
+}
+
+function renderWordIntroduction(lesson) {
+  const words = getLessonIntroWords(lesson);
+  const introTitle = lesson.kind === 'grammar' ? 'Meet the patterns' : 'Meet the words';
+  const cards = words.map((word) => {
+    const label = word.preview || word.latin;
+    const answer = word.previewAnswer || word.english;
+    return `
+      <article class="word-intro-card">
+        <span class="word-picture" aria-hidden="true">${escapeHtml(getWordVisual(word))}</span>
+        <div>
+          <strong>${escapeHtml(label)}</strong>
+          <span>${escapeHtml(answer)}</span>
+        </div>
+        ${renderSpeakButton(word.latin, 'Hear')}
+      </article>
+    `;
+  }).join('');
+
+  elements.lessonPracticePanel?.classList.add('is-intro');
+  elements.lessonPracticePanel?.classList.remove('is-practice', 'is-complete');
+  elements.wordPreview.className = 'word-preview intro-word-preview';
+  elements.wordPreview.innerHTML = `
+    <section class="word-intro">
+      <div class="word-intro-header">
+        <div>
+          <span class="section-kicker">Warm-up</span>
+          <h3>${escapeHtml(introTitle)}</h3>
+        </div>
+        ${renderAutoPlayToggle()}
+      </div>
+      <div class="word-intro-grid">${cards}</div>
+    </section>
+  `;
+  elements.endingHint.innerHTML = '';
+  elements.questionArea.innerHTML = '';
+  elements.lessonResult.innerHTML = '';
+  elements.lessonResult.removeAttribute('data-tone');
+  elements.nextQuestionButton.hidden = false;
+  elements.nextQuestionButton.disabled = false;
+  elements.nextQuestionButton.textContent = 'Start practice';
+}
+
+function startLessonPractice() {
+  AppState.lessonPhase = 'practice';
   AppState.currentQuestionIndex = 0;
   AppState.selectedOption = null;
   AppState.answerChecked = false;
   AppState.currentLessonCorrect = 0;
+  renderQuestion();
+}
+
+function renderPracticeToolbar(lesson) {
+  const total = lesson.words.length;
+  const progressPercent = total > 0
+    ? Math.round((AppState.currentQuestionIndex / total) * 100)
+    : 0;
+  return `
+    <section class="practice-toolbar" aria-label="Practice progress">
+      <div>
+        <span>Practice</span>
+        <strong>Question ${AppState.currentQuestionIndex + 1}/${total}</strong>
+      </div>
+      ${renderAutoPlayToggle()}
+      <div class="practice-meter" aria-hidden="true">
+        <span style="width: ${progressPercent}%;"></span>
+      </div>
+    </section>
+  `;
+}
+
+function hasLessonOverview(lesson) {
+  return Boolean(
+    lesson.story
+    || lesson.sourceNote
+    || (Array.isArray(lesson.focus) && lesson.focus.length > 0)
+    || getLessonPhraseCount(lesson) > 0
+  );
+}
+
+function getLessonResourceTabs(lesson) {
+  const tabs = [];
+  if (hasLessonOverview(lesson)) tabs.push({ id: 'overview', label: 'Overview' });
+  tabs.push({ id: 'printables', label: 'Printables' });
+  if (getLessonPuzzleTerms(lesson).length > 0) tabs.push({ id: 'puzzles', label: 'Puzzles' });
+  return tabs;
+}
+
+function renderLessonResourceTabs(lesson) {
+  if (!elements.lessonResources || !elements.lessonResourceTabs || !elements.lessonResourcePanels) return;
+  const tabs = getLessonResourceTabs(lesson);
+  if (tabs.length === 0) {
+    elements.lessonResources.hidden = true;
+    return;
+  }
+
+  elements.lessonResources.hidden = false;
+  if (!tabs.some((tab) => tab.id === AppState.activeResourceTab)) {
+    AppState.activeResourceTab = tabs[0].id;
+  }
+
+  elements.lessonResourceTabs.innerHTML = tabs.map((tab) => {
+    const active = tab.id === AppState.activeResourceTab;
+    return `
+      <button
+        type="button"
+        class="lesson-resource-tab${active ? ' active' : ''}"
+        role="tab"
+        aria-selected="${active ? 'true' : 'false'}"
+        data-lesson-resource-tab="${escapeHtml(tab.id)}"
+      >${escapeHtml(tab.label)}</button>
+    `;
+  }).join('');
+
+  elements.lessonResourcePanels.querySelectorAll('[data-resource-panel]').forEach((panel) => {
+    const active = panel.dataset.resourcePanel === AppState.activeResourceTab;
+    panel.hidden = !active;
+    panel.classList.toggle('active', active);
+  });
+}
+
+function selectLessonResourceTab(tabId) {
+  const lesson = getSelectedLesson();
+  if (!lesson) return;
+  AppState.activeResourceTab = tabId;
+  renderLessonResourceTabs(lesson);
+}
+
+function openLesson(lessonId) {
+  const lesson = LESSONS.find((item) => item.id === lessonId);
+  if (!lesson) return;
+  AppState.selectedLesson = lessonId;
+  AppState.lessonPhase = 'intro';
+  AppState.activeResourceTab = hasLessonOverview(lesson) ? 'overview' : 'printables';
+  AppState.currentQuestionIndex = 0;
+  AppState.selectedOption = null;
+  AppState.answerChecked = false;
+  AppState.currentLessonCorrect = 0;
+  if (elements.lessonResources) elements.lessonResources.open = false;
   saveState();
   renderLesson();
   showPage('lesson');
@@ -1171,20 +1383,12 @@ function renderLesson() {
   renderPhraseFocus(lesson);
   renderLessonPrintables(lesson);
   renderLessonPuzzles(lesson);
-  elements.wordPreview.innerHTML = getLessonVocabularyWords(lesson)
-    .map((word) => {
-      const label = word.preview || word.latin;
-      const answer = word.previewAnswer || word.english;
-      const emoji = word.emoji ? `${escapeHtml(word.emoji)} ` : '';
-      return `
-      <div class="word-badge">
-        <span>${emoji}${escapeHtml(label)}</span>
-        <strong>${escapeHtml(answer)}</strong>
-      </div>
-    `;
-    })
-    .join('');
-  renderQuestion();
+  renderLessonResourceTabs(lesson);
+  if (AppState.lessonPhase === 'practice') {
+    renderQuestion();
+  } else {
+    renderWordIntroduction(lesson);
+  }
 }
 
 function renderLessonPuzzles(lesson) {
@@ -2270,6 +2474,7 @@ function renderQuestion() {
     return;
   }
   const choices = createChoices(question, lesson.words);
+  AppState.lessonPhase = 'practice';
   AppState.answerChecked = false;
   AppState.selectedOption = null;
   const promptHtml = question.prompt
@@ -2278,9 +2483,19 @@ function renderQuestion() {
   const contextHtml = question.context
     ? `<p class="question-context">${escapeHtml(question.context)}</p>`
     : '';
+  elements.lessonPracticePanel?.classList.remove('is-intro', 'is-complete');
+  elements.lessonPracticePanel?.classList.add('is-practice');
+  elements.wordPreview.className = 'word-preview practice-word-preview';
+  elements.wordPreview.innerHTML = renderPracticeToolbar(lesson);
   elements.questionArea.innerHTML = `
-    <div class="question-card">
-      <p><strong>Question ${AppState.currentQuestionIndex + 1}/${lesson.words.length}</strong></p>
+    <div class="question-card" data-question-card>
+      <div class="question-word-row">
+        <div>
+          <span class="question-eyebrow">Listen and choose</span>
+          <p class="question-latin">${escapeHtml(question.latin)}</p>
+        </div>
+        ${renderSpeakButton(question.latin, 'Hear')}
+      </div>
       ${contextHtml}
       <h3>${promptHtml}</h3>
       <div class="options-grid" id="optionsGrid"></div>
@@ -2291,14 +2506,20 @@ function renderQuestion() {
     const button = document.createElement('button');
     button.className = 'option-button';
     button.textContent = choice;
+    button.setAttribute('aria-pressed', 'false');
     button.addEventListener('click', () => selectOption(choice));
     optionsGrid.appendChild(button);
   });
   renderEndingHint(question);
+  elements.nextQuestionButton.hidden = false;
   elements.nextQuestionButton.textContent = 'Check answer';
   elements.nextQuestionButton.disabled = false;
-  elements.lessonResult.textContent = '';
+  elements.lessonResult.innerHTML = '';
+  elements.lessonResult.removeAttribute('data-tone');
   saveState();
+  if (AppState.speechAutoPlay) {
+    window.setTimeout(() => speakLatin(question.latin), 180);
+  }
 }
 
 function createChoices(question, words) {
@@ -2338,10 +2559,31 @@ function createChoices(question, words) {
 function selectOption(value) {
   if (AppState.answerChecked) return;
   AppState.selectedOption = value;
-  const buttons = document.querySelectorAll('.option-button');
+  const buttons = elements.questionArea.querySelectorAll('.option-button');
   buttons.forEach((button) => {
-    button.classList.toggle('selected', button.textContent === value);
+    const selected = button.textContent === value;
+    button.classList.toggle('selected', selected);
+    button.setAttribute('aria-pressed', selected ? 'true' : 'false');
   });
+}
+
+function renderQuestionFeedback(question, correct) {
+  const correctLines = ['Nice catch!', 'Exactly.', 'Strong work.'];
+  const incorrectLines = ['Good try.', 'Almost.', 'Keep going.'];
+  const lineIndex = AppState.currentQuestionIndex % correctLines.length;
+  const title = correct ? correctLines[lineIndex] : incorrectLines[lineIndex];
+  const detail = question.explanation
+    ? question.explanation
+    : `${question.latin} means ${question.english}.`;
+  const tag = correct ? '+10 points' : 'Correct meaning';
+
+  return `
+    <div class="feedback-card ${correct ? 'success' : 'error'}">
+      <span>${escapeHtml(tag)}</span>
+      <strong>${escapeHtml(title)}</strong>
+      <p>${escapeHtml(detail)}</p>
+    </div>
+  `;
 }
 
 function checkAnswer() {
@@ -2350,22 +2592,21 @@ function checkAnswer() {
   const question = lesson.words[AppState.currentQuestionIndex];
   if (!question) return;
   if (!AppState.selectedOption) {
+    elements.lessonResult.dataset.tone = 'warning';
     elements.lessonResult.textContent = 'Choose an answer before moving on.';
     return;
   }
   const correct = AppState.selectedOption === question.english;
-  const optionButtons = document.querySelectorAll('.option-button');
+  const questionCard = elements.questionArea.querySelector('[data-question-card]');
+  questionCard?.classList.add(correct ? 'is-correct' : 'is-wrong');
+  const optionButtons = elements.questionArea.querySelectorAll('.option-button');
   optionButtons.forEach((button) => {
     if (button.textContent === question.english) button.classList.add('correct');
     if (button.textContent === AppState.selectedOption && !correct) button.classList.add('wrong');
     button.disabled = true;
   });
-  const resultText = correct
-    ? `Great job! ${question.latin} means ${question.english}.`
-    : `Not quite — ${question.latin} means ${question.english}.`;
-  elements.lessonResult.textContent = question.explanation
-    ? `${correct ? 'Great job!' : 'Not quite.'} Correct answer: ${question.english}. ${question.explanation}`
-    : resultText;
+  elements.lessonResult.dataset.tone = correct ? 'success' : 'error';
+  elements.lessonResult.innerHTML = renderQuestionFeedback(question, correct);
   if (correct) {
     AppState.currentLessonCorrect += 1;
     awardPoints(10);
@@ -2380,6 +2621,10 @@ function checkAnswer() {
 function nextQuestion() {
   const lesson = LESSONS.find((item) => item.id === AppState.selectedLesson);
   if (!lesson) return;
+  if (AppState.lessonPhase === 'intro') {
+    startLessonPractice();
+    return;
+  }
   if (!AppState.answerChecked) {
     checkAnswer();
     return;
@@ -2406,6 +2651,39 @@ function markWordMastered(word) {
   saveState();
 }
 
+function renderLessonCompletion(lesson, score) {
+  const total = lesson.words.length;
+  const ratio = total > 0 ? score / total : 0;
+  const isPerfect = score === total && total > 0;
+  const isHighScore = ratio >= 0.8;
+  const title = isPerfect
+    ? 'Perfect lesson!'
+    : isHighScore
+      ? 'Strong finish!'
+      : 'Lesson complete!';
+  const message = isPerfect
+    ? 'Every answer landed. That is a badge-worthy run.'
+    : isHighScore
+      ? 'You are building real recall. Keep this lesson in the rotation.'
+      : 'You finished the loop. A replay will make these words feel faster.';
+  const burst = isHighScore
+    ? '<div class="celebration-burst" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div>'
+    : '';
+
+  return `
+    <section class="lesson-complete-card${isHighScore ? ' high-score' : ''}">
+      ${burst}
+      <span class="section-kicker">Lesson complete</span>
+      <h3>${escapeHtml(title)}</h3>
+      <p>${escapeHtml(message)}</p>
+      <div class="completion-score">
+        <strong>${score}/${total}</strong>
+        <span>correct</span>
+      </div>
+    </section>
+  `;
+}
+
 function completeLesson(lesson) {
   const score = AppState.currentLessonCorrect;
   const previous = AppState.progress.lessons[lesson.id];
@@ -2417,15 +2695,23 @@ function completeLesson(lesson) {
   };
   AppState.answerChecked = false;
   AppState.selectedOption = null;
+  AppState.lessonPhase = 'complete';
   saveState();
   renderHome();
   renderDashboard();
-  elements.lessonResult.textContent = `Lesson complete! You scored ${score}/${lesson.words.length}.`;
-  elements.lessonListSubtitle.textContent = `Nice work, ${AppState.studentName}!`;
+  elements.lessonPracticePanel?.classList.remove('is-intro', 'is-practice');
+  elements.lessonPracticePanel?.classList.add('is-complete');
+  elements.wordPreview.innerHTML = '';
+  elements.endingHint.innerHTML = '';
+  elements.questionArea.innerHTML = '';
+  elements.nextQuestionButton.hidden = true;
+  elements.lessonResult.dataset.tone = score / lesson.words.length >= 0.8 ? 'success' : 'neutral';
+  elements.lessonResult.innerHTML = renderLessonCompletion(lesson, score);
+  elements.lessonListSubtitle.textContent = `Nice work${AppState.studentName ? `, ${AppState.studentName}` : ''}!`;
   setTimeout(() => {
     renderLessonList();
     showPage('lessonList');
-  }, 1200);
+  }, 2800);
 }
 
 function renderDashboard() {
@@ -3073,6 +3359,28 @@ function setupEvents() {
     showHomeOrWelcome();
   });
   elements.nextQuestionButton.addEventListener('click', nextQuestion);
+  pages.lesson?.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const speakButton = target?.closest('[data-speak-latin]');
+    if (speakButton) {
+      speakLatin(speakButton.dataset.speakLatin);
+      return;
+    }
+
+    const resourceTab = target?.closest('[data-lesson-resource-tab]');
+    if (resourceTab) {
+      selectLessonResourceTab(resourceTab.dataset.lessonResourceTab);
+    }
+  });
+  pages.lesson?.addEventListener('change', (event) => {
+    const target = event.target;
+    if (!(target instanceof HTMLInputElement) || !target.matches('[data-audio-autoplay]')) return;
+    AppState.speechAutoPlay = target.checked;
+    pages.lesson.querySelectorAll('[data-audio-autoplay]').forEach((input) => {
+      if (input instanceof HTMLInputElement) input.checked = AppState.speechAutoPlay;
+    });
+    if (AppState.speechAutoPlay && AppState.lessonPhase === 'practice') speakCurrentQuestion();
+  });
   elements.assessmentBuilder?.addEventListener('click', (event) => {
     const target = event.target instanceof Element ? event.target : null;
     const modeButton = target?.closest('[data-assessment-mode]');

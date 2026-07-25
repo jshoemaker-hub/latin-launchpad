@@ -290,18 +290,33 @@
             <button id="backToLessons" class="secondary-button">Back</button>
           </div>
 
-          <div id="storyScene" class="story-scene"></div>
-          <div id="lessonNotes" class="lesson-notes"></div>
-          <div id="phraseFocus" class="phrase-focus"></div>
-          <div id="lessonPrintables" class="lesson-printables"></div>
-          <div id="lessonPuzzles" class="lesson-puzzles"></div>
-          <div id="wordPreview" class="word-preview"></div>
-          <div id="endingHint" class="ending-hint"></div>
-          <div id="questionArea" class="question-area"></div>
-          <div class="lesson-actions">
-            <button id="nextQuestionButton" class="primary-button">Next</button>
-          </div>
-          <div id="lessonResult" class="lesson-result"></div>
+          <section id="lessonPracticePanel" class="lesson-practice-panel" aria-label="Lesson practice">
+            <div id="wordPreview" class="word-preview"></div>
+            <div id="endingHint" class="ending-hint"></div>
+            <div id="questionArea" class="question-area"></div>
+            <div class="lesson-actions">
+              <button id="nextQuestionButton" class="primary-button">Next</button>
+            </div>
+            <div id="lessonResult" class="lesson-result"></div>
+          </section>
+
+          <details id="lessonResources" class="lesson-resources">
+            <summary>Lesson resources</summary>
+            <div id="lessonResourceTabs" class="lesson-resource-tabs" role="tablist" aria-label="Lesson resource sections"></div>
+            <div id="lessonResourcePanels" class="lesson-resource-panels">
+              <section class="lesson-resource-panel" data-resource-panel="overview">
+                <div id="storyScene" class="story-scene"></div>
+                <div id="lessonNotes" class="lesson-notes"></div>
+                <div id="phraseFocus" class="phrase-focus"></div>
+              </section>
+              <section class="lesson-resource-panel" data-resource-panel="printables">
+                <div id="lessonPrintables" class="lesson-printables"></div>
+              </section>
+              <section class="lesson-resource-panel" data-resource-panel="puzzles">
+                <div id="lessonPuzzles" class="lesson-puzzles"></div>
+              </section>
+            </div>
+          </details>
         </div>
       </section>
 
