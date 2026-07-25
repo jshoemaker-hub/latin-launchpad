@@ -1444,13 +1444,13 @@ input {
 
 .word-intro-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
   gap: 12px;
 }
 
 .word-intro-card {
   display: grid;
-  grid-template-columns: 52px minmax(0, 1fr) auto;
+  grid-template-columns: 52px minmax(0, 1fr);
   gap: 12px;
   align-items: center;
   min-height: 82px;
@@ -1479,7 +1479,8 @@ input {
 .word-intro-card strong,
 .word-intro-card span {
   display: block;
-  overflow-wrap: anywhere;
+  overflow-wrap: normal;
+  word-break: normal;
 }
 
 .word-intro-card strong {
@@ -1520,6 +1521,11 @@ input {
   flex-wrap: wrap;
   gap: 8px;
   justify-content: flex-end;
+}
+
+.intro-sound-controls {
+  grid-column: 2;
+  justify-content: flex-start;
 }
 
 .audio-toggle {
