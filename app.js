@@ -67,6 +67,7 @@ function getSupabase() {
 const VALID_GRADES = [3, 4, 5, 6, 7, 8];
 const PUZZLE_CACHE = new Map();
 const QUESTION_COUNT_OPTIONS = [10, 25, 50, 100];
+const REVIEW_LESSON_ID = 'review-queue';
 const ASSESSMENT_TYPE_LABELS = {
   vocabulary: 'Vocabulary',
   grammar: 'Grammar',
@@ -131,12 +132,17 @@ const AppState = {
   grade: null,
   selectedLesson: null,
   lessonPhase: 'intro',
+  lessonAttemptMode: 'lesson',
+  practiceMode: 'meaning',
   activeResourceTab: 'overview',
   speechAutoPlay: false,
   currentQuestionIndex: 0,
   selectedOption: null,
   answerChecked: false,
   currentLessonCorrect: 0,
+  currentLessonMissed: [],
+  reviewQueue: [],
+  reviewTitle: '',
   progress: getDefaultProgress(),
   badges: {}
 };
@@ -255,6 +261,8 @@ const elements = {
   wordsMasteredValue: document.getElementById('wordsMasteredValue'),
   badgeSubtitle: document.getElementById('badgeSubtitle'),
   badgeGrid: document.getElementById('badgeGrid'),
+  weakWordsList: document.getElementById('weakWordsList'),
+  reviewWeakWordsButton: document.getElementById('reviewWeakWordsButton'),
   progressList: document.getElementById('progressList')
 };
 
@@ -275,7 +283,8 @@ function getDefaultProgress() {
   return {
     points: 0,
     lessons: {},
-    wordsMastered: {}
+    wordsMastered: {},
+    wordStats: {}
   };
 }
 
@@ -336,8 +345,30 @@ function normalizeProgress(progress) {
   return {
     points: Number.isFinite(safeProgress.points) ? safeProgress.points : 0,
     lessons: isPlainObject(safeProgress.lessons) ? safeProgress.lessons : {},
-    wordsMastered: isPlainObject(safeProgress.wordsMastered) ? safeProgress.wordsMastered : {}
+    wordsMastered: isPlainObject(safeProgress.wordsMastered) ? safeProgress.wordsMastered : {},
+    wordStats: normalizeWordStats(safeProgress.wordStats)
   };
+}
+
+function normalizeWordStats(wordStats) {
+  if (!isPlainObject(wordStats)) return {};
+  return Object.fromEntries(
+    Object.entries(wordStats)
+      .filter(([, entry]) => isPlainObject(entry))
+      .map(([key, entry]) => [
+        key,
+        {
+          latin: typeof entry.latin === 'string' ? entry.latin : key,
+          english: typeof entry.english === 'string' ? entry.english : '',
+          emoji: typeof entry.emoji === 'string' ? entry.emoji : '',
+          attempts: Number.isFinite(entry.attempts) ? Math.max(0, entry.attempts) : 0,
+          correct: Number.isFinite(entry.correct) ? Math.max(0, entry.correct) : 0,
+          misses: Number.isFinite(entry.misses) ? Math.max(0, entry.misses) : 0,
+          lastPracticedAt: typeof entry.lastPracticedAt === 'string' ? entry.lastPracticedAt : '',
+          lastMissedAt: typeof entry.lastMissedAt === 'string' ? entry.lastMissedAt : ''
+        }
+      ])
+  );
 }
 
 function normalizeBadges(badges) {
@@ -1176,13 +1207,13 @@ function normalizeSpeechText(value) {
     .trim();
 }
 
-function speakLatin(value) {
+function speakLatin(value, rate = 0.82) {
   const text = normalizeSpeechText(value);
   if (!text || !canSpeakLatin()) return false;
   const utterance = new SpeechSynthesisUtterance(text);
   const voice = getLatinVoice();
   utterance.lang = voice?.lang || 'la';
-  utterance.rate = 0.82;
+  utterance.rate = rate;
   utterance.pitch = 1;
   if (voice) utterance.voice = voice;
   window.speechSynthesis.cancel();
@@ -1192,17 +1223,18 @@ function speakLatin(value) {
 
 function speakCurrentQuestion() {
   const lesson = getSelectedLesson();
-  const question = lesson?.words[AppState.currentQuestionIndex];
+  const question = getActiveQuestions(lesson)[AppState.currentQuestionIndex];
   if (question) speakLatin(question.latin);
 }
 
-function renderSpeakButton(value, label = 'Listen') {
+function renderSpeakButton(value, label = 'Listen', rate = 0.82) {
   const disabled = canSpeakLatin() ? '' : ' disabled';
   return `
     <button
       type="button"
       class="sound-button"
       data-speak-latin="${escapeHtml(value)}"
+      data-speak-rate="${escapeHtml(rate)}"
       aria-label="Hear ${escapeHtml(value)}"
       ${disabled}
     >
@@ -1230,6 +1262,151 @@ function getWordVisual(word) {
   return word.emoji || String(word.latin || '?').trim().charAt(0).toUpperCase() || '?';
 }
 
+function getSyllableCue(value) {
+  const text = String(value || '').trim();
+  if (!/^[A-Za-z]+$/.test(text) || text.length < 6) return '';
+  const groups = text.match(/[^aeiouyAEIOUY]*[aeiouyAEIOUY]+(?:[^aeiouyAEIOUY](?![^aeiouyAEIOUY]*[aeiouyAEIOUY]))?/g);
+  if (!groups || groups.length < 2) return '';
+  return groups
+    .map((group) => group.toLowerCase())
+    .join('-');
+}
+
+function renderSyllableCue(value) {
+  const cue = getSyllableCue(value);
+  return cue ? `<p class="syllable-cue">${escapeHtml(cue)}</p>` : '';
+}
+
+function renderQuestionSoundControls(question) {
+  return `
+    <div class="sound-control-group">
+      ${renderSpeakButton(question.latin, 'Hear')}
+      ${renderSpeakButton(question.latin, 'Slow', 0.58)}
+    </div>
+  `;
+}
+
+function isReviewAttempt() {
+  return AppState.lessonAttemptMode === 'missed-review' || AppState.lessonAttemptMode === 'weak-review';
+}
+
+function supportsPicturePractice(lesson) {
+  return !isReviewAttempt()
+    && lesson?.kind === 'vocabulary'
+    && getLessonVocabularyWords(lesson).length >= 2;
+}
+
+function getLessonPictureQuestions(lesson) {
+  return lesson.words;
+}
+
+function getActiveQuestions(lesson) {
+  if (!lesson) return [];
+  if (isReviewAttempt()) return AppState.reviewQueue;
+  if (AppState.practiceMode === 'picture' && supportsPicturePractice(lesson)) {
+    return getLessonPictureQuestions(lesson);
+  }
+  return lesson.words;
+}
+
+function getWordKey(question) {
+  return question?.masteryKey || question?.latin || '';
+}
+
+function rememberMissedQuestion(question) {
+  const key = getWordKey(question);
+  if (!key || AppState.currentLessonMissed.some((item) => getWordKey(item) === key)) return;
+  AppState.currentLessonMissed.push(question);
+}
+
+function recordWordAttempt(question, correct) {
+  const key = getWordKey(question);
+  if (!key) return;
+  const stats = normalizeWordStats(AppState.progress.wordStats);
+  const previous = stats[key] || {};
+  const now = new Date().toISOString();
+  stats[key] = {
+    latin: question.latin,
+    english: question.previewAnswer || question.english,
+    emoji: question.emoji || previous.emoji || '',
+    attempts: (previous.attempts || 0) + 1,
+    correct: (previous.correct || 0) + (correct ? 1 : 0),
+    misses: (previous.misses || 0) + (correct ? 0 : 1),
+    lastPracticedAt: now,
+    lastMissedAt: correct ? (previous.lastMissedAt || '') : now
+  };
+  AppState.progress.wordStats = stats;
+}
+
+function getQuestionByWordKey(key) {
+  for (const lesson of LESSONS) {
+    const question = lesson.words.find((word) => getWordKey(word) === key || word.latin === key);
+    if (question) return question;
+  }
+  return null;
+}
+
+function getWeakWordEntries(limit = 8) {
+  const stats = normalizeWordStats(AppState.progress.wordStats);
+  return Object.entries(stats)
+    .map(([key, entry]) => ({ key, ...entry }))
+    .filter((entry) => entry.misses > 0)
+    .sort((a, b) => {
+      const aNeed = a.misses - a.correct * 0.35;
+      const bNeed = b.misses - b.correct * 0.35;
+      return bNeed - aNeed || b.misses - a.misses || (b.lastMissedAt || '').localeCompare(a.lastMissedAt || '');
+    })
+    .slice(0, limit);
+}
+
+function getWeakReviewQuestions(limit = 10) {
+  return getWeakWordEntries(limit)
+    .map((entry) => getQuestionByWordKey(entry.key))
+    .filter(Boolean);
+}
+
+function renderPracticeModeChooser(lesson) {
+  if (!supportsPicturePractice(lesson)) return '';
+  return `
+    <div class="practice-mode-tabs" role="tablist" aria-label="Practice mode">
+      ${renderPracticeModeButton('meaning', 'Meaning quiz')}
+      ${renderPracticeModeButton('picture', 'Picture match')}
+    </div>
+  `;
+}
+
+function renderPracticeModeButton(mode, label) {
+  const selected = AppState.practiceMode === mode;
+  return `
+    <button
+      type="button"
+      class="practice-mode-button${selected ? ' active' : ''}"
+      role="tab"
+      aria-selected="${selected ? 'true' : 'false'}"
+      data-practice-mode="${escapeHtml(mode)}"
+    >${escapeHtml(label)}</button>
+  `;
+}
+
+function selectPracticeMode(mode) {
+  const lesson = getSelectedLesson();
+  if (!lesson || !['meaning', 'picture'].includes(mode)) return;
+  AppState.practiceMode = supportsPicturePractice(lesson) ? mode : 'meaning';
+  renderWordIntroduction(lesson);
+}
+
+function getCompletionActions(missedCount) {
+  const reviewButton = missedCount > 0
+    ? '<button type="button" class="primary-button" data-lesson-action="start-missed-review">Review missed words</button>'
+    : '';
+  return `
+    <div class="completion-actions">
+      ${reviewButton}
+      <button type="button" class="secondary-button" data-lesson-action="back-to-lessons">Back to lessons</button>
+    </div>
+  `;
+}
+
 function renderWordIntroduction(lesson) {
   const words = getLessonIntroWords(lesson);
   const introTitle = lesson.kind === 'grammar' ? 'Meet the patterns' : 'Meet the words';
@@ -1243,7 +1420,10 @@ function renderWordIntroduction(lesson) {
           <strong>${escapeHtml(label)}</strong>
           <span>${escapeHtml(answer)}</span>
         </div>
-        ${renderSpeakButton(word.latin, 'Hear')}
+        <div class="intro-sound-controls">
+          ${renderSpeakButton(word.latin, 'Hear')}
+          ${renderSpeakButton(word.latin, 'Slow', 0.58)}
+        </div>
       </article>
     `;
   }).join('');
@@ -1258,7 +1438,10 @@ function renderWordIntroduction(lesson) {
           <span class="section-kicker">Warm-up</span>
           <h3>${escapeHtml(introTitle)}</h3>
         </div>
-        ${renderAutoPlayToggle()}
+        <div class="intro-practice-controls">
+          ${renderPracticeModeChooser(lesson)}
+          ${renderAutoPlayToggle()}
+        </div>
       </div>
       <div class="word-intro-grid">${cards}</div>
     </section>
@@ -1269,10 +1452,12 @@ function renderWordIntroduction(lesson) {
   elements.lessonResult.removeAttribute('data-tone');
   elements.nextQuestionButton.hidden = false;
   elements.nextQuestionButton.disabled = false;
-  elements.nextQuestionButton.textContent = 'Start practice';
+  elements.nextQuestionButton.textContent = AppState.practiceMode === 'picture' ? 'Start picture match' : 'Start practice';
 }
 
 function startLessonPractice() {
+  const lesson = getSelectedLesson();
+  if (lesson && !supportsPicturePractice(lesson)) AppState.practiceMode = 'meaning';
   AppState.lessonPhase = 'practice';
   AppState.currentQuestionIndex = 0;
   AppState.selectedOption = null;
@@ -1282,14 +1467,20 @@ function startLessonPractice() {
 }
 
 function renderPracticeToolbar(lesson) {
-  const total = lesson.words.length;
+  const questions = getActiveQuestions(lesson);
+  const total = questions.length;
   const progressPercent = total > 0
     ? Math.round((AppState.currentQuestionIndex / total) * 100)
     : 0;
+  const label = isReviewAttempt()
+    ? 'Review'
+    : AppState.practiceMode === 'picture'
+      ? 'Picture match'
+      : 'Practice';
   return `
     <section class="practice-toolbar" aria-label="Practice progress">
       <div>
-        <span>Practice</span>
+        <span>${escapeHtml(label)}</span>
         <strong>Question ${AppState.currentQuestionIndex + 1}/${total}</strong>
       </div>
       ${renderAutoPlayToggle()}
@@ -1362,11 +1553,16 @@ function openLesson(lessonId) {
   if (!lesson) return;
   AppState.selectedLesson = lessonId;
   AppState.lessonPhase = 'intro';
+  AppState.lessonAttemptMode = 'lesson';
+  AppState.practiceMode = 'meaning';
   AppState.activeResourceTab = hasLessonOverview(lesson) ? 'overview' : 'printables';
   AppState.currentQuestionIndex = 0;
   AppState.selectedOption = null;
   AppState.answerChecked = false;
   AppState.currentLessonCorrect = 0;
+  AppState.currentLessonMissed = [];
+  AppState.reviewQueue = [];
+  AppState.reviewTitle = '';
   if (elements.lessonResources) elements.lessonResources.open = false;
   saveState();
   renderLesson();
@@ -1374,10 +1570,20 @@ function openLesson(lessonId) {
 }
 
 function renderLesson() {
-  const lesson = LESSONS.find((item) => item.id === AppState.selectedLesson);
+  const lesson = getSelectedLesson();
   if (!lesson) return;
   elements.lessonTitle.textContent = lesson.title;
   elements.lessonDescription.textContent = lesson.description;
+  if (lesson.id === REVIEW_LESSON_ID) {
+    renderStoryScene(null);
+    renderLessonNotes({});
+    renderPhraseFocus({});
+    if (elements.lessonPrintables) elements.lessonPrintables.innerHTML = '';
+    if (elements.lessonPuzzles) elements.lessonPuzzles.innerHTML = '';
+    if (elements.lessonResources) elements.lessonResources.hidden = true;
+    renderQuestion();
+    return;
+  }
   renderStoryScene(lesson.story);
   renderLessonNotes(lesson);
   renderPhraseFocus(lesson);
@@ -1807,6 +2013,18 @@ function revealOnlineWordFind() {
 }
 
 function getSelectedLesson() {
+  if (AppState.selectedLesson === REVIEW_LESSON_ID) {
+    return {
+      id: REVIEW_LESSON_ID,
+      grade: AppState.grade || VALID_GRADES[0],
+      kind: 'review',
+      title: AppState.reviewTitle || 'Review Queue',
+      description: 'Practice the words that need one more pass.',
+      vocabularyWords: AppState.reviewQueue,
+      phrases: [],
+      words: AppState.reviewQueue
+    };
+  }
   return LESSONS.find((item) => item.id === AppState.selectedLesson) || null;
 }
 
@@ -2466,20 +2684,24 @@ function renderEndingHint(question) {
 }
 
 function renderQuestion() {
-  const lesson = LESSONS.find((item) => item.id === AppState.selectedLesson);
+  const lesson = getSelectedLesson();
   if (!lesson) return;
-  const question = lesson.words[AppState.currentQuestionIndex];
+  const questions = getActiveQuestions(lesson);
+  const question = questions[AppState.currentQuestionIndex];
   if (!question) {
     completeLesson(lesson);
     return;
   }
-  const choices = createChoices(question, lesson.words);
+  const choices = createChoices(question, questions);
+  const pictureMode = AppState.practiceMode === 'picture' && supportsPicturePractice(lesson);
   AppState.lessonPhase = 'practice';
   AppState.answerChecked = false;
   AppState.selectedOption = null;
   const promptHtml = question.prompt
     ? escapeHtml(question.prompt)
-    : `What does <span>${escapeHtml(question.latin)}</span> mean?`;
+    : pictureMode
+      ? `Which picture matches <span>${escapeHtml(question.latin)}</span>?`
+      : `What does <span>${escapeHtml(question.latin)}</span> mean?`;
   const contextHtml = question.context
     ? `<p class="question-context">${escapeHtml(question.context)}</p>`
     : '';
@@ -2493,21 +2715,20 @@ function renderQuestion() {
         <div>
           <span class="question-eyebrow">Listen and choose</span>
           <p class="question-latin">${escapeHtml(question.latin)}</p>
+          ${renderSyllableCue(question.latin)}
         </div>
-        ${renderSpeakButton(question.latin, 'Hear')}
+        ${renderQuestionSoundControls(question)}
       </div>
       ${contextHtml}
       <h3>${promptHtml}</h3>
-      <div class="options-grid" id="optionsGrid"></div>
+      <div class="options-grid${pictureMode ? ' picture-options-grid' : ''}" id="optionsGrid"></div>
     </div>
   `;
   const optionsGrid = document.getElementById('optionsGrid');
   choices.forEach((choice) => {
-    const button = document.createElement('button');
-    button.className = 'option-button';
-    button.textContent = choice;
-    button.setAttribute('aria-pressed', 'false');
-    button.addEventListener('click', () => selectOption(choice));
+    const button = pictureMode
+      ? createPictureOptionButton(choice, lesson)
+      : createMeaningOptionButton(choice);
     optionsGrid.appendChild(button);
   });
   renderEndingHint(question);
@@ -2520,6 +2741,31 @@ function renderQuestion() {
   if (AppState.speechAutoPlay) {
     window.setTimeout(() => speakLatin(question.latin), 180);
   }
+}
+
+function createMeaningOptionButton(choice) {
+  const button = document.createElement('button');
+  button.className = 'option-button';
+  button.textContent = choice;
+  button.dataset.optionValue = choice;
+  button.setAttribute('aria-pressed', 'false');
+  button.addEventListener('click', () => selectOption(choice));
+  return button;
+}
+
+function createPictureOptionButton(choice, lesson) {
+  const match = lesson.words.find((word) => (word.previewAnswer || word.english) === choice || word.english === choice);
+  const visual = match ? getWordVisual(match) : choice.charAt(0).toUpperCase();
+  const button = document.createElement('button');
+  button.className = 'option-button picture-option-button';
+  button.dataset.optionValue = choice;
+  button.setAttribute('aria-pressed', 'false');
+  button.innerHTML = `
+    <span class="picture-choice-visual" aria-hidden="true">${escapeHtml(visual)}</span>
+    <span class="picture-choice-label">${escapeHtml(choice)}</span>
+  `;
+  button.addEventListener('click', () => selectOption(choice));
+  return button;
 }
 
 function createChoices(question, words) {
@@ -2561,7 +2807,7 @@ function selectOption(value) {
   AppState.selectedOption = value;
   const buttons = elements.questionArea.querySelectorAll('.option-button');
   buttons.forEach((button) => {
-    const selected = button.textContent === value;
+    const selected = button.dataset.optionValue === value;
     button.classList.toggle('selected', selected);
     button.setAttribute('aria-pressed', selected ? 'true' : 'false');
   });
@@ -2575,7 +2821,9 @@ function renderQuestionFeedback(question, correct) {
   const detail = question.explanation
     ? question.explanation
     : `${question.latin} means ${question.english}.`;
-  const tag = correct ? '+10 points' : 'Correct meaning';
+  const tag = correct
+    ? (isReviewAttempt() ? 'Review win' : '+10 points')
+    : 'Correct meaning';
 
   return `
     <div class="feedback-card ${correct ? 'success' : 'error'}">
@@ -2587,9 +2835,10 @@ function renderQuestionFeedback(question, correct) {
 }
 
 function checkAnswer() {
-  const lesson = LESSONS.find((item) => item.id === AppState.selectedLesson);
+  const lesson = getSelectedLesson();
   if (!lesson || AppState.answerChecked) return;
-  const question = lesson.words[AppState.currentQuestionIndex];
+  const questions = getActiveQuestions(lesson);
+  const question = questions[AppState.currentQuestionIndex];
   if (!question) return;
   if (!AppState.selectedOption) {
     elements.lessonResult.dataset.tone = 'warning';
@@ -2601,25 +2850,28 @@ function checkAnswer() {
   questionCard?.classList.add(correct ? 'is-correct' : 'is-wrong');
   const optionButtons = elements.questionArea.querySelectorAll('.option-button');
   optionButtons.forEach((button) => {
-    if (button.textContent === question.english) button.classList.add('correct');
-    if (button.textContent === AppState.selectedOption && !correct) button.classList.add('wrong');
+    if (button.dataset.optionValue === question.english) button.classList.add('correct');
+    if (button.dataset.optionValue === AppState.selectedOption && !correct) button.classList.add('wrong');
     button.disabled = true;
   });
   elements.lessonResult.dataset.tone = correct ? 'success' : 'error';
   elements.lessonResult.innerHTML = renderQuestionFeedback(question, correct);
+  recordWordAttempt(question, correct);
   if (correct) {
     AppState.currentLessonCorrect += 1;
-    awardPoints(10);
+    if (!isReviewAttempt()) awardPoints(10);
     markWordMastered(question.masteryKey || question.latin);
+  } else if (!isReviewAttempt()) {
+    rememberMissedQuestion(question);
   }
   AppState.answerChecked = true;
   saveState();
   elements.nextQuestionButton.textContent =
-    AppState.currentQuestionIndex < lesson.words.length - 1 ? 'Next question' : 'Finish lesson';
+    AppState.currentQuestionIndex < questions.length - 1 ? 'Next question' : 'Finish lesson';
 }
 
 function nextQuestion() {
-  const lesson = LESSONS.find((item) => item.id === AppState.selectedLesson);
+  const lesson = getSelectedLesson();
   if (!lesson) return;
   if (AppState.lessonPhase === 'intro') {
     startLessonPractice();
@@ -2629,7 +2881,8 @@ function nextQuestion() {
     checkAnswer();
     return;
   }
-  if (AppState.currentQuestionIndex < lesson.words.length - 1) {
+  const questions = getActiveQuestions(lesson);
+  if (AppState.currentQuestionIndex < questions.length - 1) {
     AppState.currentQuestionIndex += 1;
     AppState.selectedOption = null;
     AppState.answerChecked = false;
@@ -2652,10 +2905,12 @@ function markWordMastered(word) {
 }
 
 function renderLessonCompletion(lesson, score) {
-  const total = lesson.words.length;
+  const questions = getActiveQuestions(lesson);
+  const total = questions.length;
   const ratio = total > 0 ? score / total : 0;
   const isPerfect = score === total && total > 0;
   const isHighScore = ratio >= 0.8;
+  const missed = AppState.currentLessonMissed;
   const title = isPerfect
     ? 'Perfect lesson!'
     : isHighScore
@@ -2680,18 +2935,73 @@ function renderLessonCompletion(lesson, score) {
         <strong>${score}/${total}</strong>
         <span>correct</span>
       </div>
+      ${renderMissedWordReview(missed)}
+      ${getCompletionActions(missed.length)}
+    </section>
+  `;
+}
+
+function renderMissedWordReview(missed) {
+  if (!missed.length) return '';
+  return `
+    <section class="missed-review-panel" aria-label="Missed words">
+      <h4>Missed words</h4>
+      <div class="missed-word-grid">
+        ${missed.map((word) => `
+          <article class="missed-word-card">
+            <span class="word-picture" aria-hidden="true">${escapeHtml(getWordVisual(word))}</span>
+            <div>
+              <strong>${escapeHtml(word.latin)}</strong>
+              <span>${escapeHtml(word.previewAnswer || word.english)}</span>
+            </div>
+            ${renderSpeakButton(word.latin, 'Hear')}
+          </article>
+        `).join('')}
+      </div>
+    </section>
+  `;
+}
+
+function renderReviewCompletion(lesson, score) {
+  const total = getActiveQuestions(lesson).length;
+  return `
+    <section class="lesson-complete-card high-score">
+      <span class="section-kicker">Review complete</span>
+      <h3>${score}/${total}</h3>
+      <p>${score === total ? 'Those words are looking much steadier.' : 'A little repetition is doing its job.'}</p>
+      <div class="completion-actions">
+        <button type="button" class="secondary-button" data-lesson-action="back-to-lessons">Back to lessons</button>
+        <button type="button" class="primary-button" data-lesson-action="open-dashboard">Dashboard</button>
+      </div>
     </section>
   `;
 }
 
 function completeLesson(lesson) {
   const score = AppState.currentLessonCorrect;
+  if (isReviewAttempt() || lesson.id === REVIEW_LESSON_ID) {
+    AppState.answerChecked = false;
+    AppState.selectedOption = null;
+    AppState.lessonPhase = 'complete';
+    saveState();
+    renderHome();
+    renderDashboard();
+    elements.lessonPracticePanel?.classList.remove('is-intro', 'is-practice');
+    elements.lessonPracticePanel?.classList.add('is-complete');
+    elements.wordPreview.innerHTML = '';
+    elements.endingHint.innerHTML = '';
+    elements.questionArea.innerHTML = '';
+    elements.nextQuestionButton.hidden = true;
+    elements.lessonResult.dataset.tone = 'success';
+    elements.lessonResult.innerHTML = renderReviewCompletion(lesson, score);
+    return;
+  }
   const previous = AppState.progress.lessons[lesson.id];
   AppState.progress.lessons[lesson.id] = {
     completedAt: new Date().toISOString(),
     score: Math.max(previous?.score ?? 0, score),
     lastScore: score,
-    maxScore: lesson.words.length
+    maxScore: getActiveQuestions(lesson).length
   };
   AppState.answerChecked = false;
   AppState.selectedOption = null;
@@ -2705,13 +3015,43 @@ function completeLesson(lesson) {
   elements.endingHint.innerHTML = '';
   elements.questionArea.innerHTML = '';
   elements.nextQuestionButton.hidden = true;
-  elements.lessonResult.dataset.tone = score / lesson.words.length >= 0.8 ? 'success' : 'neutral';
+  const total = getActiveQuestions(lesson).length;
+  elements.lessonResult.dataset.tone = total > 0 && score / total >= 0.8 ? 'success' : 'neutral';
   elements.lessonResult.innerHTML = renderLessonCompletion(lesson, score);
   elements.lessonListSubtitle.textContent = `Nice work${AppState.studentName ? `, ${AppState.studentName}` : ''}!`;
-  setTimeout(() => {
-    renderLessonList();
-    showPage('lessonList');
-  }, 2800);
+}
+
+function startMissedWordReview() {
+  if (!AppState.currentLessonMissed.length) return;
+  AppState.lessonAttemptMode = 'missed-review';
+  AppState.reviewQueue = AppState.currentLessonMissed.slice();
+  AppState.reviewTitle = 'Missed Word Review';
+  AppState.currentQuestionIndex = 0;
+  AppState.selectedOption = null;
+  AppState.answerChecked = false;
+  AppState.currentLessonCorrect = 0;
+  AppState.practiceMode = 'meaning';
+  AppState.lessonPhase = 'practice';
+  elements.nextQuestionButton.hidden = false;
+  renderQuestion();
+}
+
+function startWeakWordReview() {
+  const questions = getWeakReviewQuestions(10);
+  if (questions.length === 0) return;
+  AppState.selectedLesson = REVIEW_LESSON_ID;
+  AppState.lessonAttemptMode = 'weak-review';
+  AppState.reviewQueue = questions;
+  AppState.reviewTitle = 'Weak Word Review';
+  AppState.practiceMode = 'meaning';
+  AppState.lessonPhase = 'practice';
+  AppState.currentQuestionIndex = 0;
+  AppState.selectedOption = null;
+  AppState.answerChecked = false;
+  AppState.currentLessonCorrect = 0;
+  if (elements.lessonResources) elements.lessonResources.open = false;
+  renderLesson();
+  showPage('lesson');
 }
 
 function renderDashboard() {
@@ -2720,6 +3060,7 @@ function renderDashboard() {
   elements.lessonsCompleteValue.textContent = lessonsCompleted;
   elements.wordsMasteredValue.textContent = Object.keys(AppState.progress.wordsMastered).length;
   renderBadges();
+  renderWeakWords();
   const visibleLessons = VALID_GRADES.includes(AppState.grade)
     ? LESSONS.filter((lesson) => lesson.grade === AppState.grade)
     : LESSONS;
@@ -2735,6 +3076,28 @@ function renderDashboard() {
       </div>
     `;
   }).join('');
+}
+
+function renderWeakWords() {
+  if (!elements.weakWordsList || !elements.reviewWeakWordsButton) return;
+  const weakWords = getWeakWordEntries(6);
+  elements.reviewWeakWordsButton.disabled = weakWords.length === 0;
+  if (weakWords.length === 0) {
+    elements.weakWordsList.innerHTML = '<p class="weak-empty">Missed words will appear here after practice.</p>';
+    return;
+  }
+
+  elements.weakWordsList.innerHTML = weakWords.map((word) => `
+    <article class="weak-word-item">
+      <span class="word-picture" aria-hidden="true">${escapeHtml(word.emoji || String(word.latin || '?').charAt(0).toUpperCase())}</span>
+      <div>
+        <strong>${escapeHtml(word.latin)}</strong>
+        <span>${escapeHtml(word.english || 'Review this word')}</span>
+      </div>
+      <small>${word.misses} ${word.misses === 1 ? 'miss' : 'misses'}</small>
+      ${renderSpeakButton(word.latin, 'Hear')}
+    </article>
+  `).join('');
 }
 
 function getCurrentGradeLessons() {
@@ -3358,12 +3721,27 @@ function setupEvents() {
   elements.backToLessonsFromDashboard.addEventListener('click', () => {
     showHomeOrWelcome();
   });
+  elements.reviewWeakWordsButton?.addEventListener('click', startWeakWordReview);
   elements.nextQuestionButton.addEventListener('click', nextQuestion);
   pages.lesson?.addEventListener('click', (event) => {
     const target = event.target instanceof Element ? event.target : null;
     const speakButton = target?.closest('[data-speak-latin]');
     if (speakButton) {
-      speakLatin(speakButton.dataset.speakLatin);
+      speakLatin(speakButton.dataset.speakLatin, Number(speakButton.dataset.speakRate) || 0.82);
+      return;
+    }
+
+    const practiceModeButton = target?.closest('[data-practice-mode]');
+    if (practiceModeButton) {
+      selectPracticeMode(practiceModeButton.dataset.practiceMode);
+      return;
+    }
+
+    const lessonAction = target?.closest('[data-lesson-action]');
+    if (lessonAction) {
+      if (lessonAction.dataset.lessonAction === 'start-missed-review') startMissedWordReview();
+      if (lessonAction.dataset.lessonAction === 'back-to-lessons') showLessonListOrOnboarding();
+      if (lessonAction.dataset.lessonAction === 'open-dashboard') showDashboardOrOnboarding();
       return;
     }
 
@@ -3371,6 +3749,11 @@ function setupEvents() {
     if (resourceTab) {
       selectLessonResourceTab(resourceTab.dataset.lessonResourceTab);
     }
+  });
+  pages.dashboard?.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const speakButton = target?.closest('[data-speak-latin]');
+    if (speakButton) speakLatin(speakButton.dataset.speakLatin, Number(speakButton.dataset.speakRate) || 0.82);
   });
   pages.lesson?.addEventListener('change', (event) => {
     const target = event.target;
