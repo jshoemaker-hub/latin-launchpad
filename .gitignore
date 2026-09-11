@@ -1,4 +1,5 @@
 .DS_Store
+._*
 Thumbs.db
 
 # Local reference material used to author lessons, not needed by the website.
@@ -9,3 +10,4 @@ ref/*.pdf
 dist/
 node_modules/
 npm-debug.log*
+.gstack/

@@ -191,6 +191,141 @@ const LATIN_STORY_SCENES = [
   }
 ];
 
+// Original, project-owned picture-search scenes. Coordinates are percentages of
+// each 3:2 image so the same hotspots work at every responsive size.
+const LATIN_SEEK_FIND_SCENES = {
+  'forum-market': {
+    image: 'assets/seek-find/forum-market.jpg',
+    mission: 'In foro Romano sex res reperi.',
+    missionEnglish: 'Find six things in the Roman Forum.',
+    targets: [
+      { key: 'forum', latin: 'forum', english: 'forum', hint: 'Look high above the market.', x: 40, y: 2, w: 24, h: 22 },
+      { key: 'via', latin: 'via', english: 'road', hint: 'Follow the pale stones through the crowd.', x: 43, y: 60, w: 22, h: 35 },
+      { key: 'taberna', latin: 'taberna', english: 'shop', hint: 'Look beneath the striped canopy.', x: 76, y: 1, w: 23, h: 24 },
+      { key: 'panis', latin: 'panis', english: 'bread', hint: 'Check the nearest table on the left.', x: 1, y: 66, w: 23, h: 21 },
+      { key: 'nummus', latin: 'nummus', english: 'coin', hint: 'Someone dropped it on the road.', x: 47, y: 84, w: 9, h: 11 },
+      { key: 'uvae', latin: 'uvae', english: 'grapes', hint: 'Search the baskets on the right.', x: 77, y: 68, w: 21, h: 21 }
+    ]
+  },
+  'garden-dog': {
+    image: 'assets/seek-find/garden-dog.jpg',
+    mission: 'In horto villae sex res reperi.',
+    missionEnglish: 'Find six things in the villa garden.',
+    targets: [
+      { key: 'canis', latin: 'canis', english: 'dog', hint: 'Look for a friend running across the path.', x: 31, y: 52, w: 22, h: 28 },
+      { key: 'arbor', latin: 'arbor', english: 'tree', hint: 'Its branches shade the fountain.', x: 22, y: 1, w: 28, h: 35 },
+      { key: 'mensa', latin: 'mensa', english: 'table', hint: 'Look near the family on the right.', x: 72, y: 38, w: 26, h: 22 },
+      { key: 'felis', latin: 'felis', english: 'cat', hint: 'Only a curious face is peeking out.', x: 86, y: 70, w: 13, h: 25 },
+      { key: 'rosa', latin: 'rosa', english: 'rose', hint: 'A bright bloom grows close to the left edge.', x: 2, y: 55, w: 14, h: 20 },
+      { key: 'penna', latin: 'penna', english: 'feather', hint: 'Check the sunlit path near the bottom.', x: 55, y: 80, w: 17, h: 15 }
+    ]
+  },
+  'roman-baths': {
+    image: 'assets/seek-find/roman-baths.jpg',
+    mission: 'In thermis Romanis sex res reperi.',
+    missionEnglish: 'Find six things in the Roman baths.',
+    targets: [
+      { key: 'aqua', latin: 'aqua', english: 'water', hint: 'It fills the large blue pool.', x: 31, y: 49, w: 48, h: 42 },
+      { key: 'porta', latin: 'porta', english: 'doorway', hint: 'Look toward the sunlit garden.', x: 1, y: 3, w: 20, h: 40 },
+      { key: 'columna', latin: 'columna', english: 'column', hint: 'Find the tallest carved stone support.', x: 70, y: 1, w: 18, h: 47 },
+      { key: 'ampulla', latin: 'ampulla', english: 'oil bottle', hint: 'A little green bottle rests at the lower left.', x: 1, y: 65, w: 12, h: 23 },
+      { key: 'strigilis', latin: 'strigilis', english: 'strigil', hint: 'A curved bronze tool lies beside the bottle.', x: 10, y: 68, w: 18, h: 18 },
+      { key: 'subsellium', latin: 'subsellium', english: 'bench', hint: 'A folded towel is draped over it.', x: 76, y: 66, w: 23, h: 33 }
+    ]
+  },
+  'roman-dinner': {
+    image: 'assets/seek-find/roman-dinner.jpg',
+    mission: 'In triclinio sex res reperi.',
+    missionEnglish: 'Find six things in the Roman dining room.',
+    targets: [
+      { key: 'panis', latin: 'panis', english: 'bread', hint: 'Look on the nearest table at lower left.', x: 1, y: 64, w: 22, h: 23 },
+      { key: 'olivae', latin: 'olivae', english: 'olives', hint: 'A bowl sits on the mosaic floor.', x: 43, y: 80, w: 17, h: 17 },
+      { key: 'poculum', latin: 'poculum', english: 'cup', hint: 'Look beside the reclining diner.', x: 77, y: 43, w: 10, h: 18 },
+      { key: 'mensa', latin: 'mensa', english: 'table', hint: 'The main dishes are arranged on it.', x: 43, y: 47, w: 30, h: 27 },
+      { key: 'lucerna', latin: 'lucerna', english: 'lamp', hint: 'It glows in an alcove high on the wall.', x: 62, y: 4, w: 13, h: 19 },
+      { key: 'amphora', latin: 'amphora', english: 'amphora', hint: 'Find the tall painted jar on the right.', x: 84, y: 59, w: 15, h: 38 }
+    ]
+  },
+  'farmer-wolf': {
+    image: 'assets/seek-find/farmer-wolf.jpg',
+    mission: 'In agro Romano sex res reperi.',
+    missionEnglish: 'Find six things on the Roman farm.',
+    targets: [
+      { key: 'agricola', latin: 'agricola', english: 'farmer', hint: 'He watches the flock from the left.', x: 23, y: 20, w: 25, h: 56 },
+      { key: 'canis', latin: 'canis', english: 'dog', hint: 'The farmer’s helper stands near the center.', x: 35, y: 49, w: 25, h: 30 },
+      { key: 'ovis', latin: 'ovis', english: 'sheep', hint: 'One sheep is closest to the path.', x: 58, y: 48, w: 23, h: 32 },
+      { key: 'villa', latin: 'villa', english: 'country house', hint: 'Look beyond the grain field.', x: 4, y: 4, w: 21, h: 21 },
+      { key: 'luna', latin: 'luna', english: 'moon', hint: 'It hangs in the upper-right sky.', x: 83, y: 1, w: 10, h: 15 },
+      { key: 'pedum', latin: 'pedum', english: 'shepherd’s crook', hint: 'A hooked staff leans against the right fence.', x: 88, y: 39, w: 11, h: 42 }
+    ]
+  },
+  school: {
+    image: 'assets/seek-find/school.jpg',
+    mission: 'In schola Romana sex res reperi.',
+    missionEnglish: 'Find six things in the Roman school.',
+    targets: [
+      { key: 'magister', latin: 'magister', english: 'teacher', hint: 'He stands before the map.', x: 41, y: 6, w: 18, h: 40 },
+      { key: 'liber', latin: 'liber', english: 'book', hint: 'This Roman book is an open scroll.', x: 9, y: 76, w: 31, h: 22 },
+      { key: 'tabula', latin: 'tabula', english: 'wax tablet', hint: 'A student writes on it at the front table.', x: 39, y: 70, w: 20, h: 19 },
+      { key: 'stilus', latin: 'stilus', english: 'stylus', hint: 'The pointed tool touches the wax tablet.', x: 43, y: 62, w: 10, h: 19 },
+      { key: 'lucerna', latin: 'lucerna', english: 'lamp', hint: 'It glows on the high shelf at right.', x: 87, y: 2, w: 11, h: 17 },
+      { key: 'pera', latin: 'pera', english: 'satchel', hint: 'Find the red bag at lower right.', x: 82, y: 68, w: 17, h: 27 }
+    ]
+  },
+  'river-boat': {
+    image: 'assets/seek-find/river-boat.jpg',
+    mission: 'Apud flumen sex res reperi.',
+    missionEnglish: 'Find six things beside the Tiber.',
+    targets: [
+      { key: 'puer', latin: 'puer', english: 'boy', hint: 'He sits on the shaded riverbank.', x: 8, y: 22, w: 24, h: 43 },
+      { key: 'navis', latin: 'navis', english: 'ship', hint: 'The large wooden boat crosses the water.', x: 42, y: 27, w: 48, h: 34 },
+      { key: 'velum', latin: 'velum', english: 'sail', hint: 'Look for a large white square above the ship.', x: 38, y: 1, w: 38, h: 37 },
+      { key: 'remus', latin: 'remus', english: 'oar', hint: 'One long wooden oar reaches into the water.', x: 63, y: 45, w: 15, h: 25 },
+      { key: 'piscis', latin: 'piscis', english: 'fish', hint: 'A silver shape swims in the clear shallows.', x: 49, y: 83, w: 12, h: 13 },
+      { key: 'funis', latin: 'funis', english: 'rope', hint: 'Find the coil on the dock.', x: 72, y: 70, w: 22, h: 20 }
+    ]
+  },
+  'romulus-remus': {
+    image: 'assets/seek-find/romulus-remus.jpg',
+    mission: 'In collibus Romae sex res reperi.',
+    missionEnglish: 'Find six things in the hills of early Rome.',
+    targets: [
+      { key: 'fratres', latin: 'fratres', english: 'brothers', hint: 'The twins are drawing plans together.', x: 36, y: 40, w: 27, h: 39 },
+      { key: 'pastor', latin: 'pastor', english: 'shepherd', hint: 'He carries a tall hooked staff.', x: 20, y: 31, w: 22, h: 51 },
+      { key: 'murus', latin: 'murus', english: 'wall', hint: 'Look for new stonework on the right.', x: 61, y: 43, w: 37, h: 30 },
+      { key: 'corona', latin: 'corona', english: 'crown', hint: 'A bronze crown rests on a rock.', x: 82, y: 74, w: 17, h: 20 },
+      { key: 'collis', latin: 'collis', english: 'hill', hint: 'A settlement stands on the green hilltop.', x: 43, y: 8, w: 27, h: 21 },
+      { key: 'lupa', latin: 'lupa', english: 'she-wolf', hint: 'She watches quietly from the upper left.', x: 1, y: 1, w: 17, h: 20 }
+    ]
+  },
+  'harbor-trade': {
+    image: 'assets/seek-find/harbor-trade.jpg',
+    mission: 'In portu Romano sex res reperi.',
+    missionEnglish: 'Find six things in the Roman harbor.',
+    targets: [
+      { key: 'mercator', latin: 'mercator', english: 'merchant', hint: 'He wears a rust-red cloak.', x: 22, y: 27, w: 21, h: 53 },
+      { key: 'nauta', latin: 'nauta', english: 'sailor', hint: 'He carries a thick coil of rope.', x: 45, y: 27, w: 22, h: 60 },
+      { key: 'navis', latin: 'navis', english: 'ship', hint: 'Find the biggest blue wooden ship.', x: 29, y: 1, w: 45, h: 43 },
+      { key: 'amphora', latin: 'amphora', english: 'amphora', hint: 'A tall painted jar stands at lower left.', x: 1, y: 56, w: 20, h: 40 },
+      { key: 'piper', latin: 'piper', english: 'pepper', hint: 'Black peppercorns fill an open sack.', x: 38, y: 71, w: 19, h: 25 },
+      { key: 'ancora', latin: 'ancora', english: 'anchor', hint: 'The heavy black anchor rests at lower right.', x: 76, y: 63, w: 23, h: 34 }
+    ]
+  },
+  'aeneas-troy': {
+    image: 'assets/seek-find/aeneas-troy.jpg',
+    mission: 'In itinere Aeneae sex res reperi.',
+    missionEnglish: 'Find six things on Aeneas’s journey.',
+    targets: [
+      { key: 'aeneas', latin: 'Aeneas', english: 'Aeneas', hint: 'He carries his father along the path.', x: 27, y: 18, w: 25, h: 66 },
+      { key: 'pater', latin: 'pater', english: 'father', hint: 'The older man rides on Aeneas’s shoulders.', x: 28, y: 3, w: 24, h: 41 },
+      { key: 'filius', latin: 'filius', english: 'son', hint: 'The child in blue holds Aeneas’s hand.', x: 45, y: 48, w: 17, h: 37 },
+      { key: 'navis', latin: 'navis', english: 'ship', hint: 'A striped sail rises beside the water.', x: 79, y: 1, w: 20, h: 48 },
+      { key: 'scutum', latin: 'scutum', english: 'shield', hint: 'A bronze shield leans on a rock at left.', x: 1, y: 54, w: 18, h: 37 },
+      { key: 'sarcina', latin: 'sarcina', english: 'bundle', hint: 'A tied travel bundle rests at lower right.', x: 77, y: 76, w: 22, h: 22 }
+    ]
+  }
+};
+
 const STORY_SEQUENCE_BY_GRADE = {
   3: ['garden-dog', 'school', 'forum-market', 'river-boat', 'roman-dinner', 'farmer-wolf'],
   4: ['school', 'forum-market', 'garden-dog', 'roman-baths', 'river-boat', 'roman-dinner', 'farmer-wolf'],
@@ -208,5 +343,8 @@ const LATIN_STORY_BY_ID = LATIN_STORY_SCENES.reduce((storiesById, story) => {
 function getStorySceneForLesson(grade, lessonIndex) {
   const sequence = STORY_SEQUENCE_BY_GRADE[grade] || LATIN_STORY_SCENES.map((story) => story.id);
   const storyId = sequence[lessonIndex % sequence.length];
-  return LATIN_STORY_BY_ID[storyId] || null;
+  const story = LATIN_STORY_BY_ID[storyId];
+  return story
+    ? { ...story, seekFind: LATIN_SEEK_FIND_SCENES[storyId] || null }
+    : null;
 }

@@ -12,6 +12,7 @@ A simple student-first Latin learning scaffold for grades 3–8.
 - `app.js` — interactive lesson logic with guest progress, email profiles, and badges in localStorage
 - `grammar-lessons.js` — reference-backed grammar quiz packs for grades 3–8
 - `latin-stories.js` — Discover Latin story pairings, classroom cues, and illustration briefs
+- `assets/seek-find/` — original Roman story artwork for the interactive picture-search activities
 - `latin-story-integration.md` — teaching routine and illustration prompt bank
 
 ## How to use
@@ -19,7 +20,7 @@ A simple student-first Latin learning scaffold for grades 3–8.
 2. Continue as a guest or use Email login to create a local profile.
 3. Enter a student name.
 4. Pick a grade.
-5. Choose a lesson, preview any story or grammar notes, and practice vocabulary or grammar.
+5. Choose a lesson, preview any story or grammar notes, play its Seek & Find picture mission, and practice vocabulary or grammar.
 6. View progress and account badges on the dashboard.
 
 ## Next steps
