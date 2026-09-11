@@ -246,6 +246,7 @@ const elements = {
   backToLessons: document.getElementById('backToLessons'),
   lessonPrintables: document.getElementById('lessonPrintables'),
   lessonPuzzles: document.getElementById('lessonPuzzles'),
+  lessonSeekFind: document.getElementById('lessonSeekFind'),
   printArea: document.getElementById('printArea'),
   homeButton: document.getElementById('homeButton'),
   lessonsButton: document.getElementById('lessonsButton'),
@@ -273,6 +274,13 @@ const OnlinePuzzleState = {
   wordFindStart: null,
   wordFindFound: new Set(),
   wordFindStatus: ''
+};
+
+const SeekFindState = {
+  lessonId: null,
+  found: new Set(),
+  activeHintKey: null,
+  status: ''
 };
 
 function isPlainObject(value) {
@@ -1120,14 +1128,17 @@ function renderLessonList() {
     const storyTag = lesson.story
       ? `<span class="lesson-story-tag">${escapeHtml(lesson.story.englishTitle)}</span>`
       : '';
+    const seekFindTag = getSeekFindConfig(lesson)
+      ? '<span class="lesson-seek-find-tag">Seek &amp; Find</span>'
+      : '';
     const grammarTag = lesson.kind === 'grammar'
       ? '<span class="lesson-kind-tag">Grammar</span>'
       : '';
     const phraseTag = getLessonPhraseCount(lesson) > 0
       ? `<span class="lesson-phrase-tag">${getLessonPhraseCount(lesson)} ${getLessonPhraseCount(lesson) === 1 ? 'phrase' : 'phrases'}</span>`
       : '';
-    const tagsHtml = grammarTag || storyTag || phraseTag
-      ? `<div class="lesson-card-tags">${grammarTag}${storyTag}${phraseTag}</div>`
+    const tagsHtml = grammarTag || storyTag || seekFindTag || phraseTag
+      ? `<div class="lesson-card-tags">${grammarTag}${storyTag}${seekFindTag}${phraseTag}</div>`
       : '';
     const card = document.createElement('div');
     card.className = 'lesson-card-item';
@@ -1517,6 +1528,7 @@ function hasLessonOverview(lesson) {
 function getLessonResourceTabs(lesson) {
   const tabs = [];
   if (hasLessonOverview(lesson)) tabs.push({ id: 'overview', label: 'Overview' });
+  if (getSeekFindConfig(lesson)) tabs.push({ id: 'seek-find', label: 'Seek & Find' });
   tabs.push({ id: 'printables', label: 'Printables' });
   if (getLessonPuzzleTerms(lesson).length > 0) tabs.push({ id: 'puzzles', label: 'Puzzles' });
   return tabs;
@@ -1601,6 +1613,7 @@ function renderLesson() {
   renderStoryScene(lesson.story);
   renderLessonNotes(lesson);
   renderPhraseFocus(lesson);
+  renderLessonSeekFind(lesson);
   renderLessonPrintables(lesson);
   renderLessonPuzzles(lesson);
   renderLessonResourceTabs(lesson);
@@ -1609,6 +1622,155 @@ function renderLesson() {
   } else {
     renderWordIntroduction(lesson);
   }
+}
+
+function getSeekFindConfig(lesson) {
+  const config = lesson?.story?.seekFind;
+  return config
+    && typeof config.image === 'string'
+    && Array.isArray(config.targets)
+    && config.targets.length > 0
+      ? config
+      : null;
+}
+
+function resetSeekFindState(lessonId) {
+  SeekFindState.lessonId = lessonId;
+  SeekFindState.found = new Set();
+  SeekFindState.activeHintKey = null;
+  SeekFindState.status = '';
+}
+
+function renderLessonSeekFind(lesson) {
+  if (!elements.lessonSeekFind) return;
+  const config = getSeekFindConfig(lesson);
+  if (!config) {
+    elements.lessonSeekFind.innerHTML = '';
+    return;
+  }
+
+  if (SeekFindState.lessonId !== lesson.id) resetSeekFindState(lesson.id);
+
+  const foundCount = SeekFindState.found.size;
+  const total = config.targets.length;
+  const complete = foundCount === total;
+  const progress = Math.round((foundCount / total) * 100);
+  const status = SeekFindState.status
+    || 'Choose a Latin word for a clue, then tap the matching object in the picture.';
+
+  const hotspots = config.targets.map((target) => {
+    const found = SeekFindState.found.has(target.key);
+    return `
+      <button
+        type="button"
+        class="seek-find-hotspot${found ? ' found' : ''}"
+        style="--hotspot-x:${Number(target.x)}%;--hotspot-y:${Number(target.y)}%;--hotspot-w:${Number(target.w)}%;--hotspot-h:${Number(target.h)}%;"
+        data-seek-find-target="${escapeHtml(target.key)}"
+        aria-label="${found ? 'Found' : 'Find'} ${escapeHtml(target.latin)}, ${escapeHtml(target.english)}"
+        aria-pressed="${found ? 'true' : 'false'}"
+      >
+        <span aria-hidden="true">✓</span>
+      </button>
+    `;
+  }).join('');
+
+  const wordButtons = config.targets.map((target, index) => {
+    const found = SeekFindState.found.has(target.key);
+    const active = SeekFindState.activeHintKey === target.key;
+    return `
+      <button
+        type="button"
+        class="seek-find-word${found ? ' found' : ''}${active ? ' active' : ''}"
+        data-seek-find-hint="${escapeHtml(target.key)}"
+        aria-label="${found ? 'Found' : 'Get a clue for'} ${escapeHtml(target.latin)}, ${escapeHtml(target.english)}"
+      >
+        <span class="seek-find-word-number" aria-hidden="true">${found ? '✓' : index + 1}</span>
+        <span><strong>${escapeHtml(target.latin)}</strong><small>${escapeHtml(target.english)}</small></span>
+      </button>
+    `;
+  }).join('');
+
+  elements.lessonSeekFind.innerHTML = `
+    <section class="seek-find-panel${complete ? ' complete' : ''}" aria-label="Picture seek and find">
+      <header class="seek-find-header">
+        <div>
+          <span class="seek-find-eyebrow">Picture mission</span>
+          <h3>Seek &amp; Find: ${escapeHtml(lesson.story.englishTitle)}</h3>
+          <p>Search the original artwork for six story words. Tap each object when you spot it.</p>
+        </div>
+        <div class="seek-find-score" aria-label="${foundCount} of ${total} objects found">
+          <strong>${foundCount}/${total}</strong>
+          <span>found</span>
+        </div>
+      </header>
+      <div class="seek-find-layout">
+        <figure class="seek-find-figure">
+          <div class="seek-find-canvas">
+            <img src="${escapeHtml(config.image)}" alt="${escapeHtml(lesson.story.pictureCue)}" width="1536" height="1024" loading="lazy" />
+            ${hotspots}
+            ${complete ? '<div class="seek-find-complete-banner" role="status"><span aria-hidden="true">★</span> Euge! You found them all!</div>' : ''}
+          </div>
+          <figcaption>Original artwork created for Latin Launchpad.</figcaption>
+        </figure>
+        <aside class="seek-find-side">
+          <div class="seek-find-mission">
+            <span>Your mission</span>
+            <strong>${escapeHtml(config.mission)}</strong>
+            <p>${escapeHtml(config.missionEnglish)}</p>
+          </div>
+          <div class="seek-find-progress" aria-hidden="true"><span style="width:${progress}%"></span></div>
+          <div class="seek-find-word-list" aria-label="Things to find">${wordButtons}</div>
+          <p class="seek-find-status" data-tone="${complete ? 'success' : 'neutral'}" aria-live="polite">${escapeHtml(status)}</p>
+          <div class="seek-find-actions">
+            <button type="button" class="secondary-button" data-seek-find-action="hint" ${complete ? 'disabled' : ''}>Give me a hint</button>
+            <button type="button" class="secondary-button" data-seek-find-action="reset" ${foundCount === 0 ? 'disabled' : ''}>Start over</button>
+          </div>
+        </aside>
+      </div>
+    </section>
+  `;
+}
+
+function showSeekFindHint(targetKey = null) {
+  const lesson = getSelectedLesson();
+  const config = getSeekFindConfig(lesson);
+  if (!lesson || !config) return;
+  const remaining = config.targets.filter((target) => !SeekFindState.found.has(target.key));
+  if (remaining.length === 0) return;
+
+  let target = remaining.find((item) => item.key === targetKey);
+  if (!target) {
+    const activeIndex = remaining.findIndex((item) => item.key === SeekFindState.activeHintKey);
+    target = remaining[(activeIndex + 1) % remaining.length];
+  }
+  SeekFindState.activeHintKey = target.key;
+  SeekFindState.status = `${target.latin} (${target.english}): ${target.hint}`;
+  renderLessonSeekFind(lesson);
+}
+
+function findSeekFindTarget(targetKey) {
+  const lesson = getSelectedLesson();
+  const config = getSeekFindConfig(lesson);
+  const target = config?.targets.find((item) => item.key === targetKey);
+  if (!lesson || !config || !target) return;
+
+  if (SeekFindState.found.has(target.key)) {
+    SeekFindState.status = `Already found: ${target.latin} — ${target.english}.`;
+  } else {
+    SeekFindState.found.add(target.key);
+    SeekFindState.activeHintKey = null;
+    SeekFindState.status = SeekFindState.found.size === config.targets.length
+      ? 'Euge! Excellent work — you found every story word.'
+      : `Invenisti! You found ${target.latin} — ${target.english}.`;
+  }
+  renderLessonSeekFind(lesson);
+}
+
+function resetSeekFind() {
+  const lesson = getSelectedLesson();
+  if (!lesson) return;
+  resetSeekFindState(lesson.id);
+  renderLessonSeekFind(lesson);
 }
 
 function renderLessonPuzzles(lesson) {
@@ -3741,21 +3903,40 @@ function setupEvents() {
     const target = event.target instanceof Element ? event.target : null;
     const speakButton = target?.closest('[data-speak-latin]');
     if (speakButton) {
-      speakLatin(speakButton.dataset.speakLatin, Number(speakButton.dataset.speakRate) || 0.82);
-      return;
-    }
+        speakLatin(speakButton.dataset.speakLatin, Number(speakButton.dataset.speakRate) || 0.82);
+        return;
+      }
 
-    const practiceModeButton = target?.closest('[data-practice-mode]');
-    if (practiceModeButton) {
-      selectPracticeMode(practiceModeButton.dataset.practiceMode);
-      return;
-    }
+      const practiceModeButton = target?.closest('[data-practice-mode]');
+      if (practiceModeButton) {
+        selectPracticeMode(practiceModeButton.dataset.practiceMode);
+        return;
+      }
 
-    const lessonAction = target?.closest('[data-lesson-action]');
-    if (lessonAction) {
-      if (lessonAction.dataset.lessonAction === 'start-missed-review') startMissedWordReview();
-      if (lessonAction.dataset.lessonAction === 'back-to-lessons') showLessonListOrOnboarding();
-      if (lessonAction.dataset.lessonAction === 'open-dashboard') showDashboardOrOnboarding();
+      const seekFindTarget = target?.closest('[data-seek-find-target]');
+      if (seekFindTarget) {
+        findSeekFindTarget(seekFindTarget.dataset.seekFindTarget);
+        return;
+      }
+
+      const seekFindHint = target?.closest('[data-seek-find-hint]');
+      if (seekFindHint) {
+        showSeekFindHint(seekFindHint.dataset.seekFindHint);
+        return;
+      }
+
+      const seekFindAction = target?.closest('[data-seek-find-action]');
+      if (seekFindAction) {
+        if (seekFindAction.dataset.seekFindAction === 'hint') showSeekFindHint();
+        if (seekFindAction.dataset.seekFindAction === 'reset') resetSeekFind();
+        return;
+      }
+
+      const lessonAction = target?.closest('[data-lesson-action]');
+      if (lessonAction) {
+        if (lessonAction.dataset.lessonAction === 'start-missed-review') startMissedWordReview();
+        if (lessonAction.dataset.lessonAction === 'back-to-lessons') showLessonListOrOnboarding();
+        if (lessonAction.dataset.lessonAction === 'open-dashboard') showDashboardOrOnboarding();
       return;
     }
 
