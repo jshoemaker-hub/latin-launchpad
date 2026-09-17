@@ -129,6 +129,55 @@ const BADGE_DEFINITIONS = [
     mark: 'L',
     description: 'Complete five lessons.',
     criteria: (state) => getCompletedLessons(state).length >= 5
+  },
+  {
+    id: 'sentence-builder',
+    name: 'Sentence Builder',
+    mark: 'A',
+    description: 'Complete a lesson in Arrange mode.',
+    criteria: () => false
+  },
+  {
+    id: 'translation-trailblazer',
+    name: 'Translation Trailblazer',
+    mark: 'T',
+    description: 'Complete a lesson in Translate mode.',
+    criteria: () => false
+  },
+  {
+    id: 'latin-composer',
+    name: 'Latin Composer',
+    mark: 'C',
+    description: 'Complete a lesson in Compose mode.',
+    criteria: () => false
+  },
+  {
+    id: 'story-explorer',
+    name: 'Story Explorer',
+    mark: 'R',
+    description: 'Open a full Latin story from a lesson.',
+    criteria: () => false
+  },
+  {
+    id: 'picture-detective',
+    name: 'Picture Detective',
+    mark: 'P',
+    description: 'Complete a lesson in Picture Match mode.',
+    criteria: () => false
+  },
+  {
+    id: 'seek-find-scout',
+    name: 'Seek & Find Scout',
+    mark: 'F',
+    description: 'Find every object in a story picture mission.',
+    criteria: () => false
+  },
+  {
+    id: 'puzzle-solver',
+    name: 'Puzzle Solver',
+    mark: 'Z',
+    description: 'Solve an online crossword or word find without revealing it.',
+    criteria: () => false
   }
 ];
 
@@ -140,6 +189,8 @@ const AppState = {
   lessonPhase: 'intro',
   lessonAttemptMode: 'lesson',
   practiceMode: 'meaning',
+  productionAnswer: '',
+  arrangeTokens: [],
   activeResourceTab: 'overview',
   speechAutoPlay: false,
   currentQuestionIndex: 0,
@@ -395,10 +446,20 @@ function normalizeProgress(progress) {
   const safeProgress = isPlainObject(progress) ? progress : {};
   return {
     points: Number.isFinite(safeProgress.points) ? safeProgress.points : 0,
-    lessons: isPlainObject(safeProgress.lessons) ? safeProgress.lessons : {},
+    lessons: normalizeLessonProgress(safeProgress.lessons),
     wordsMastered: isPlainObject(safeProgress.wordsMastered) ? safeProgress.wordsMastered : {},
     wordStats: normalizeWordStats(safeProgress.wordStats)
   };
+}
+
+function normalizeLessonProgress(lessons) {
+  if (!isPlainObject(lessons)) return {};
+  return Object.fromEntries(
+    Object.entries(lessons).filter(([, entry]) => {
+      if (!isPlainObject(entry)) return false;
+      return !Number.isFinite(entry.maxScore) || entry.maxScore > 0;
+    })
+  );
 }
 
 function normalizeWordStats(wordStats) {
@@ -499,7 +560,7 @@ function persistProfileSnapshot(snapshot) {
 
 function saveState() {
   try {
-    if (isEmailAccount()) evaluateBadges();
+    evaluateBadges();
     const snapshot = createStateSnapshot();
     localStorage.setItem(STORAGE_KEY, JSON.stringify(snapshot));
     persistProfileSnapshot(snapshot);
@@ -707,7 +768,6 @@ function getCompletedLessonModels(state = AppState) {
 }
 
 function evaluateBadges(state = AppState) {
-  if (!isEmailAccount(state)) return [];
   const earnedBadges = normalizeBadges(state.badges);
   const badgeState = {
     ...state,
@@ -731,6 +791,32 @@ function evaluateBadges(state = AppState) {
   }
 
   return newlyEarned;
+}
+
+function grantAchievement(badgeId, pointAward = 15) {
+  const badge = BADGE_DEFINITIONS.find((entry) => entry.id === badgeId);
+  if (!badge || AppState.badges[badgeId]) return null;
+  AppState.badges[badgeId] = new Date().toISOString();
+  AppState.progress.points += pointAward;
+  return badge;
+}
+
+function persistAchievement(badgeId, pointAward = 15) {
+  const badge = grantAchievement(badgeId, pointAward);
+  if (!badge) return null;
+  saveState();
+  renderHome();
+  renderDashboard();
+  return badge;
+}
+
+function getPracticeAchievementId(mode) {
+  return {
+    picture: 'picture-detective',
+    arrange: 'sentence-builder',
+    translate: 'translation-trailblazer',
+    compose: 'latin-composer'
+  }[mode] || '';
 }
 
 function renderAccountControls() {
@@ -762,13 +848,13 @@ function renderAccountControls() {
 function renderBadges() {
   if (!elements.badgeGrid || !elements.badgeSubtitle) return;
   const signedIn = isEmailAccount();
-  if (signedIn) evaluateBadges();
-  const earnedBadges = signedIn ? normalizeBadges(AppState.badges) : {};
+  evaluateBadges();
+  const earnedBadges = normalizeBadges(AppState.badges);
   const earnedCount = Object.keys(earnedBadges).length;
 
   elements.badgeSubtitle.textContent = signedIn
     ? `${earnedCount}/${BADGE_DEFINITIONS.length} earned for ${AppState.account.email}.`
-    : 'Sign in with email to collect badges.';
+    : `${earnedCount}/${BADGE_DEFINITIONS.length} earned on this device.`;
   elements.badgeGrid.innerHTML = BADGE_DEFINITIONS.map((badge) => {
     const earnedAt = earnedBadges[badge.id];
     const earned = Boolean(earnedAt);
@@ -1369,6 +1455,22 @@ function supportsPicturePractice(lesson) {
     && getLessonVocabularyWords(lesson).length >= 2;
 }
 
+function supportsArrangePractice(lesson) {
+  return !isReviewAttempt() && lesson?.words.some((word) => getArrangeWordTokens(word.latin).length > 1);
+}
+
+function getLatinTokens(value) {
+  return String(value || '').match(/[A-Za-zÀ-ž]+|[^\sA-Za-zÀ-ž]/g) || [];
+}
+
+function getArrangeWordTokens(value) {
+  return getLatinTokens(value).filter((token) => /[A-Za-zÀ-ž]/.test(token));
+}
+
+function getArrangeQuestions(lesson) {
+  return lesson.words.filter((word) => getArrangeWordTokens(word.latin).length > 1);
+}
+
 function getLessonPictureQuestions(lesson) {
   return lesson.words;
 }
@@ -1378,6 +1480,9 @@ function getActiveQuestions(lesson) {
   if (isReviewAttempt()) return AppState.reviewQueue;
   if (AppState.practiceMode === 'picture' && supportsPicturePractice(lesson)) {
     return getLessonPictureQuestions(lesson);
+  }
+  if (AppState.practiceMode === 'arrange' && supportsArrangePractice(lesson)) {
+    return getArrangeQuestions(lesson);
   }
   return lesson.words;
 }
@@ -1439,11 +1544,13 @@ function getWeakReviewQuestions(limit = 10) {
 }
 
 function renderPracticeModeChooser(lesson) {
-  if (!supportsPicturePractice(lesson)) return '';
   return `
     <div class="practice-mode-tabs" role="tablist" aria-label="Practice mode">
       ${renderPracticeModeButton('meaning', 'Meaning quiz')}
-      ${renderPracticeModeButton('picture', 'Picture match')}
+      ${supportsPicturePractice(lesson) ? renderPracticeModeButton('picture', 'Picture match') : ''}
+      ${supportsArrangePractice(lesson) ? renderPracticeModeButton('arrange', 'Arrange') : ''}
+      ${renderPracticeModeButton('translate', 'Translate')}
+      ${renderPracticeModeButton('compose', 'Compose')}
     </div>
   `;
 }
@@ -1463,8 +1570,10 @@ function renderPracticeModeButton(mode, label) {
 
 function selectPracticeMode(mode) {
   const lesson = getSelectedLesson();
-  if (!lesson || !['meaning', 'picture'].includes(mode)) return;
-  AppState.practiceMode = supportsPicturePractice(lesson) ? mode : 'meaning';
+  if (!lesson || !['meaning', 'picture', 'arrange', 'translate', 'compose'].includes(mode)) return;
+  if (mode === 'picture' && !supportsPicturePractice(lesson)) mode = 'meaning';
+  if (mode === 'arrange' && !supportsArrangePractice(lesson)) mode = 'meaning';
+  AppState.practiceMode = mode;
   renderWordIntroduction(lesson);
 }
 
@@ -1526,17 +1635,26 @@ function renderWordIntroduction(lesson) {
   elements.lessonResult.removeAttribute('data-tone');
   elements.nextQuestionButton.hidden = false;
   elements.nextQuestionButton.disabled = false;
-  elements.nextQuestionButton.textContent = AppState.practiceMode === 'picture' ? 'Start picture match' : 'Start practice';
+  const startLabels = {
+    picture: 'Start picture match',
+    arrange: 'Start arranging',
+    translate: 'Start translating',
+    compose: 'Start composing'
+  };
+  elements.nextQuestionButton.textContent = startLabels[AppState.practiceMode] || 'Start practice';
 }
 
 function startLessonPractice() {
   const lesson = getSelectedLesson();
-  if (lesson && !supportsPicturePractice(lesson)) AppState.practiceMode = 'meaning';
+  if (lesson && AppState.practiceMode === 'picture' && !supportsPicturePractice(lesson)) AppState.practiceMode = 'meaning';
+  if (lesson && AppState.practiceMode === 'arrange' && !supportsArrangePractice(lesson)) AppState.practiceMode = 'meaning';
   AppState.lessonPhase = 'practice';
   AppState.currentQuestionIndex = 0;
   AppState.selectedOption = null;
   AppState.answerChecked = false;
   AppState.currentLessonCorrect = 0;
+  AppState.productionAnswer = '';
+  AppState.arrangeTokens = [];
   renderQuestion();
 }
 
@@ -1548,9 +1666,7 @@ function renderPracticeToolbar(lesson) {
     : 0;
   const label = isReviewAttempt()
     ? 'Review'
-    : AppState.practiceMode === 'picture'
-      ? 'Picture match'
-      : 'Practice';
+    : ({ picture: 'Picture match', arrange: 'Arrange', translate: 'Translate', compose: 'Compose' }[AppState.practiceMode] || 'Practice');
   return `
     <section class="practice-toolbar" aria-label="Practice progress">
       <div>
@@ -1819,6 +1935,10 @@ function findSeekFindTarget(targetKey) {
     SeekFindState.status = SeekFindState.found.size === config.targets.length
       ? 'Euge! Excellent work — you found every story word.'
       : `Invenisti! You found ${target.latin} — ${target.english}.`;
+    if (SeekFindState.found.size === config.targets.length) {
+      const badge = persistAchievement('seek-find-scout');
+      if (badge) SeekFindState.status += ' Seek & Find Scout unlocked. +15 points.';
+    }
   }
   renderLessonSeekFind(lesson);
 }
@@ -2077,9 +2197,14 @@ function checkOnlineCrossword(reveal = false) {
 
   const status = document.getElementById('crosswordStatus');
   if (status) {
-    status.textContent = completeEntries === entries.length
+    const complete = completeEntries === entries.length;
+    status.textContent = complete
       ? `Complete: ${completeEntries}/${entries.length}`
       : `Solved: ${completeEntries}/${entries.length}`;
+    if (complete && !reveal) {
+      const badge = persistAchievement('puzzle-solver');
+      if (badge) status.textContent += ' Puzzle Solver unlocked. +15 points.';
+    }
   }
 }
 
@@ -2193,6 +2318,11 @@ function handleWordFindCellClick(button) {
   const result = selectWordFindLine(OnlinePuzzleState.wordFindStart, cell);
   OnlinePuzzleState.wordFindStart = null;
   OnlinePuzzleState.wordFindStatus = result;
+  const { terms } = getLessonPuzzles(lesson);
+  if (OnlinePuzzleState.wordFindFound.size === terms.length) {
+    const badge = persistAchievement('puzzle-solver');
+    if (badge) OnlinePuzzleState.wordFindStatus += ' Puzzle Solver unlocked. +15 points.';
+  }
   renderOnlinePuzzle(lesson);
 }
 
@@ -2998,6 +3128,8 @@ function renderStoryScene(story) {
   const icons = story.visual.icons
     .map((icon) => `<span aria-hidden="true">${escapeHtml(icon)}</span>`)
     .join('');
+  const storyBadgeEarned = Boolean(AppState.badges['story-explorer']);
+  const awardText = storyBadgeEarned ? 'Story Explorer earned' : 'Earn Story Explorer + 15 points';
   elements.storyScene.innerHTML = `
     <section class="story-scene-panel" style="--scene-bg: ${escapeHtml(story.visual.bg)}; --scene-accent: ${escapeHtml(story.visual.accent)};">
       <div class="story-visual" role="img" aria-label="${escapeHtml(story.pictureCue)}">
@@ -3018,7 +3150,10 @@ function renderStoryScene(story) {
             <p>${escapeHtml(story.pictureCue)}</p>
           </div>
         </div>
-        <a class="story-link" href="${escapeHtml(story.sourceUrl)}" target="_blank" rel="noopener">Read the full story</a>
+        <div class="story-read-action">
+          <a class="story-link" data-story-read href="${escapeHtml(story.sourceUrl)}" target="_blank" rel="noopener">Read the full story</a>
+          <span class="story-award${storyBadgeEarned ? ' earned' : ''}">${escapeHtml(awardText)}</span>
+        </div>
       </div>
     </section>
   `;
@@ -3061,9 +3196,13 @@ function renderQuestion() {
   }
   const choices = createChoices(question, questions);
   const pictureMode = AppState.practiceMode === 'picture' && supportsPicturePractice(lesson);
+  const arrangeMode = AppState.practiceMode === 'arrange';
+  const typedMode = AppState.practiceMode === 'translate' || AppState.practiceMode === 'compose';
   AppState.lessonPhase = 'practice';
   AppState.answerChecked = false;
   AppState.selectedOption = null;
+  AppState.productionAnswer = '';
+  AppState.arrangeTokens = [];
   const promptHtml = question.prompt
     ? escapeHtml(question.prompt)
     : pictureMode
@@ -3076,27 +3215,39 @@ function renderQuestion() {
   elements.lessonPracticePanel?.classList.add('is-practice');
   elements.wordPreview.className = 'word-preview practice-word-preview';
   elements.wordPreview.innerHTML = renderPracticeToolbar(lesson);
+  const interactionHtml = arrangeMode
+    ? renderArrangeInteraction(question)
+    : typedMode
+      ? renderTypedInteraction(question)
+      : '<div class="options-grid' + (pictureMode ? ' picture-options-grid' : '') + '" id="optionsGrid"></div>';
+  const eyebrow = arrangeMode ? 'Build the sentence' : typedMode ? 'Write your answer' : 'Listen and choose';
+  const displayedLatin = AppState.practiceMode === 'compose' || arrangeMode ? '' : `
+    <p class="question-latin">${escapeHtml(question.latin)}</p>
+    ${renderSyllableCue(question.latin)}`;
+  const modePrompt = arrangeMode
+    ? `Arrange the words to mean: <span>${escapeHtml(question.previewAnswer || question.english)}</span>`
+    : AppState.practiceMode === 'translate'
+      ? 'Type the English meaning.'
+      : AppState.practiceMode === 'compose'
+        ? `Write this in Latin: <span>${escapeHtml(question.previewAnswer || question.english)}</span>`
+        : promptHtml;
   elements.questionArea.innerHTML = `
     <div class="question-card" data-question-card>
       <div class="question-word-row">
         <div>
-          <span class="question-eyebrow">Listen and choose</span>
-          <p class="question-latin">${escapeHtml(question.latin)}</p>
-          ${renderSyllableCue(question.latin)}
+          <span class="question-eyebrow">${eyebrow}</span>
+          ${displayedLatin}
         </div>
-        ${renderQuestionSoundControls(question)}
+        ${AppState.practiceMode === 'compose' || arrangeMode ? '' : renderQuestionSoundControls(question)}
       </div>
       ${contextHtml}
-      <h3>${promptHtml}</h3>
-      <div class="options-grid${pictureMode ? ' picture-options-grid' : ''}" id="optionsGrid"></div>
+      <h3>${modePrompt}</h3>
+      ${interactionHtml}
     </div>
   `;
   const optionsGrid = document.getElementById('optionsGrid');
-  choices.forEach((choice) => {
-    const button = pictureMode
-      ? createPictureOptionButton(choice, lesson)
-      : createMeaningOptionButton(choice);
-    optionsGrid.appendChild(button);
+  if (optionsGrid) choices.forEach((choice) => {
+    optionsGrid.appendChild(pictureMode ? createPictureOptionButton(choice, lesson) : createMeaningOptionButton(choice));
   });
   renderEndingHint(question);
   elements.nextQuestionButton.hidden = false;
@@ -3108,6 +3259,79 @@ function renderQuestion() {
   if (AppState.speechAutoPlay) {
     window.setTimeout(() => speakLatin(question.latin), 180);
   }
+}
+
+function renderTypedInteraction(question) {
+  const label = AppState.practiceMode === 'compose' ? 'Latin answer' : 'English answer';
+  return `
+    <label class="production-field">
+      <span>${label}</span>
+      <input type="text" data-production-input autocomplete="off" autocapitalize="none" spellcheck="false" />
+    </label>
+  `;
+}
+
+function renderArrangeInteraction(question) {
+  const tokens = getArrangeWordTokens(question.latin);
+  const shuffled = tokens.map((token, index) => ({ token, id: index })).sort(() => Math.random() - 0.5);
+  AppState.arrangeTokens = shuffled;
+  return `
+    <div class="arrange-builder">
+      <div class="arrange-answer" data-arrange-answer aria-label="Your sentence"><span>Choose a word below</span></div>
+      <div class="arrange-bank" data-arrange-bank>
+        ${shuffled.map(({ token, id }) => `<button type="button" data-arrange-token="${id}">${escapeHtml(token)}</button>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+function moveArrangeToken(button) {
+  if (AppState.answerChecked) return;
+  const answer = elements.questionArea.querySelector('[data-arrange-answer]');
+  if (!answer) return;
+  answer.querySelector('span')?.remove();
+  button.classList.add('selected');
+  button.disabled = true;
+  const placed = document.createElement('button');
+  placed.type = 'button';
+  placed.textContent = button.textContent;
+  placed.dataset.arrangePlaced = button.dataset.arrangeToken;
+  answer.appendChild(placed);
+}
+
+function removeArrangeToken(button) {
+  if (AppState.answerChecked) return;
+  const source = elements.questionArea.querySelector(`[data-arrange-token="${button.dataset.arrangePlaced}"]`);
+  if (source) {
+    source.disabled = false;
+    source.classList.remove('selected');
+  }
+  button.remove();
+  const answer = elements.questionArea.querySelector('[data-arrange-answer]');
+  if (answer && !answer.children.length) answer.innerHTML = '<span>Choose a word below</span>';
+}
+
+function normalizePracticeAnswer(value) {
+  return String(value || '').toLowerCase().replace(/[^a-zà-ž0-9/ ]/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function getAcceptedEnglishAnswers(question) {
+  const rawAnswer = String(question.previewAnswer || question.english || '');
+  const answers = [rawAnswer, ...rawAnswer.split(/\s+\/\s+|\s*;\s*/)]
+    .map(normalizePracticeAnswer)
+    .filter(Boolean);
+  return Array.from(new Set(answers));
+}
+
+function isProductionAnswerCorrect(question) {
+  if (AppState.practiceMode === 'arrange') {
+    const placed = [...elements.questionArea.querySelectorAll('[data-arrange-placed]')].map((button) => button.textContent).join(' ');
+    const target = getArrangeWordTokens(question.latin).join(' ');
+    return normalizePracticeAnswer(placed) === normalizePracticeAnswer(target);
+  }
+  const answer = normalizePracticeAnswer(AppState.productionAnswer);
+  if (AppState.practiceMode === 'compose') return answer === normalizePracticeAnswer(question.latin);
+  return getAcceptedEnglishAnswers(question).some((accepted) => answer === accepted);
 }
 
 function createMeaningOptionButton(choice) {
@@ -3185,12 +3409,13 @@ function renderQuestionFeedback(question, correct) {
   const incorrectLines = ['Good try.', 'Almost.', 'Keep going.'];
   const lineIndex = AppState.currentQuestionIndex % correctLines.length;
   const title = correct ? correctLines[lineIndex] : incorrectLines[lineIndex];
-  const detail = question.explanation
-    ? question.explanation
-    : `${question.latin} means ${question.english}.`;
+  const modelAnswer = `${question.latin} means ${question.previewAnswer || question.english}.`;
+  const detail = !correct && ['arrange', 'translate', 'compose'].includes(AppState.practiceMode)
+    ? `${modelAnswer}${question.explanation ? ` ${question.explanation}` : ''}`
+    : (question.explanation || modelAnswer);
   const tag = correct
     ? (isReviewAttempt() ? 'Review win' : '+10 points')
-    : 'Correct meaning';
+    : (['arrange', 'translate', 'compose'].includes(AppState.practiceMode) ? 'Model answer' : 'Correct meaning');
 
   return `
     <div class="feedback-card ${correct ? 'success' : 'error'}">
@@ -3207,12 +3432,25 @@ function checkAnswer() {
   const questions = getActiveQuestions(lesson);
   const question = questions[AppState.currentQuestionIndex];
   if (!question) return;
-  if (!AppState.selectedOption) {
+  const productionMode = ['arrange', 'translate', 'compose'].includes(AppState.practiceMode);
+  if (!productionMode && !AppState.selectedOption) {
     elements.lessonResult.dataset.tone = 'warning';
     elements.lessonResult.textContent = 'Choose an answer before moving on.';
     return;
   }
-  const correct = AppState.selectedOption === question.english;
+  if (productionMode && AppState.practiceMode !== 'arrange' && !AppState.productionAnswer.trim()) {
+    elements.lessonResult.dataset.tone = 'warning';
+    elements.lessonResult.textContent = 'Type an answer before moving on.';
+    return;
+  }
+  if (AppState.practiceMode === 'arrange' && !elements.questionArea.querySelector('[data-arrange-placed]')) {
+    elements.lessonResult.dataset.tone = 'warning';
+    elements.lessonResult.textContent = 'Build the sentence before moving on.';
+    return;
+  }
+  const correct = productionMode
+    ? isProductionAnswerCorrect(question)
+    : AppState.selectedOption === question.english;
   const questionCard = elements.questionArea.querySelector('[data-question-card]');
   questionCard?.classList.add(correct ? 'is-correct' : 'is-wrong');
   const optionButtons = elements.questionArea.querySelectorAll('.option-button');
@@ -3221,6 +3459,8 @@ function checkAnswer() {
     if (button.dataset.optionValue === AppState.selectedOption && !correct) button.classList.add('wrong');
     button.disabled = true;
   });
+  elements.questionArea.querySelectorAll('[data-production-input], [data-arrange-token], [data-arrange-placed]')
+    .forEach((control) => { control.disabled = true; });
   elements.lessonResult.dataset.tone = correct ? 'success' : 'error';
   elements.lessonResult.innerHTML = renderQuestionFeedback(question, correct);
   recordWordAttempt(question, correct);
@@ -3271,7 +3511,7 @@ function markWordMastered(word) {
   saveState();
 }
 
-function renderLessonCompletion(lesson, score) {
+function renderLessonCompletion(lesson, score, earnedAchievement = null) {
   const questions = getActiveQuestions(lesson);
   const total = questions.length;
   const ratio = total > 0 ? score / total : 0;
@@ -3302,6 +3542,12 @@ function renderLessonCompletion(lesson, score) {
         <strong>${score}/${total}</strong>
         <span>correct</span>
       </div>
+      ${earnedAchievement ? `
+        <div class="achievement-unlocked">
+          <span class="badge-mark" aria-hidden="true">${escapeHtml(earnedAchievement.mark)}</span>
+          <div><strong>${escapeHtml(earnedAchievement.name)} unlocked</strong><span>+15 bonus points</span></div>
+        </div>
+      ` : ''}
       ${renderMissedWordReview(missed)}
       ${getCompletionActions(missed.length)}
     </section>
@@ -3370,6 +3616,7 @@ function completeLesson(lesson) {
     lastScore: score,
     maxScore: getActiveQuestions(lesson).length
   };
+  const earnedAchievement = grantAchievement(getPracticeAchievementId(AppState.practiceMode));
   AppState.answerChecked = false;
   AppState.selectedOption = null;
   AppState.lessonPhase = 'complete';
@@ -3384,7 +3631,7 @@ function completeLesson(lesson) {
   elements.nextQuestionButton.hidden = true;
   const total = getActiveQuestions(lesson).length;
   elements.lessonResult.dataset.tone = total > 0 && score / total >= 0.8 ? 'success' : 'neutral';
-  elements.lessonResult.innerHTML = renderLessonCompletion(lesson, score);
+  elements.lessonResult.innerHTML = renderLessonCompletion(lesson, score, earnedAchievement);
   elements.lessonListSubtitle.textContent = `Nice work${AppState.studentName ? `, ${AppState.studentName}` : ''}!`;
 }
 
@@ -4373,6 +4620,28 @@ function setupEvents() {
         return;
       }
 
+      const storyReadLink = target?.closest('[data-story-read]');
+      if (storyReadLink) {
+        const earnedBadge = persistAchievement('story-explorer');
+        if (earnedBadge) {
+          const lesson = getSelectedLesson();
+          if (lesson?.story) renderStoryScene(lesson.story);
+        }
+        return;
+      }
+
+      const arrangeToken = target?.closest('[data-arrange-token]');
+      if (arrangeToken) {
+        moveArrangeToken(arrangeToken);
+        return;
+      }
+
+      const arrangePlaced = target?.closest('[data-arrange-placed]');
+      if (arrangePlaced) {
+        removeArrangeToken(arrangePlaced);
+        return;
+      }
+
       const seekFindTarget = target?.closest('[data-seek-find-target]');
       if (seekFindTarget) {
         findSeekFindTarget(seekFindTarget.dataset.seekFindTarget);
@@ -4437,6 +4706,19 @@ function setupEvents() {
       if (input instanceof HTMLInputElement) input.checked = AppState.speechAutoPlay;
     });
     if (AppState.speechAutoPlay && AppState.lessonPhase === 'practice') speakCurrentQuestion();
+  });
+  pages.lesson?.addEventListener('input', (event) => {
+    const target = event.target;
+    if (target instanceof HTMLInputElement && target.matches('[data-production-input]')) {
+      AppState.productionAnswer = target.value;
+    }
+  });
+  pages.lesson?.addEventListener('keydown', (event) => {
+    const target = event.target;
+    if (event.key === 'Enter' && target instanceof HTMLInputElement && target.matches('[data-production-input]')) {
+      event.preventDefault();
+      nextQuestion();
+    }
   });
   elements.assessmentBuilder?.addEventListener('click', (event) => {
     const target = event.target instanceof Element ? event.target : null;

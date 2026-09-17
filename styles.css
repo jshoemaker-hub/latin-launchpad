@@ -1652,6 +1652,7 @@ input {
 
 .practice-mode-tabs {
   display: inline-flex;
+  flex-wrap: wrap;
   gap: 5px;
   padding: 4px;
   border: 1px solid var(--border);
@@ -2024,6 +2025,126 @@ input {
   border-color: #f97316;
   color: #7f1d1d;
   font-weight: 900;
+}
+
+.production-field {
+  display: grid;
+  gap: 8px;
+  margin-top: 18px;
+  color: var(--muted);
+  font-weight: 900;
+}
+
+.production-field input {
+  width: 100%;
+  min-height: 52px;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  background: #ffffff;
+  color: var(--text);
+  font: inherit;
+  font-size: 1.08rem;
+}
+
+.production-field input:focus {
+  border-color: var(--primary);
+  outline: 3px solid rgba(37, 99, 235, 0.14);
+}
+
+.arrange-builder {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.arrange-answer,
+.arrange-bank {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 9px;
+  min-height: 64px;
+  padding: 12px;
+  border-radius: 14px;
+}
+
+.arrange-answer {
+  border: 2px dashed #93c5fd;
+  background: #eff6ff;
+}
+
+.arrange-answer > span {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.arrange-bank {
+  border: 1px solid var(--border);
+  background: #f8fafc;
+}
+
+.arrange-answer button,
+.arrange-bank button {
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 9px 12px;
+  background: #ffffff;
+  color: var(--text);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 900;
+}
+
+.arrange-bank button.selected {
+  opacity: 0.35;
+}
+
+.story-read-action {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 14px;
+}
+
+.story-award {
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.story-award.earned {
+  color: #166534;
+}
+
+.achievement-unlocked {
+  display: inline-grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  margin-top: 18px;
+  padding: 12px 14px;
+  border: 1px solid #86efac;
+  border-radius: 12px;
+  background: #f0fdf4;
+  text-align: left;
+}
+
+.achievement-unlocked .badge-mark {
+  width: 40px;
+  height: 40px;
+}
+
+.achievement-unlocked strong,
+.achievement-unlocked span {
+  display: block;
+}
+
+.achievement-unlocked span {
+  margin-top: 2px;
+  color: #166534;
+  font-size: 0.86rem;
+  font-weight: 800;
 }
 
 .lesson-actions {
