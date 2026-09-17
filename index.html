@@ -41,6 +41,8 @@
       <div class="header-actions">
         <button type="button" id="homeButton" class="pill-button">Home</button>
         <button type="button" id="lessonsButton" class="pill-button">Lessons</button>
+        <button type="button" id="studyButton" class="pill-button">Study</button>
+        <button type="button" id="dictionaryButton" class="pill-button">Dictionary</button>
         <button type="button" id="assessmentsButton" class="pill-button">Tests &amp; Quizzes</button>
         <button type="button" id="dashboardButton" class="pill-button">Dashboard</button>
         <button type="button" id="accountButton" class="pill-button">Account</button>
@@ -139,6 +141,14 @@
                   <strong>Tests &amp; Quizzes</strong>
                   <span>Build a chapter quiz or level test.</span>
                 </button>
+                <button id="homePracticeStudy" type="button" class="practice-link">
+                  <strong>Vocabulary Study</strong>
+                  <span>Browse words or run timed flashcards.</span>
+                </button>
+                <button id="homePracticeDictionary" type="button" class="practice-link">
+                  <strong>Dictionary</strong>
+                  <span>Search every vocabulary word across grades.</span>
+                </button>
                 <button id="homePracticeDashboard" type="button" class="practice-link">
                   <strong>Dashboard</strong>
                   <span>Review progress and badges.</span>
@@ -232,13 +242,13 @@
 
       <section id="signupPage" class="page">
         <div class="card">
-          <h2>Tell us your name</h2>
-          <p>We’ll keep your progress safe and show you the right lessons.</p>
+          <h2>What should we call you?</h2>
+          <p>Your name is optional. You can continue without adding one.</p>
           <label>
-            Name
-            <input type="text" id="studentNameInput" placeholder="Your name" />
+            Name <span class="optional-label">Optional</span>
+            <input type="text" id="studentNameInput" placeholder="Your name (optional)" />
           </label>
-          <button id="signupNextButton" class="primary-button">Next</button>
+          <button id="signupNextButton" class="primary-button">Continue</button>
         </div>
       </section>
 
@@ -280,6 +290,86 @@
         </div>
       </section>
 
+      <section id="studyPage" class="page">
+        <div class="card study-page-card">
+          <div class="page-header">
+            <div>
+              <span class="section-kicker">Vocabulary study</span>
+              <h2 id="studyTitle">Study vocabulary</h2>
+              <p id="studySummary">Browse your grade-level words or practice with timed flashcards.</p>
+            </div>
+            <button id="studyBackButton" type="button" class="secondary-button">Home</button>
+          </div>
+          <div class="study-mode-tabs" role="tablist" aria-label="Vocabulary study mode">
+            <button type="button" class="study-mode-tab active" role="tab" aria-selected="true" data-study-mode="list">Vocabulary list</button>
+            <button type="button" class="study-mode-tab" role="tab" aria-selected="false" data-study-mode="flashcards">Timed flashcards</button>
+          </div>
+          <section id="vocabularyListPanel" class="study-panel" data-study-panel="list">
+            <div class="vocabulary-toolbar">
+              <label>
+                <span>Search vocabulary</span>
+                <input id="vocabularySearch" type="search" placeholder="Search Latin or English" autocomplete="off" />
+              </label>
+              <strong id="vocabularyCount"></strong>
+            </div>
+            <div id="vocabularyList" class="vocabulary-list"></div>
+          </section>
+          <section id="flashcardPanel" class="study-panel" data-study-panel="flashcards" hidden>
+            <div class="flashcard-toolbar">
+              <div class="flashcard-speeds" role="group" aria-label="Seconds per flashcard">
+                <span>Card time</span>
+                <button type="button" data-flashcard-duration="3">3 sec</button>
+                <button type="button" class="active" data-flashcard-duration="5">5 sec</button>
+                <button type="button" data-flashcard-duration="8">8 sec</button>
+              </div>
+              <div class="flashcard-actions">
+                <button id="flashcardShuffle" type="button" class="secondary-button">Shuffle</button>
+                <button id="flashcardStart" type="button" class="primary-button">Start timer</button>
+              </div>
+            </div>
+            <div id="flashcardStage" class="flashcard-stage"></div>
+            <div class="flashcard-navigation">
+              <button id="flashcardPrevious" type="button" class="secondary-button">Previous</button>
+              <button id="flashcardFlip" type="button" class="secondary-button">Reveal answer</button>
+              <button id="flashcardNext" type="button" class="secondary-button">Next</button>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section id="dictionaryPage" class="page">
+        <div class="card study-page-card">
+          <div class="page-header">
+            <div>
+              <span class="section-kicker">Latin dictionary</span>
+              <h2>Site-wide vocabulary</h2>
+              <p>Search every Latin headword and English meaning used across grades 3–8.</p>
+            </div>
+            <button id="dictionaryBackButton" type="button" class="secondary-button">Back</button>
+          </div>
+          <div class="dictionary-toolbar">
+            <label>
+              <span>Search dictionary</span>
+              <input id="dictionarySearch" type="search" placeholder="Search Latin or English" autocomplete="off" />
+            </label>
+            <label>
+              <span>Grade</span>
+              <select id="dictionaryGradeFilter">
+                <option value="all">All grades</option>
+                <option value="3">Grade 3</option>
+                <option value="4">Grade 4</option>
+                <option value="5">Grade 5</option>
+                <option value="6">Grade 6</option>
+                <option value="7">Grade 7</option>
+                <option value="8">Grade 8</option>
+              </select>
+            </label>
+            <strong id="dictionaryCount"></strong>
+          </div>
+          <div id="dictionaryList" class="vocabulary-list"></div>
+        </div>
+      </section>
+
       <section id="lessonPage" class="page">
         <div class="card lesson-card">
           <div class="page-header">
@@ -306,8 +396,12 @@
             <div id="lessonResourcePanels" class="lesson-resource-panels">
               <section class="lesson-resource-panel" data-resource-panel="overview">
                 <div id="storyScene" class="story-scene"></div>
+                <div id="cultureCard" class="culture-card"></div>
                 <div id="lessonNotes" class="lesson-notes"></div>
                 <div id="phraseFocus" class="phrase-focus"></div>
+              </section>
+              <section class="lesson-resource-panel" data-resource-panel="classroom">
+                <div id="classroomLatin" class="classroom-latin"></div>
               </section>
               <section class="lesson-resource-panel" data-resource-panel="printables">
                 <div id="lessonPrintables" class="lesson-printables"></div>
@@ -423,8 +517,11 @@
   <div id="printArea" class="print-area" role="dialog" aria-label="Printable preview" aria-hidden="true"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="word-banks.js"></script>
+  <script src="reference-vocabulary.js"></script>
   <script src="latin-phrases.js"></script>
   <script src="latin-stories.js"></script>
+  <script src="latin-culture.js"></script>
+  <script src="classroom-latin.js"></script>
   <script src="learning-objectives.js"></script>
   <script src="grammar-lessons.js"></script>
   <script src="app.js"></script>

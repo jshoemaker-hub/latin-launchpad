@@ -14,6 +14,12 @@ const VOCAB_LESSONS = Object.entries(GRADE_WORDS).flatMap(([grade, words]) => {
       grade: Number(grade),
       kind: 'vocabulary',
       story: typeof getStorySceneForLesson === 'function' ? getStorySceneForLesson(Number(grade), index) : null,
+      culture: typeof getCultureCardForLesson === 'function'
+        ? getCultureCardForLesson(Number(grade), lessonWords, index)
+        : null,
+      classroomPhrases: typeof getClassroomPhrasesForLesson === 'function'
+        ? getClassroomPhrasesForLesson(Number(grade), index)
+        : [],
       title: `Grade ${grade}: Lesson ${index + 1}`,
       description: phrases.length > 0
         ? `Practice Latin vocabulary words ${start + 1}-${start + lessonWords.length}, then connect them to popular Latin phrases.`
@@ -164,6 +170,18 @@ const AssessmentState = {
   message: ''
 };
 
+const StudyState = {
+  mode: 'list',
+  words: [],
+  index: 0,
+  showingAnswer: false,
+  running: false,
+  durationSeconds: 5,
+  remainingMs: 5000,
+  timerId: null,
+  lastTick: 0
+};
+
 const pages = {
   welcome: document.getElementById('welcomePage'),
   home: document.getElementById('homePage'),
@@ -172,6 +190,8 @@ const pages = {
   grade: document.getElementById('gradePage'),
   lessonList: document.getElementById('lessonListPage'),
   assessments: document.getElementById('assessmentsPage'),
+  study: document.getElementById('studyPage'),
+  dictionary: document.getElementById('dictionaryPage'),
   lesson: document.getElementById('lessonPage'),
   dashboard: document.getElementById('dashboardPage'),
   resetPassword: document.getElementById('resetPasswordPage'),
@@ -195,6 +215,8 @@ const elements = {
   homeLessonsButton: document.getElementById('homeLessonsButton'),
   homePracticeLessons: document.getElementById('homePracticeLessons'),
   homePracticeAssessments: document.getElementById('homePracticeAssessments'),
+  homePracticeStudy: document.getElementById('homePracticeStudy'),
+  homePracticeDictionary: document.getElementById('homePracticeDictionary'),
   homePracticeDashboard: document.getElementById('homePracticeDashboard'),
   accountButton: document.getElementById('accountButton'),
   contactButton: document.getElementById('contactButton'),
@@ -233,8 +255,10 @@ const elements = {
   lessonResourceTabs: document.getElementById('lessonResourceTabs'),
   lessonResourcePanels: document.getElementById('lessonResourcePanels'),
   storyScene: document.getElementById('storyScene'),
+  cultureCard: document.getElementById('cultureCard'),
   lessonNotes: document.getElementById('lessonNotes'),
   phraseFocus: document.getElementById('phraseFocus'),
+  classroomLatin: document.getElementById('classroomLatin'),
   wordPreview: document.getElementById('wordPreview'),
   questionArea: document.getElementById('questionArea'),
   nextQuestionButton: document.getElementById('nextQuestionButton'),
@@ -250,6 +274,8 @@ const elements = {
   printArea: document.getElementById('printArea'),
   homeButton: document.getElementById('homeButton'),
   lessonsButton: document.getElementById('lessonsButton'),
+  studyButton: document.getElementById('studyButton'),
+  dictionaryButton: document.getElementById('dictionaryButton'),
   assessmentsButton: document.getElementById('assessmentsButton'),
   assessmentsBackButton: document.getElementById('assessmentsBackButton'),
   assessmentBuilder: document.getElementById('assessmentBuilder'),
@@ -264,7 +290,24 @@ const elements = {
   badgeGrid: document.getElementById('badgeGrid'),
   weakWordsList: document.getElementById('weakWordsList'),
   reviewWeakWordsButton: document.getElementById('reviewWeakWordsButton'),
-  progressList: document.getElementById('progressList')
+  progressList: document.getElementById('progressList'),
+  studyTitle: document.getElementById('studyTitle'),
+  studySummary: document.getElementById('studySummary'),
+  studyBackButton: document.getElementById('studyBackButton'),
+  vocabularySearch: document.getElementById('vocabularySearch'),
+  vocabularyCount: document.getElementById('vocabularyCount'),
+  vocabularyList: document.getElementById('vocabularyList'),
+  flashcardStage: document.getElementById('flashcardStage'),
+  flashcardStart: document.getElementById('flashcardStart'),
+  flashcardShuffle: document.getElementById('flashcardShuffle'),
+  flashcardPrevious: document.getElementById('flashcardPrevious'),
+  flashcardFlip: document.getElementById('flashcardFlip'),
+  flashcardNext: document.getElementById('flashcardNext'),
+  dictionaryBackButton: document.getElementById('dictionaryBackButton'),
+  dictionarySearch: document.getElementById('dictionarySearch'),
+  dictionaryGradeFilter: document.getElementById('dictionaryGradeFilter'),
+  dictionaryCount: document.getElementById('dictionaryCount'),
+  dictionaryList: document.getElementById('dictionaryList')
 };
 
 const OnlinePuzzleState = {
@@ -604,6 +647,7 @@ function showPage(page) {
     return;
   }
   Object.values(pages).forEach((section) => section.classList.remove('active'));
+  if (page !== 'study') stopFlashcardTimer();
   pages[page].classList.add('active');
   updateNavState(page);
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -617,6 +661,8 @@ function updateNavState(page) {
     grade: 'lessonsButton',
     lessonList: 'lessonsButton',
     lesson: 'lessonsButton',
+    study: 'studyButton',
+    dictionary: 'dictionaryButton',
     assessments: 'assessmentsButton',
     dashboard: 'dashboardButton',
     account: 'accountButton',
@@ -626,6 +672,8 @@ function updateNavState(page) {
   [
     elements.homeButton,
     elements.lessonsButton,
+    elements.studyButton,
+    elements.dictionaryButton,
     elements.assessmentsButton,
     elements.dashboardButton,
     elements.accountButton,
@@ -1436,13 +1484,14 @@ function renderWordIntroduction(lesson) {
   const words = getLessonIntroWords(lesson);
   const introTitle = lesson.kind === 'grammar' ? 'Meet the patterns' : 'Meet the words';
   const cards = words.map((word) => {
-    const label = word.preview || word.latin;
+    const label = word.preview || word.principalParts || word.latin;
     const answer = word.previewAnswer || word.english;
     return `
       <article class="word-intro-card">
         <span class="word-picture" aria-hidden="true">${escapeHtml(getWordVisual(word))}</span>
         <div>
           <strong>${escapeHtml(label)}</strong>
+          ${word.principalParts ? `<small class="principal-parts-label">Headword: ${escapeHtml(word.latin)}</small>` : ''}
           <span>${escapeHtml(answer)}</span>
         </div>
         <div class="intro-sound-controls">
@@ -1519,6 +1568,7 @@ function renderPracticeToolbar(lesson) {
 function hasLessonOverview(lesson) {
   return Boolean(
     lesson.story
+    || lesson.culture
     || lesson.sourceNote
     || (Array.isArray(lesson.focus) && lesson.focus.length > 0)
     || getLessonPhraseCount(lesson) > 0
@@ -1528,6 +1578,9 @@ function hasLessonOverview(lesson) {
 function getLessonResourceTabs(lesson) {
   const tabs = [];
   if (hasLessonOverview(lesson)) tabs.push({ id: 'overview', label: 'Overview' });
+  if (Array.isArray(lesson.classroomPhrases) && lesson.classroomPhrases.length > 0) {
+    tabs.push({ id: 'classroom', label: 'Speak Latin' });
+  }
   if (getSeekFindConfig(lesson)) tabs.push({ id: 'seek-find', label: 'Seek & Find' });
   tabs.push({ id: 'printables', label: 'Printables' });
   if (getLessonPuzzleTerms(lesson).length > 0) tabs.push({ id: 'puzzles', label: 'Puzzles' });
@@ -1602,8 +1655,10 @@ function renderLesson() {
   elements.lessonDescription.textContent = lesson.description;
   if (lesson.id === REVIEW_LESSON_ID) {
     renderStoryScene(null);
+    renderCultureCard(null);
     renderLessonNotes({});
     renderPhraseFocus({});
+    renderClassroomLatin({});
     if (elements.lessonPrintables) elements.lessonPrintables.innerHTML = '';
     if (elements.lessonPuzzles) elements.lessonPuzzles.innerHTML = '';
     if (elements.lessonResources) elements.lessonResources.hidden = true;
@@ -1611,8 +1666,10 @@ function renderLesson() {
     return;
   }
   renderStoryScene(lesson.story);
+  renderCultureCard(lesson.culture);
   renderLessonNotes(lesson);
   renderPhraseFocus(lesson);
+  renderClassroomLatin(lesson);
   renderLessonSeekFind(lesson);
   renderLessonPrintables(lesson);
   renderLessonPuzzles(lesson);
@@ -2796,6 +2853,140 @@ function renderPhraseSources() {
     .join(' and ');
 }
 
+function renderCultureCard(culture) {
+  if (!elements.cultureCard) return;
+  if (!culture) {
+    elements.cultureCard.innerHTML = '';
+    return;
+  }
+
+  const linkedWords = culture.linkedWords
+    .map((word) => `<span>${escapeHtml(word)}</span>`)
+    .join('');
+  const sourceImages = culture.sourceImages.map((image) => escapeHtml(image)).join(', ');
+  elements.cultureCard.innerHTML = `
+    <section class="culture-card-panel" aria-label="Roman culture connection">
+      <div class="culture-mark" aria-hidden="true">${escapeHtml(culture.mark || 'R')}</div>
+      <div class="culture-copy">
+        <span class="culture-eyebrow">Culture connection</span>
+        <h3>${escapeHtml(culture.title)}</h3>
+        <p class="culture-latin">${escapeHtml(culture.latinTitle)}</p>
+        <p>${escapeHtml(culture.summary)}</p>
+        <p class="culture-connection">${escapeHtml(culture.connection)}</p>
+        <div class="culture-footer">
+          <div class="culture-words" aria-label="Related Latin words">${linkedWords}</div>
+          <small>Reference: ${sourceImages}</small>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function renderClassroomLatin(lesson) {
+  if (!elements.classroomLatin) return;
+  const phrases = Array.isArray(lesson.classroomPhrases) ? lesson.classroomPhrases : [];
+  if (phrases.length === 0) {
+    elements.classroomLatin.innerHTML = '';
+    return;
+  }
+
+  const categories = [...new Set(phrases.map((phrase) => phrase.category))];
+  const categoryButtons = ['all', ...categories].map((category) => `
+    <button
+      type="button"
+      class="classroom-filter${category === 'all' ? ' active' : ''}"
+      data-classroom-category="${escapeHtml(category)}"
+      aria-pressed="${category === 'all'}"
+    >${escapeHtml(CLASSROOM_LATIN_CATEGORIES[category] || category)}</button>
+  `).join('');
+
+  const cards = phrases.map((phrase) => {
+    const meaningId = `classroom-meaning-${escapeHtml(phrase.id)}`;
+    return `
+      <article class="classroom-phrase-card" data-classroom-card data-category="${escapeHtml(phrase.category)}">
+        <div class="classroom-phrase-heading">
+          <div>
+            <span>${escapeHtml(CLASSROOM_LATIN_CATEGORIES[phrase.category] || phrase.category)}</span>
+            <h4>${escapeHtml(phrase.latin)}</h4>
+          </div>
+          ${renderSpeakButton(phrase.latin, 'Listen', 0.74)}
+        </div>
+        <div id="${meaningId}" class="classroom-meaning" hidden>
+          <strong>${escapeHtml(phrase.english)}</strong>
+          <p>${escapeHtml(phrase.note)}</p>
+        </div>
+        <button
+          type="button"
+          class="classroom-reveal"
+          data-classroom-reveal="${escapeHtml(phrase.id)}"
+          aria-controls="${meaningId}"
+          aria-expanded="false"
+        >Reveal meaning</button>
+      </article>
+    `;
+  }).join('');
+
+  elements.classroomLatin.innerHTML = `
+    <section class="classroom-latin-panel" aria-label="Classroom Latin practice">
+      <div class="classroom-latin-header">
+        <div>
+          <span class="classroom-eyebrow">Say it in class</span>
+          <h3>Useful Latin for the school day</h3>
+          <p>Listen first, say the phrase aloud, then reveal its meaning.</p>
+        </div>
+        <div class="classroom-actions">
+          <button type="button" class="secondary-button" data-classroom-action="shuffle">Shuffle</button>
+          <button type="button" class="secondary-button" data-classroom-action="reveal-all">Reveal all</button>
+        </div>
+      </div>
+      <div class="classroom-filters" aria-label="Filter classroom phrases">${categoryButtons}</div>
+      <div class="classroom-phrase-grid">${cards}</div>
+    </section>
+  `;
+}
+
+function filterClassroomPhrases(category) {
+  if (!elements.classroomLatin) return;
+  elements.classroomLatin.querySelectorAll('[data-classroom-category]').forEach((button) => {
+    const active = button.dataset.classroomCategory === category;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-pressed', String(active));
+  });
+  elements.classroomLatin.querySelectorAll('[data-classroom-card]').forEach((card) => {
+    card.hidden = category !== 'all' && card.dataset.category !== category;
+  });
+}
+
+function toggleClassroomMeaning(button) {
+  const meaning = document.getElementById(button.getAttribute('aria-controls'));
+  if (!meaning) return;
+  const reveal = meaning.hidden;
+  meaning.hidden = !reveal;
+  button.setAttribute('aria-expanded', String(reveal));
+  button.textContent = reveal ? 'Hide meaning' : 'Reveal meaning';
+}
+
+function revealAllClassroomMeanings() {
+  if (!elements.classroomLatin) return;
+  elements.classroomLatin.querySelectorAll('[data-classroom-reveal]').forEach((button) => {
+    const meaning = document.getElementById(button.getAttribute('aria-controls'));
+    if (meaning) meaning.hidden = false;
+    button.setAttribute('aria-expanded', 'true');
+    button.textContent = 'Hide meaning';
+  });
+}
+
+function shuffleClassroomPhrases() {
+  const grid = elements.classroomLatin?.querySelector('.classroom-phrase-grid');
+  if (!grid) return;
+  const cards = [...grid.children];
+  for (let index = cards.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [cards[index], cards[swapIndex]] = [cards[swapIndex], cards[index]];
+  }
+  cards.forEach((card) => grid.appendChild(card));
+}
+
 
 function renderStoryScene(story) {
   if (!elements.storyScene) return;
@@ -3343,6 +3534,240 @@ function showHomeOrWelcome() {
   showPage('home');
 }
 
+function getStudyWords() {
+  if (!VALID_GRADES.includes(AppState.grade)) return [];
+  const seen = new Set();
+  return GRADE_WORDS[AppState.grade]
+    .filter((word) => {
+      const key = normalizeVocabularyHeadword(word.latin);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => a.latin.localeCompare(b.latin));
+}
+
+function ensureStudyWords() {
+  const words = getStudyWords();
+  const currentKeys = StudyState.words.map((word) => normalizeVocabularyHeadword(word.latin)).join('|');
+  const nextKeys = words.map((word) => normalizeVocabularyHeadword(word.latin)).join('|');
+  if (currentKeys !== nextKeys) {
+    StudyState.words = words;
+    StudyState.index = 0;
+    StudyState.showingAnswer = false;
+    StudyState.remainingMs = StudyState.durationSeconds * 1000;
+  }
+}
+
+function renderStudyPage() {
+  ensureStudyWords();
+  elements.studyTitle.textContent = `Grade ${AppState.grade} vocabulary`;
+  elements.studySummary.textContent = `${StudyState.words.length} unique words ready to review.`;
+  renderVocabularyList();
+  renderFlashcard();
+  document.querySelectorAll('[data-study-mode]').forEach((button) => {
+    const active = button.dataset.studyMode === StudyState.mode;
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-selected', String(active));
+  });
+  document.querySelectorAll('[data-study-panel]').forEach((panel) => {
+    panel.hidden = panel.dataset.studyPanel !== StudyState.mode;
+  });
+}
+
+function renderVocabularyList() {
+  const query = (elements.vocabularySearch?.value || '').trim().toLowerCase();
+  const words = StudyState.words.filter((word) => {
+    const searchable = `${word.latin} ${word.principalParts || ''} ${word.english}`.toLowerCase();
+    return !query || searchable.includes(query);
+  });
+  elements.vocabularyCount.textContent = `${words.length} ${words.length === 1 ? 'word' : 'words'}`;
+  elements.vocabularyList.innerHTML = words.length > 0
+    ? words.map((word) => `
+        <div class="vocabulary-row">
+          <span class="vocabulary-mark" aria-hidden="true">${escapeHtml(getWordVisual(word))}</span>
+          <div>
+            <strong>${escapeHtml(word.principalParts || word.latin)}</strong>
+            ${word.principalParts ? `<small>Headword: ${escapeHtml(word.latin)}</small>` : ''}
+          </div>
+          <span>${escapeHtml(word.english)}</span>
+          ${renderSpeakButton(word.latin, 'Listen', 0.74)}
+        </div>
+      `).join('')
+    : '<p class="study-empty">No vocabulary matches that search.</p>';
+}
+
+function getDictionaryWords() {
+  const entries = new Map();
+  VALID_GRADES.forEach((grade) => {
+    (GRADE_WORDS[grade] || []).forEach((word) => {
+      const key = normalizeVocabularyHeadword(word.latin);
+      if (!key) return;
+      if (!entries.has(key)) {
+        entries.set(key, {
+          ...word,
+          grades: [],
+          meanings: []
+        });
+      }
+      const entry = entries.get(key);
+      if (!entry.grades.includes(grade)) entry.grades.push(grade);
+      if (word.english && !entry.meanings.includes(word.english)) entry.meanings.push(word.english);
+      if (!entry.principalParts && word.principalParts) entry.principalParts = word.principalParts;
+    });
+  });
+  return [...entries.values()]
+    .map((word) => ({ ...word, english: word.meanings.join(' / ') }))
+    .sort((a, b) => a.latin.localeCompare(b.latin));
+}
+
+function renderDictionary() {
+  const query = elements.dictionarySearch.value.trim().toLowerCase();
+  const grade = elements.dictionaryGradeFilter.value;
+  const words = getDictionaryWords().filter((word) => {
+    const matchesGrade = grade === 'all' || word.grades.includes(Number(grade));
+    const searchable = `${word.latin} ${word.principalParts || ''} ${word.english}`.toLowerCase();
+    return matchesGrade && (!query || searchable.includes(query));
+  });
+  elements.dictionaryCount.textContent = `${words.length} ${words.length === 1 ? 'entry' : 'entries'}`;
+  elements.dictionaryList.innerHTML = words.length > 0
+    ? words.map((word) => `
+        <div class="vocabulary-row dictionary-row">
+          <span class="vocabulary-mark" aria-hidden="true">${escapeHtml(getWordVisual(word))}</span>
+          <div>
+            <strong>${escapeHtml(word.principalParts || word.latin)}</strong>
+            ${word.principalParts ? `<small>Headword: ${escapeHtml(word.latin)}</small>` : ''}
+          </div>
+          <span>${escapeHtml(word.english)}</span>
+          <span class="dictionary-grades" aria-label="Used in grades ${word.grades.join(', ')}">
+            ${word.grades.map((item) => `<span>G${item}</span>`).join('')}
+          </span>
+          ${renderSpeakButton(word.latin, 'Listen', 0.74)}
+        </div>
+      `).join('')
+    : '<p class="study-empty">No dictionary entries match that search.</p>';
+}
+
+function showDictionary() {
+  renderDictionary();
+  showPage('dictionary');
+}
+
+function selectStudyMode(mode) {
+  if (!['list', 'flashcards'].includes(mode)) return;
+  StudyState.mode = mode;
+  if (mode !== 'flashcards') stopFlashcardTimer();
+  renderStudyPage();
+}
+
+function renderFlashcard() {
+  const word = StudyState.words[StudyState.index];
+  if (!word) {
+    elements.flashcardStage.innerHTML = '<p class="study-empty">Choose a grade to load flashcards.</p>';
+    return;
+  }
+  const totalMs = StudyState.durationSeconds * 1000;
+  const elapsedPercent = Math.max(0, Math.min(100, ((totalMs - StudyState.remainingMs) / totalMs) * 100));
+  elements.flashcardStage.innerHTML = `
+    <div class="flashcard-progress" aria-hidden="true"><span style="width:${elapsedPercent}%"></span></div>
+    <div class="flashcard-counter">Card ${StudyState.index + 1} of ${StudyState.words.length}</div>
+    <div class="flashcard-face">
+      <span class="flashcard-kicker">${StudyState.showingAnswer ? 'Meaning' : 'Latin'}</span>
+      <strong>${escapeHtml(StudyState.showingAnswer ? word.english : (word.principalParts || word.latin))}</strong>
+      ${StudyState.showingAnswer && word.principalParts ? `<small>Headword: ${escapeHtml(word.latin)}</small>` : ''}
+      ${StudyState.showingAnswer ? '' : renderSpeakButton(word.latin, 'Listen', 0.74)}
+    </div>
+    <div class="flashcard-time">${(StudyState.remainingMs / 1000).toFixed(1)} seconds</div>
+  `;
+  elements.flashcardStart.textContent = StudyState.running ? 'Pause timer' : 'Start timer';
+  elements.flashcardFlip.textContent = StudyState.showingAnswer ? 'Show Latin' : 'Reveal answer';
+  document.querySelectorAll('[data-flashcard-duration]').forEach((button) => {
+    button.classList.toggle('active', Number(button.dataset.flashcardDuration) === StudyState.durationSeconds);
+  });
+}
+
+function resetFlashcardClock() {
+  StudyState.remainingMs = StudyState.durationSeconds * 1000;
+  StudyState.lastTick = performance.now();
+  StudyState.showingAnswer = false;
+}
+
+function moveFlashcard(direction) {
+  if (StudyState.words.length === 0) return;
+  StudyState.index = (StudyState.index + direction + StudyState.words.length) % StudyState.words.length;
+  resetFlashcardClock();
+  renderFlashcard();
+}
+
+function updateFlashcardClockDisplay() {
+  const totalMs = StudyState.durationSeconds * 1000;
+  const elapsedPercent = Math.max(0, Math.min(100, ((totalMs - StudyState.remainingMs) / totalMs) * 100));
+  const progress = elements.flashcardStage.querySelector('.flashcard-progress span');
+  const time = elements.flashcardStage.querySelector('.flashcard-time');
+  if (progress) progress.style.width = `${elapsedPercent}%`;
+  if (time) time.textContent = `${Math.max(0, StudyState.remainingMs / 1000).toFixed(1)} seconds`;
+}
+
+function tickFlashcards() {
+  const now = performance.now();
+  StudyState.remainingMs -= now - StudyState.lastTick;
+  StudyState.lastTick = now;
+  const shouldReveal = StudyState.remainingMs <= StudyState.durationSeconds * 500;
+  if (shouldReveal && !StudyState.showingAnswer) {
+    StudyState.showingAnswer = true;
+    renderFlashcard();
+  } else {
+    updateFlashcardClockDisplay();
+  }
+  if (StudyState.remainingMs <= 0) {
+    moveFlashcard(1);
+  }
+}
+
+function toggleFlashcardTimer() {
+  if (StudyState.running) {
+    stopFlashcardTimer();
+    renderFlashcard();
+    return;
+  }
+  if (StudyState.remainingMs <= 0) resetFlashcardClock();
+  StudyState.running = true;
+  StudyState.lastTick = performance.now();
+  StudyState.timerId = window.setInterval(tickFlashcards, 100);
+  renderFlashcard();
+}
+
+function stopFlashcardTimer() {
+  if (StudyState.timerId) window.clearInterval(StudyState.timerId);
+  StudyState.timerId = null;
+  StudyState.running = false;
+}
+
+function setFlashcardDuration(seconds) {
+  StudyState.durationSeconds = seconds;
+  resetFlashcardClock();
+  renderFlashcard();
+}
+
+function shuffleFlashcards() {
+  for (let index = StudyState.words.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [StudyState.words[index], StudyState.words[swapIndex]] = [StudyState.words[swapIndex], StudyState.words[index]];
+  }
+  StudyState.index = 0;
+  resetFlashcardClock();
+  renderFlashcard();
+}
+
+function showStudyOrOnboarding() {
+  if (!VALID_GRADES.includes(AppState.grade)) {
+    showPage(AppState.studentName ? 'grade' : 'signup');
+    return;
+  }
+  renderStudyPage();
+  showPage('study');
+}
+
 function showDashboardOrOnboarding() {
   if (!AppState.studentName) {
     showPage('signup');
@@ -3791,6 +4216,8 @@ function setupEvents() {
   elements.homeQuizButton.addEventListener('click', showAssessmentsOrOnboarding);
   elements.homeLessonsButton.addEventListener('click', showLessonListOrOnboarding);
   elements.homePracticeLessons.addEventListener('click', showLessonListOrOnboarding);
+  elements.homePracticeStudy.addEventListener('click', showStudyOrOnboarding);
+  elements.homePracticeDictionary.addEventListener('click', showDictionary);
   elements.homePracticeAssessments.addEventListener('click', showAssessmentsOrOnboarding);
   elements.homePracticeDashboard.addEventListener('click', showDashboardOrOnboarding);
   elements.homePathList.addEventListener('click', (event) => {
@@ -3877,8 +4304,7 @@ function setupEvents() {
   elements.signOutButton.addEventListener('click', continueAsGuest);
   elements.signupNextButton.addEventListener('click', () => {
     const name = elements.studentNameInput.value.trim();
-    if (!name) return;
-    AppState.studentName = name;
+    AppState.studentName = name || 'Learner';
     saveState();
     renderAccountControls();
     showPage('grade');
@@ -3891,11 +4317,45 @@ function setupEvents() {
   });
   elements.homeButton.addEventListener('click', showHomeOrWelcome);
   elements.lessonsButton.addEventListener('click', showLessonListOrOnboarding);
+  elements.studyButton.addEventListener('click', showStudyOrOnboarding);
+  elements.dictionaryButton.addEventListener('click', showDictionary);
   elements.assessmentsButton.addEventListener('click', showAssessmentsOrOnboarding);
   elements.dashboardButton.addEventListener('click', showDashboardOrOnboarding);
   elements.assessmentsBackButton.addEventListener('click', showHomeOrWelcome);
   elements.backToLessonsFromDashboard.addEventListener('click', () => {
     showHomeOrWelcome();
+  });
+  elements.studyBackButton.addEventListener('click', showHomeOrWelcome);
+  elements.vocabularySearch.addEventListener('input', renderVocabularyList);
+  pages.study.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const modeButton = target?.closest('[data-study-mode]');
+    if (modeButton) {
+      selectStudyMode(modeButton.dataset.studyMode);
+      return;
+    }
+    const durationButton = target?.closest('[data-flashcard-duration]');
+    if (durationButton) {
+      setFlashcardDuration(Number(durationButton.dataset.flashcardDuration));
+      return;
+    }
+    const speakButton = target?.closest('[data-speak-latin]');
+    if (speakButton) speakLatin(speakButton.dataset.speakLatin, Number(speakButton.dataset.speakRate) || 0.82);
+  });
+  elements.flashcardStart.addEventListener('click', toggleFlashcardTimer);
+  elements.flashcardShuffle.addEventListener('click', shuffleFlashcards);
+  elements.flashcardPrevious.addEventListener('click', () => moveFlashcard(-1));
+  elements.flashcardNext.addEventListener('click', () => moveFlashcard(1));
+  elements.flashcardFlip.addEventListener('click', () => {
+    StudyState.showingAnswer = !StudyState.showingAnswer;
+    renderFlashcard();
+  });
+  elements.dictionaryBackButton.addEventListener('click', showHomeOrWelcome);
+  elements.dictionarySearch.addEventListener('input', renderDictionary);
+  elements.dictionaryGradeFilter.addEventListener('change', renderDictionary);
+  pages.dictionary.addEventListener('click', (event) => {
+    const speakButton = event.target instanceof Element ? event.target.closest('[data-speak-latin]') : null;
+    if (speakButton) speakLatin(speakButton.dataset.speakLatin, Number(speakButton.dataset.speakRate) || 0.82);
   });
   elements.reviewWeakWordsButton?.addEventListener('click', startWeakWordReview);
   elements.nextQuestionButton.addEventListener('click', nextQuestion);
@@ -3943,6 +4403,25 @@ function setupEvents() {
     const resourceTab = target?.closest('[data-lesson-resource-tab]');
     if (resourceTab) {
       selectLessonResourceTab(resourceTab.dataset.lessonResourceTab);
+      return;
+    }
+
+    const classroomCategory = target?.closest('[data-classroom-category]');
+    if (classroomCategory) {
+      filterClassroomPhrases(classroomCategory.dataset.classroomCategory);
+      return;
+    }
+
+    const classroomReveal = target?.closest('[data-classroom-reveal]');
+    if (classroomReveal) {
+      toggleClassroomMeaning(classroomReveal);
+      return;
+    }
+
+    const classroomAction = target?.closest('[data-classroom-action]');
+    if (classroomAction) {
+      if (classroomAction.dataset.classroomAction === 'shuffle') shuffleClassroomPhrases();
+      if (classroomAction.dataset.classroomAction === 'reveal-all') revealAllClassroomMeanings();
     }
   });
   pages.dashboard?.addEventListener('click', (event) => {

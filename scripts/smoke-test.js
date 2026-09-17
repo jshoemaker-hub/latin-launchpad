@@ -6,6 +6,12 @@ const root = path.resolve(__dirname, '..');
 const appPath = path.join(root, 'app.js');
 const htmlPath = path.join(root, 'index.html');
 const cssPath = path.join(root, 'styles.css');
+const wordBanksPath = path.join(root, 'word-banks.js');
+const referenceIndexPath = path.join(root, 'reference-vocabulary.js');
+const phrasesPath = path.join(root, 'latin-phrases.js');
+const culturePath = path.join(root, 'latin-culture.js');
+const classroomPath = path.join(root, 'classroom-latin.js');
+const grammarPath = path.join(root, 'grammar-lessons.js');
 
 const app = fs.readFileSync(appPath, 'utf8');
 const html = fs.readFileSync(htmlPath, 'utf8');
@@ -18,7 +24,99 @@ function assert(condition, message) {
 }
 
 function checkJavaScriptSyntax() {
-  new vm.Script(app, { filename: appPath });
+  [appPath, wordBanksPath, referenceIndexPath, phrasesPath, culturePath, classroomPath, grammarPath].forEach((filePath) => {
+    new vm.Script(fs.readFileSync(filePath, 'utf8'), { filename: filePath });
+  });
+}
+
+function loadContentData() {
+  const context = {};
+  vm.createContext(context);
+  [wordBanksPath, referenceIndexPath, phrasesPath, culturePath, classroomPath, grammarPath].forEach((filePath) => {
+    const source = fs.readFileSync(filePath, 'utf8');
+    vm.runInContext(source, context, { filename: filePath });
+  });
+  vm.runInContext(
+    'globalThis.__CONTENT = { GRADE_WORDS, REFERENCE_VOCABULARY_BY_GRADE, REFERENCE_INDEX_WORDS, LATIN_PHRASES, LATIN_CULTURE_CARDS, CLASSROOM_LATIN_PHRASES, GRAMMAR_LESSONS };',
+    context
+  );
+  return context.__CONTENT;
+}
+
+function assertUniqueIds(items, label) {
+  const ids = items.map((item) => item.id);
+  const duplicates = ids.filter((id, index) => ids.indexOf(id) !== index);
+  assert(duplicates.length === 0, `Duplicate ${label} ids: ${[...new Set(duplicates)].join(', ')}`);
+  assert(items.every((item) => item.id && typeof item.id === 'string'), `${label} entries need string ids`);
+}
+
+function checkContentData() {
+  const {
+    GRADE_WORDS,
+    REFERENCE_VOCABULARY_BY_GRADE,
+    REFERENCE_INDEX_WORDS,
+    LATIN_PHRASES,
+    LATIN_CULTURE_CARDS,
+    CLASSROOM_LATIN_PHRASES,
+    GRAMMAR_LESSONS
+  } = loadContentData();
+  assertUniqueIds(LATIN_PHRASES, 'phrase');
+  assertUniqueIds(LATIN_CULTURE_CARDS, 'culture card');
+  assertUniqueIds(CLASSROOM_LATIN_PHRASES, 'classroom phrase');
+  assertUniqueIds(GRAMMAR_LESSONS, 'grammar lesson');
+
+  assert(LATIN_PHRASES.length === 65, `Expected 65 phrases, found ${LATIN_PHRASES.length}`);
+  assert(LATIN_CULTURE_CARDS.length === 13, `Expected 13 culture cards, found ${LATIN_CULTURE_CARDS.length}`);
+  assert(CLASSROOM_LATIN_PHRASES.length === 40, `Expected 40 classroom phrases, found ${CLASSROOM_LATIN_PHRASES.length}`);
+  assert(GRAMMAR_LESSONS.length === 17, `Expected 17 grammar lessons, found ${GRAMMAR_LESSONS.length}`);
+
+  const referenceWords = Object.values(REFERENCE_VOCABULARY_BY_GRADE).flat();
+  assert(referenceWords.length === 66, `Expected 66 reference vocabulary entries, found ${referenceWords.length}`);
+  const normalizeTerm = (value) => value.toLowerCase().replace(/[^a-z]/g, '');
+  const referenceHeadwords = referenceWords.map((word) => normalizeTerm(word.latin));
+  assert(
+    new Set(referenceHeadwords).size === referenceHeadwords.length,
+    'Reference vocabulary contains duplicate headwords'
+  );
+  assert(REFERENCE_INDEX_WORDS.length === 392, `Expected 392 index entries, found ${REFERENCE_INDEX_WORDS.length}`);
+  const indexHeadwords = REFERENCE_INDEX_WORDS.map(([latin]) => normalizeTerm(latin));
+  assert(new Set(indexHeadwords).size === indexHeadwords.length, 'Reference index contains duplicate headwords');
+
+  const vocabulary = new Set(
+    Object.values(GRADE_WORDS).flat().map((word) => normalizeTerm(word.latin))
+  );
+  referenceHeadwords.forEach((headword) => {
+    const occurrences = Object.values(GRADE_WORDS).flat()
+      .filter((word) => normalizeTerm(word.latin) === headword).length;
+    assert(occurrences === 1, `Reference headword should appear once: ${headword}`);
+  });
+  indexHeadwords.forEach((headword) => {
+    assert(vocabulary.has(headword), `Reference index headword is missing from lessons: ${headword}`);
+  });
+
+  const normalizedPhrases = LATIN_PHRASES.map((phrase) => normalizeTerm(phrase.latin));
+  assert(new Set(normalizedPhrases).size === normalizedPhrases.length, 'Duplicate Latin phrase text');
+  LATIN_PHRASES.forEach((phrase) => {
+    assert(phrase.latin && phrase.meaning && phrase.note, `Incomplete phrase: ${phrase.id}`);
+    assert(Array.isArray(phrase.linkedWords) && phrase.linkedWords.length > 0, `Phrase has no links: ${phrase.id}`);
+    assert(
+      phrase.linkedWords.some((word) => vocabulary.has(word.toLowerCase().replace(/[^a-z]/g, ''))),
+      `Phrase cannot match a lesson: ${phrase.id}`
+    );
+  });
+
+  LATIN_CULTURE_CARDS.forEach((card) => {
+    assert(card.minGrade >= 3 && (card.maxGrade || 8) <= 8, `Invalid culture grade range: ${card.id}`);
+    assert(card.sourceImages.length > 0, `Culture card needs a source image: ${card.id}`);
+    card.sourceImages.forEach((image) => {
+      assert(/^IMG_\d+\.jpeg$/.test(image), `Invalid culture source image reference: ${image}`);
+    });
+  });
+
+  CLASSROOM_LATIN_PHRASES.forEach((phrase) => {
+    assert(phrase.minGrade >= 3 && (phrase.maxGrade || 8) <= 8, `Invalid classroom grade range: ${phrase.id}`);
+    assert(phrase.latin && phrase.english && phrase.category, `Incomplete classroom phrase: ${phrase.id}`);
+  });
 }
 
 function checkElementIds() {
@@ -61,9 +159,39 @@ function checkLessonLoopHooks() {
   });
 }
 
+function checkVocabularyStudyHooks() {
+  [
+    'studyPage',
+    'vocabularySearch',
+    'data-study-mode="flashcards"',
+    'data-flashcard-duration="3"',
+    'flashcardStart',
+    'function tickFlashcards()',
+    "name || 'Learner'"
+  ].forEach((needle) => {
+    assert(app.includes(needle) || html.includes(needle), `Expected vocabulary study hook not found: ${needle}`);
+  });
+}
+
+function checkDictionaryHooks() {
+  [
+    'dictionaryPage',
+    'dictionaryButton',
+    'dictionarySearch',
+    'dictionaryGradeFilter',
+    'function getDictionaryWords()',
+    'function renderDictionary()'
+  ].forEach((needle) => {
+    assert(app.includes(needle) || html.includes(needle), `Expected dictionary hook not found: ${needle}`);
+  });
+}
+
 checkJavaScriptSyntax();
+checkContentData();
 checkElementIds();
 checkCssBraces();
 checkLessonLoopHooks();
+checkVocabularyStudyHooks();
+checkDictionaryHooks();
 
 console.log('Smoke tests passed.');

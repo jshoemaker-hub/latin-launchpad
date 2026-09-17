@@ -21,7 +21,7 @@ By the end of grade 3, a student can:
 - identify at least 15 English words that come from studied Latin roots (e.g., *aqua* → aquarium, *stella* → stellar)
 - recognize that Latin words change their endings, without yet naming the cases
 
-**Vocabulary target:** ~50 concrete nouns; 10 high-frequency verbs in dictionary form (*amo, voco, porto*).
+**Vocabulary target:** ~150 foundational words, including concrete nouns, numbers, adjectives, and high-frequency verbs in dictionary form (*amo, voco, porto*).
 
 ---
 

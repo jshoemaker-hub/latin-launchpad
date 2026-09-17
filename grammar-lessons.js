@@ -796,5 +796,89 @@ const GRAMMAR_LESSONS = [
         explanation: 'clarissimus is superlative.'
       }
     ]
+  },
+  {
+    id: 'grade5-grammar-stems-pronouns',
+    grade: 5,
+    kind: 'grammar',
+    title: 'Grade 5 Grammar: Stems and Emphasis',
+    description: 'Use the genitive to find a noun stem and notice when Latin states a subject pronoun.',
+    sourceNote: 'References: IMG_2451.jpeg and IMG_2454.jpeg on genitive stems and emphatic personal pronouns.',
+    focus: ['genitive singular', 'noun stems', 'pronoun emphasis'],
+    words: [
+      { latin: 'rex, regis', english: 'king; stem reg-', emoji: '👑', prompt: 'Which form reveals the stem reg-?', choices: ['regis', 'rex', 'regem only', 'reges only'], hint: 'Remove the genitive singular ending -is.', explanation: 'The genitive regis reveals the stem reg-.' },
+      { latin: 'nomen, nominis', english: 'name; stem nomin-', emoji: '🏷️', prompt: 'What stem comes from nominis?', choices: ['nomin-', 'nom-', 'nomen-', 'nominis-'], hint: 'Drop -is from the genitive singular.', explanation: 'nominis minus -is gives nomin-.' },
+      { latin: 'ego amo', english: 'I myself love / I do love', emoji: '👤', prompt: 'Why might Latin include ego when amo already means “I love”?', choices: ['for emphasis or contrast', 'because amo has no subject', 'to make the verb plural', 'to mark a direct object'], hint: 'The verb ending already identifies the subject.', explanation: 'A stated subject pronoun often adds emphasis or contrast.' },
+      { latin: 'tu amas', english: 'you yourself love / you do love', emoji: '👉', prompt: 'What special force can tu add to amas?', choices: ['emphasis on you', 'past time', 'plural number', 'passive voice'], hint: 'Compare “you love” with “you yourself love.”', explanation: 'tu is often unnecessary unless the speaker wants contrast or emphasis.' },
+      { latin: 'amat', english: 'he / she / it loves', emoji: '❤️', prompt: 'Why can amat stand without is or ea?', choices: ['the -t ending identifies third-person singular', 'Latin has no pronouns', 'amat is a noun', 'word order supplies the subject'], hint: 'Latin verb endings carry person and number.', explanation: 'The verb ending normally makes an unstressed subject pronoun unnecessary.' }
+    ]
+  },
+  {
+    id: 'grade6-grammar-preposition-cases',
+    grade: 6,
+    kind: 'grammar',
+    title: 'Grade 6 Grammar: Prepositions Choose a Case',
+    description: 'Sort common prepositions by case and use in and sub for motion or location.',
+    sourceNote: 'References: IMG_2455.jpeg-IMG_2456.jpeg on ablative and accusative prepositions.',
+    focus: ['ablative prepositions', 'accusative prepositions', 'motion and location'],
+    words: [
+      { latin: 'cum amico', english: 'with a friend', emoji: '🤝', prompt: 'Which case follows cum?', choices: ['ablative', 'accusative', 'nominative', 'vocative'], hint: 'cum belongs with the ablative group.', explanation: 'cum takes the ablative: cum amico.' },
+      { latin: 'sine aqua', english: 'without water', emoji: '🚫', prompt: 'Which case follows sine?', choices: ['ablative', 'accusative', 'genitive', 'nominative'], hint: 'Remember a/ab, cum, de, e/ex, pro, sine.', explanation: 'sine takes the ablative.' },
+      { latin: 'ad urbem', english: 'toward the city', emoji: '➡️', prompt: 'Which case follows ad?', choices: ['accusative', 'ablative', 'dative', 'genitive'], hint: 'ad often expresses direction.', explanation: 'ad takes the accusative and often points toward a destination.' },
+      { latin: 'per silvam', english: 'through the forest', emoji: '🌲', prompt: 'Which case follows per?', choices: ['accusative', 'ablative', 'nominative', 'vocative'], hint: 'per belongs with the accusative group.', explanation: 'per takes the accusative.' },
+      { latin: 'in urbem', english: 'into the city', emoji: '🏙️', prompt: 'Why is urbem accusative here?', choices: ['in expresses motion into', 'in always takes accusative', 'urbs is plural', 'the phrase shows possession'], hint: 'Ask whether the phrase shows motion or location.', explanation: 'With motion toward or into, in takes the accusative.' },
+      { latin: 'in urbe', english: 'in the city', emoji: '📍', prompt: 'Why is urbe ablative here?', choices: ['in expresses location', 'in always takes ablative', 'urbs is the subject', 'the phrase shows time'], hint: 'There is no movement into the city.', explanation: 'With location, in takes the ablative.' }
+    ]
+  },
+  {
+    id: 'grade7-grammar-present-systems',
+    grade: 7,
+    kind: 'grammar',
+    title: 'Grade 7 Grammar: Third and Fourth Conjugations',
+    description: 'Compare present-system forms and recognize how Latin tenses map into English.',
+    sourceNote: 'References: IMG_2460.jpeg-IMG_2461.jpeg and IMG_2480.jpeg on present systems and tense translation.',
+    focus: ['third conjugation', 'fourth conjugation', 'present-system tenses'],
+    words: [
+      { latin: 'regit', english: 'he / she rules', emoji: '👑', prompt: 'What does regit mean?', choices: ['he / she rules', 'he / she will rule', 'he / she ruled', 'he / she is ruled'], hint: 'The third-conjugation present uses -it.', explanation: 'regit is present active, third-person singular.' },
+      { latin: 'regent', english: 'they will rule', emoji: '🔮', prompt: 'What tense is regent?', choices: ['future', 'present', 'imperfect', 'perfect'], hint: 'Third-conjugation future forms use -am and -es, -et, -emus, -etis, -ent.', explanation: 'regent is future active: they will rule.' },
+      { latin: 'audit', english: 'he / she hears', emoji: '👂', prompt: 'What does audit mean?', choices: ['he / she hears', 'he / she will hear', 'he / she heard', 'he / she is heard'], hint: 'The fourth-conjugation stem keeps its i.', explanation: 'audit is present active, third-person singular.' },
+      { latin: 'audiet', english: 'he / she will hear', emoji: '🔮', prompt: 'What tense is audiet?', choices: ['future', 'present', 'perfect', 'pluperfect'], hint: 'Fourth-conjugation future includes -ie-.', explanation: 'audiet means he or she will hear.' },
+      { latin: 'regebat', english: 'he / she was ruling', emoji: '⏳', prompt: 'Which English form best shows the imperfect?', choices: ['was ruling', 'ruled once', 'will rule', 'has ruled'], hint: 'The imperfect often describes ongoing or repeated past action.', explanation: 'regebat can mean was ruling, used to rule, or kept ruling.' },
+      { latin: 'audit', english: 'he / she hears; is hearing', emoji: '👂', prompt: 'Which two English translations can fit the Latin present?', choices: ['hears; is hearing', 'heard; had heard', 'will hear; will have heard', 'was heard; has been heard'], hint: 'Latin does not require a separate progressive form.', explanation: 'A Latin present can match either simple or progressive English.' }
+    ]
+  },
+  {
+    id: 'grade8-grammar-perfect-stems-ablatives',
+    grade: 8,
+    kind: 'grammar',
+    title: 'Grade 8 Grammar: Perfect Stems and Ablatives',
+    description: 'Build perfect forms and distinguish an instrument from a living agent.',
+    sourceNote: 'References: IMG_2465.jpeg-IMG_2466.jpeg and IMG_2470.jpeg-IMG_2472.jpeg.',
+    focus: ['perfect stem', 'active and passive endings', 'ablative of means and agent'],
+    words: [
+      { latin: 'dixi', english: 'I said', emoji: '🗣️', prompt: 'What is the perfect stem of dico, dicere, dixi, dictus?', choices: ['dix-', 'dic-', 'dict-', 'di-'], hint: 'Drop -i from the third principal part.', explanation: 'dixi minus -i gives the perfect stem dix-.' },
+      { latin: 'venerunt', english: 'they came', emoji: '🚶', prompt: 'Which ending marks third-person plural perfect active?', choices: ['-erunt', '-ntur', '-bant', '-ent'], hint: 'Perfect active endings include -i, -isti, -it, -imus, -istis, -erunt.', explanation: 'venerunt ends in -erunt: they came.' },
+      { latin: 'regitur', english: 'he / she / it is ruled', emoji: '👑', prompt: 'Which ending marks third-person singular passive?', choices: ['-tur', '-t', '-mus', '-nt'], hint: 'Passive endings include -r, -ris, -tur, -mur, -mini, -ntur.', explanation: '-tur marks third-person singular passive.' },
+      { latin: 'gladio pugnat', english: 'he fights with a sword', emoji: '🗡️', prompt: 'What use of the ablative is gladio?', choices: ['means or instrument', 'living agent', 'place from which', 'possession'], hint: 'A sword is a non-living instrument.', explanation: 'The ablative of means uses no preposition for a non-living instrument.' },
+      { latin: 'a milite defenditur', english: 'it is defended by the soldier', emoji: '🛡️', prompt: 'Why does a milite use a/ab?', choices: ['the agent is a living person', 'miles is an instrument', 'every ablative needs a preposition', 'the phrase shows motion'], hint: 'Living agents in passive sentences use a/ab plus ablative.', explanation: 'The soldier is a living agent, so Latin uses a milite.' },
+      { latin: 'scuto defenditur', english: 'he is defended with a shield', emoji: '🛡️', prompt: 'Why is there no preposition before scuto?', choices: ['the shield is a means or instrument', 'the shield is a living agent', 'scutum is nominative', 'the verb is active'], hint: 'Compare a milite with scuto.', explanation: 'A non-living means uses the ablative without a preposition.' }
+    ]
+  },
+  {
+    id: 'grade8-grammar-patterns-pronouns',
+    grade: 8,
+    kind: 'grammar',
+    title: 'Grade 8 Grammar: Sentence Patterns and Pronoun Families',
+    description: 'Label common sentence jobs and distinguish major pronoun families.',
+    sourceNote: 'References: IMG_2477.jpeg-IMG_2481.jpeg on sentence patterns and pronoun families.',
+    focus: ['sentence patterns', 'predicate words', 'pronoun families'],
+    words: [
+      { latin: 'Puella rosam portat.', english: 'subject + verb + direct object', emoji: '🌹', prompt: 'What job does rosam have?', choices: ['direct object', 'subject', 'predicate nominative', 'indirect object'], hint: 'The girl carries the rose.', explanation: 'rosam receives the action and is the direct object.' },
+      { latin: 'Marcus est poeta.', english: 'subject + linking verb + predicate nominative', emoji: '📜', prompt: 'What job does poeta have?', choices: ['predicate nominative', 'direct object', 'indirect object', 'adverb'], hint: 'poeta renames Marcus after est.', explanation: 'A predicate nominative renames the subject after a linking verb.' },
+      { latin: 'Via est longa.', english: 'subject + linking verb + predicate adjective', emoji: '🛣️', prompt: 'What job does longa have?', choices: ['predicate adjective', 'direct object', 'subject', 'indirect object'], hint: 'longa describes via after est.', explanation: 'A predicate adjective describes the subject after a linking verb.' },
+      { latin: 'Magister discipulo librum dat.', english: 'teacher gives the student a book', emoji: '📚', prompt: 'What job does discipulo have?', choices: ['indirect object', 'direct object', 'subject', 'predicate adjective'], hint: 'The student receives the book.', explanation: 'The dative discipulo is the indirect object.' },
+      { latin: 'qui, quae, quod', english: 'who / which; relative pronoun', emoji: '🔗', prompt: 'Which pronoun family connects a describing clause?', choices: ['relative', 'personal', 'interrogative', 'reflexive'], hint: 'A relative pronoun relates its clause to an earlier noun.', explanation: 'qui, quae, quod introduces a relative clause.' },
+      { latin: 'quis? quid?', english: 'who? what?; interrogative pronoun', emoji: '❓', prompt: 'Which pronoun family asks a question?', choices: ['interrogative', 'relative', 'intensive', 'possessive'], hint: 'Interrogative comes from a word meaning to ask.', explanation: 'quis? and quid? are interrogative pronouns.' }
+    ]
   }
 ];

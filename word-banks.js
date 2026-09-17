@@ -773,3 +773,110 @@ const GRADE_WORDS = {
     ]
   )
 };
+
+// Curated additions from ref/IMG_2472.jpeg and ref/IMG_2483.jpeg-IMG_2490.jpeg.
+// A headword is added only if it does not already occur anywhere in the grade banks.
+const REFERENCE_VOCABULARY_BY_GRADE = {
+  3: [
+    { latin: 'nomen', english: 'name', emoji: '🏷️' },
+    { latin: 'discipulus', english: 'student', emoji: '🧑‍🎓' },
+    { latin: 'magistra', english: 'female teacher', emoji: '👩‍🏫' },
+    { latin: 'tabella', english: 'writing tablet', emoji: '📋' },
+    { latin: 'sella', english: 'seat', emoji: '🪑' },
+    { latin: 'ianua', english: 'door', emoji: '🚪' },
+    { latin: 'folium', english: 'leaf / sheet of paper', emoji: '📄' },
+    { latin: 'culpa', english: 'fault / blame', emoji: '🙋' }
+  ],
+  4: [
+    { latin: 'campus', english: 'field / plain', emoji: '🌾' },
+    { latin: 'collis', english: 'hill', emoji: '⛰️' },
+    { latin: 'mare', english: 'sea', emoji: '🌊' },
+    { latin: 'ventus', english: 'wind', emoji: '💨' },
+    { latin: 'saxum', english: 'rock', emoji: '🪨' },
+    { latin: 'frater', english: 'brother', emoji: '👦' },
+    { latin: 'soror', english: 'sister', emoji: '👧' },
+    { latin: 'mater', english: 'mother', emoji: '👩' },
+    { latin: 'nauta', english: 'sailor', emoji: '⛵' }
+  ],
+  5: [
+    { latin: 'provincia', english: 'province', emoji: '🗺️' },
+    { latin: 'portus', english: 'harbor', emoji: '⚓' },
+    { latin: 'pons', english: 'bridge', emoji: '🌉' },
+    { latin: 'vallum', english: 'wall / rampart', emoji: '🧱' },
+    { latin: 'scutum', english: 'shield', emoji: '🛡️' },
+    { latin: 'piscator', english: 'fisherman', emoji: '🎣' },
+    { latin: 'orator', english: 'speaker / orator', emoji: '🗣️' },
+    { latin: 'ad', english: 'to / toward / at', emoji: '➡️' },
+    { latin: 'ante', english: 'before', emoji: '⏮️' },
+    { latin: 'post', english: 'after / behind', emoji: '⏭️' },
+    { latin: 'festino', english: 'hurry / hasten', emoji: '⏩' }
+  ],
+  6: [
+    { latin: 'a / ab', english: 'by / from', emoji: '⬅️' },
+    { latin: 'de', english: 'about / down from', emoji: '↘️' },
+    { latin: 'e / ex', english: 'out of / from', emoji: '↗️' },
+    { latin: 'per', english: 'through', emoji: '↔️' },
+    { latin: 'pro', english: 'for / on behalf of', emoji: '🤝' },
+    { latin: 'sine', english: 'without', emoji: '🚫' },
+    { latin: 'sub', english: 'under / up to', emoji: '⬇️' },
+    { latin: 'trans', english: 'across', emoji: '↪️' },
+    { latin: 'cur?', english: 'why?', emoji: '❓' },
+    { latin: 'ubi?', english: 'where?', emoji: '📍' },
+    { latin: 'hodie', english: 'today', emoji: '📅' },
+    { latin: 'nunc', english: 'now', emoji: '⏱️' },
+    { latin: 'semper', english: 'always', emoji: '♾️' }
+  ],
+  7: [
+    { latin: 'circum', english: 'around', emoji: '🔄' },
+    { latin: 'contra', english: 'against', emoji: '⚔️' },
+    { latin: 'coram', english: 'in the presence of', emoji: '👥' },
+    { latin: 'inter', english: 'between / among', emoji: '↔️' },
+    { latin: 'ob', english: 'because of', emoji: '🔗' },
+    { latin: 'prae', english: 'before / in front of', emoji: '⏩' },
+    { latin: 'propter', english: 'on account of', emoji: '💭' },
+    { latin: 'quando?', english: 'when?', emoji: '🕰️' },
+    { latin: 'quid?', english: 'what?', emoji: '❓' },
+    { latin: 'quis?', english: 'who?', emoji: '👤' },
+    { latin: 'quomodo?', english: 'how?', emoji: '❓' },
+    { latin: 'quot?', english: 'how many?', emoji: '🔢' },
+    { latin: 'cras', english: 'tomorrow', emoji: '🌅' },
+    { latin: 'heri', english: 'yesterday', emoji: '🌇' },
+    { latin: 'numquam', english: 'never', emoji: '🚫' },
+    { latin: 'saepe', english: 'often', emoji: '🔁' }
+  ],
+  8: [
+    { latin: 'capio', english: 'take / capture', emoji: '✋', principalParts: 'capio, capere, cepi, captus' },
+    { latin: 'duco', english: 'lead', emoji: '🧭', principalParts: 'duco, ducere, duxi, ductus' },
+    { latin: 'fugio', english: 'flee', emoji: '🏃', principalParts: 'fugio, fugere, fugi, fugitus' },
+    { latin: 'invenio', english: 'find / discover', emoji: '🔎', principalParts: 'invenio, invenire, inveni, inventus' },
+    { latin: 'iacio', english: 'throw / hurl', emoji: '🥏', principalParts: 'iacio, iacere, ieci, iactus' },
+    { latin: 'iungo', english: 'join / connect', emoji: '🔗', principalParts: 'iungo, iungere, iunxi, iunctus' },
+    { latin: 'sentio', english: 'feel / perceive', emoji: '💭', principalParts: 'sentio, sentire, sensi, sensus' },
+    { latin: 'veho', english: 'carry / convey', emoji: '🛒', principalParts: 'veho, vehere, vexi, vectus' },
+    { latin: 'vinco', english: 'conquer', emoji: '🏆', principalParts: 'vinco, vincere, vici, victus' }
+  ]
+};
+
+function normalizeVocabularyHeadword(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z]/g, '');
+}
+
+const existingReferenceHeadwords = new Set(
+  Object.values(GRADE_WORDS).flat().map((word) => normalizeVocabularyHeadword(word.latin))
+);
+
+Object.entries(REFERENCE_VOCABULARY_BY_GRADE).forEach(([grade, words]) => {
+  words.forEach((word) => {
+    const headword = normalizeVocabularyHeadword(word.latin);
+    if (existingReferenceHeadwords.has(headword)) return;
+    GRADE_WORDS[grade].push({
+      ...word,
+      sourceImages: ['IMG_2472.jpeg', 'IMG_2483.jpeg-IMG_2490.jpeg']
+    });
+    existingReferenceHeadwords.add(headword);
+  });
+});
