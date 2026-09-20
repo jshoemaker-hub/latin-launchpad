@@ -162,6 +162,7 @@ function checkLessonLoopHooks() {
 function checkVocabularyStudyHooks() {
   [
     'studyPage',
+    'headerGradeSelect',
     'vocabularySearch',
     'data-study-mode="flashcards"',
     'data-flashcard-duration="300"',

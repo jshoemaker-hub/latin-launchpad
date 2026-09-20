@@ -22,7 +22,7 @@ body {
   background: linear-gradient(180deg, #f3f6fb 0%, #fbfcff 100%);
 }
 
-button, input {
+button, input, select {
   font: inherit;
 }
 
@@ -47,9 +47,9 @@ button:disabled {
 
 .app-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 22px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
   margin-bottom: 30px;
   padding-bottom: 18px;
   border-bottom: 1px solid var(--border);
@@ -67,9 +67,42 @@ button:disabled {
 
 .header-actions {
   display: flex;
+  align-items: center;
+  width: 100%;
   gap: 8px;
-  flex-wrap: nowrap;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.header-grade-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin: 0;
+  padding: 5px 7px 5px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.header-grade-control select {
+  min-width: 54px;
+  border: 0;
+  border-radius: 999px;
+  padding: 5px 22px 5px 8px;
+  background-color: var(--primary-soft);
+  color: var(--primary);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.header-grade-control select:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
 }
 
 .tagline {
@@ -3024,6 +3057,10 @@ input {
   .header-actions {
     flex-wrap: wrap;
     justify-content: flex-start;
+  }
+
+  .header-grade-control {
+    order: -1;
   }
 
   .seek-find-layout {

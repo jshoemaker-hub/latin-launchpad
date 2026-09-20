@@ -594,6 +594,7 @@
 //  STORAGE
 // ═══════════════════════════════════════
 const STORE = 'latinFlashcards_v2';
+const GRADE_STORE = 'latinLaunchpadGrade';
 const SESSION_LENGTHS = [5, 10, 15];
 function load() { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch { return {}; } }
 function save(d) { localStorage.setItem(STORE, JSON.stringify(d)); }
@@ -601,8 +602,13 @@ function normaliseSessionLength(mode) {
   const minutes = Number(mode);
   return SESSION_LENGTHS.includes(minutes) ? minutes : SESSION_LENGTHS[0];
 }
+function normaliseGrade(grade) {
+  const value = Number(grade);
+  return value >= 3 && value <= 8 ? value : 3;
+}
 function getData() {
   const d = load();
+  const sharedGrade = localStorage.getItem(GRADE_STORE);
   return {
     name:            d.name            || '',
     sessions:        d.sessions        || 0,
@@ -612,7 +618,7 @@ function getData() {
     weekData:        d.weekData        || {},
     sessionLog:      d.sessionLog      || [],
     missedWords:     d.missedWords     || {},
-    grade:           d.grade           || 3,
+    grade:           normaliseGrade(sharedGrade || d.grade),
     mode:            normaliseSessionLength(d.mode),
     sessionType:     d.sessionType     || 'visual',
   };
@@ -889,11 +895,12 @@ function selectMode(m, type) {
 }
 
 function selectGrade(g) {
-  state.grade = g;
+  state.grade = normaliseGrade(g);
   document.querySelectorAll('.grade-chip').forEach(el =>
     el.classList.toggle('selected', parseInt(el.textContent.replace('Grade ',''))===g)
   );
-  const d = getData(); d.grade = g; save(d);
+  localStorage.setItem(GRADE_STORE, String(state.grade));
+  const d = getData(); d.grade = state.grade; save(d);
 }
 
 // ═══════════════════════════════════════

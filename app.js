@@ -58,6 +58,7 @@ const ENDING_HINTS = [
 
 const STORAGE_KEY = 'latinLaunchpadState';
 const PROFILES_STORAGE_KEY = 'latinLaunchpadProfiles';
+const GRADE_STORAGE_KEY = 'latinLaunchpadGrade';
 const GUEST_PROFILE_ID = 'guest';
 
 const SUPABASE_URL = 'https://fmwdkpjetpftuuposmog.supabase.co';
@@ -298,6 +299,7 @@ const elements = {
   signOutButton: document.getElementById('signOutButton'),
   signupNextButton: document.getElementById('signupNextButton'),
   studentNameInput: document.getElementById('studentNameInput'),
+  headerGradeSelect: document.getElementById('headerGradeSelect'),
   gradeGrid: document.getElementById('gradeGrid'),
   lessonCards: document.getElementById('lessonCards'),
   lessonTitle: document.getElementById('lessonTitle'),
@@ -1234,10 +1236,18 @@ function renderGradeOptions() {
     button.addEventListener('click', () => selectGrade(grade));
     elements.gradeGrid.appendChild(button);
   });
+  if (elements.headerGradeSelect) {
+    const hasGrade = VALID_GRADES.includes(AppState.grade);
+    elements.headerGradeSelect.value = hasGrade ? String(AppState.grade) : '';
+    elements.headerGradeSelect.disabled = !AppState.studentName;
+    if (hasGrade) localStorage.setItem(GRADE_STORAGE_KEY, String(AppState.grade));
+  }
 }
 
 function selectGrade(grade) {
+  if (!VALID_GRADES.includes(grade)) return;
   AppState.grade = grade;
+  localStorage.setItem(GRADE_STORAGE_KEY, String(grade));
   saveState();
   renderGradeOptions();
   renderLessonList();
@@ -4568,6 +4578,9 @@ function setupEvents() {
   });
   elements.changeGradeButton.addEventListener('click', () => {
     showPage('grade');
+  });
+  elements.headerGradeSelect.addEventListener('change', () => {
+    selectGrade(Number(elements.headerGradeSelect.value));
   });
   elements.backToLessons.addEventListener('click', () => {
     showLessonListOrOnboarding();
