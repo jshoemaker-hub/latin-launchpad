@@ -164,7 +164,9 @@ function checkVocabularyStudyHooks() {
     'studyPage',
     'vocabularySearch',
     'data-study-mode="flashcards"',
-    'data-flashcard-duration="3"',
+    'data-flashcard-duration="300"',
+    'data-flashcard-duration="600"',
+    'data-flashcard-duration="900"',
     'flashcardStart',
     'function tickFlashcards()',
     "name || 'Learner'"

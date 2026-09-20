@@ -71,6 +71,7 @@ function getSupabase() {
   return _supabaseClient;
 }
 const VALID_GRADES = [3, 4, 5, 6, 7, 8];
+const FLASHCARD_SESSION_DURATIONS = [300, 600, 900];
 const PUZZLE_CACHE = new Map();
 const QUESTION_COUNT_OPTIONS = [10, 25, 50, 100];
 const REVIEW_LESSON_ID = 'review-queue';
@@ -227,8 +228,8 @@ const StudyState = {
   index: 0,
   showingAnswer: false,
   running: false,
-  durationSeconds: 5,
-  remainingMs: 5000,
+  durationSeconds: 300,
+  remainingMs: 300000,
   timerId: null,
   lastTick: 0
 };
@@ -3924,9 +3925,11 @@ function renderFlashcard() {
       ${StudyState.showingAnswer && word.principalParts ? `<small>Headword: ${escapeHtml(word.latin)}</small>` : ''}
       ${StudyState.showingAnswer ? '' : renderSpeakButton(word.latin, 'Listen', 0.74)}
     </div>
-    <div class="flashcard-time">${(StudyState.remainingMs / 1000).toFixed(1)} seconds</div>
+    <div class="flashcard-time">${formatFlashcardTime(StudyState.remainingMs)}</div>
   `;
-  elements.flashcardStart.textContent = StudyState.running ? 'Pause timer' : 'Start timer';
+  elements.flashcardStart.textContent = StudyState.running
+    ? 'Pause timer'
+    : (StudyState.remainingMs <= 0 ? 'Restart timer' : 'Start timer');
   elements.flashcardFlip.textContent = StudyState.showingAnswer ? 'Show Latin' : 'Reveal answer';
   document.querySelectorAll('[data-flashcard-duration]').forEach((button) => {
     button.classList.toggle('active', Number(button.dataset.flashcardDuration) === StudyState.durationSeconds);
@@ -3942,8 +3945,15 @@ function resetFlashcardClock() {
 function moveFlashcard(direction) {
   if (StudyState.words.length === 0) return;
   StudyState.index = (StudyState.index + direction + StudyState.words.length) % StudyState.words.length;
-  resetFlashcardClock();
+  StudyState.showingAnswer = false;
   renderFlashcard();
+}
+
+function formatFlashcardTime(milliseconds) {
+  const totalSeconds = Math.max(0, Math.ceil(milliseconds / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
 function updateFlashcardClockDisplay() {
@@ -3952,23 +3962,20 @@ function updateFlashcardClockDisplay() {
   const progress = elements.flashcardStage.querySelector('.flashcard-progress span');
   const time = elements.flashcardStage.querySelector('.flashcard-time');
   if (progress) progress.style.width = `${elapsedPercent}%`;
-  if (time) time.textContent = `${Math.max(0, StudyState.remainingMs / 1000).toFixed(1)} seconds`;
+  if (time) time.textContent = formatFlashcardTime(StudyState.remainingMs);
 }
 
 function tickFlashcards() {
   const now = performance.now();
   StudyState.remainingMs -= now - StudyState.lastTick;
   StudyState.lastTick = now;
-  const shouldReveal = StudyState.remainingMs <= StudyState.durationSeconds * 500;
-  if (shouldReveal && !StudyState.showingAnswer) {
-    StudyState.showingAnswer = true;
-    renderFlashcard();
-  } else {
-    updateFlashcardClockDisplay();
-  }
   if (StudyState.remainingMs <= 0) {
-    moveFlashcard(1);
+    StudyState.remainingMs = 0;
+    stopFlashcardTimer();
+    renderFlashcard();
+    return;
   }
+  updateFlashcardClockDisplay();
 }
 
 function toggleFlashcardTimer() {
@@ -3991,7 +3998,10 @@ function stopFlashcardTimer() {
 }
 
 function setFlashcardDuration(seconds) {
-  StudyState.durationSeconds = seconds;
+  stopFlashcardTimer();
+  StudyState.durationSeconds = FLASHCARD_SESSION_DURATIONS.includes(seconds)
+    ? seconds
+    : FLASHCARD_SESSION_DURATIONS[0];
   resetFlashcardClock();
   renderFlashcard();
 }
@@ -4002,7 +4012,7 @@ function shuffleFlashcards() {
     [StudyState.words[index], StudyState.words[swapIndex]] = [StudyState.words[swapIndex], StudyState.words[index]];
   }
   StudyState.index = 0;
-  resetFlashcardClock();
+  StudyState.showingAnswer = false;
   renderFlashcard();
 }
 

@@ -63,7 +63,7 @@
     }
 
     /* Mode grid — now 3 cards */
-    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
     .mode-audio-row { margin-top: 0; }
     .mode-btn {
       background: white; border: 2px solid #e5e7eb; border-radius: 14px;
@@ -255,6 +255,11 @@
     }
     .no-speech-banner.show { display: block; }
 
+    @media (max-width: 560px) {
+      .mode-grid { grid-template-columns: 1fr; }
+      .mode-btn.audio-card { grid-column: auto; }
+    }
+
     /* ── Print ── */
     @media print {
       body { background: white; padding: 0; display: block; }
@@ -312,6 +317,11 @@
         <span class="mode-icon">🔥</span>
         <div class="mode-label">10 min</div>
         <div class="mode-sub">~30 cards · visual</div>
+      </div>
+      <div class="mode-btn" id="mode15" onclick="selectMode(15,'visual')">
+        <span class="mode-icon">📖</span>
+        <div class="mode-label">15 min</div>
+        <div class="mode-sub">~45 cards · visual</div>
       </div>
       <div class="mode-btn audio-card" id="modeAudio" onclick="selectMode(5,'audio')">
         <span class="mode-icon" style="margin-bottom:0">🎙️</span>
@@ -584,8 +594,13 @@
 //  STORAGE
 // ═══════════════════════════════════════
 const STORE = 'latinFlashcards_v2';
+const SESSION_LENGTHS = [5, 10, 15];
 function load() { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch { return {}; } }
 function save(d) { localStorage.setItem(STORE, JSON.stringify(d)); }
+function normaliseSessionLength(mode) {
+  const minutes = Number(mode);
+  return SESSION_LENGTHS.includes(minutes) ? minutes : SESSION_LENGTHS[0];
+}
 function getData() {
   const d = load();
   return {
@@ -598,7 +613,7 @@ function getData() {
     sessionLog:      d.sessionLog      || [],
     missedWords:     d.missedWords     || {},
     grade:           d.grade           || 3,
-    mode:            d.mode            || 5,
+    mode:            normaliseSessionLength(d.mode),
     sessionType:     d.sessionType     || 'visual',
   };
 }
@@ -850,13 +865,16 @@ function renderHome() {
 function updateModeHighlight() {
   document.getElementById('mode5').classList.remove('selected-visual','selected-audio');
   document.getElementById('mode10').classList.remove('selected-visual','selected-audio');
+  document.getElementById('mode15').classList.remove('selected-visual','selected-audio');
   document.getElementById('modeAudio').classList.remove('selected-visual','selected-audio');
   if (state.sessionType === 'audio') {
     document.getElementById('modeAudio').classList.add('selected-audio');
   } else if (state.mode === 5) {
     document.getElementById('mode5').classList.add('selected-visual');
-  } else {
+  } else if (state.mode === 10) {
     document.getElementById('mode10').classList.add('selected-visual');
+  } else {
+    document.getElementById('mode15').classList.add('selected-visual');
   }
   const btn = document.getElementById('startBtn');
   btn.textContent = state.sessionType === 'audio' ? '🎙️ Start audio →' : 'Start →';
@@ -864,10 +882,10 @@ function updateModeHighlight() {
 }
 
 function selectMode(m, type) {
-  state.mode = m;
+  state.mode = normaliseSessionLength(m);
   state.sessionType = type;
   updateModeHighlight();
-  const d = getData(); d.mode = m; d.sessionType = type; save(d);
+  const d = getData(); d.mode = state.mode; d.sessionType = type; save(d);
 }
 
 function selectGrade(g) {
@@ -889,7 +907,7 @@ function shuffle(arr) {
 
 function startSession() {
   const words = GRADE_WORDS[state.grade] || [];
-  const count = state.mode === 5 ? 15 : 30;
+  const count = state.mode * 3;
   state.deck    = shuffle(words).slice(0, count);
   state.index   = 0; state.correct = 0; state.missed = 0;
   state.results = []; state.flipped = false;
