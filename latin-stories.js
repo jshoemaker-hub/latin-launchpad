@@ -9,7 +9,7 @@ const LATIN_STORY_SCENES = [
     latinCue: 'Lucia uvas emit in foro.',
     englishCue: 'Lucia buys grapes in the forum.',
     listenFor: ['forum', 'via', 'taberna', 'panis', 'nummus'],
-    pictureCue: 'A busy Roman market with a fruit stall, bread, coins, and two curious children.',
+    pictureCue: 'Marcus and Lucia shop with their father in the Roman Forum.',
     illustrationPrompt:
       'Children\'s textbook illustration of Marcus and Lucia shopping with their father in the Roman Forum, fruit stall, bread seller, denarius coin, warm daylight, historically plausible Roman clothing, no text.',
     visual: {
@@ -28,7 +28,7 @@ const LATIN_STORY_SCENES = [
     latinCue: 'Rufus in horto currit.',
     englishCue: 'Rufus runs in the garden.',
     listenFor: ['canis', 'hortus', 'arbor', 'mensa', 'currit'],
-    pictureCue: 'A white dog under a garden tree, flowers nearby, and motion across the grass.',
+    pictureCue: 'Rufus runs through a Roman garden.',
     illustrationPrompt:
       'Children\'s textbook illustration of a white Roman house dog running through a villa garden with flowers, a tree, and a marble table, playful but calm, historically plausible setting, no text.',
     visual: {
@@ -47,7 +47,7 @@ const LATIN_STORY_SCENES = [
     latinCue: 'Quintus aquam frigidam timet.',
     englishCue: 'Quintus is afraid of the cold water.',
     listenFor: ['thermae', 'aqua', 'porta', 'corpus', 'sedeo'],
-    pictureCue: 'A Roman bath interior with a pool, columns, steam, and a hesitant student at the edge.',
+    pictureCue: 'Quintus visits the Roman baths with his father.',
     illustrationPrompt:
       'Children\'s textbook illustration of a Roman bathhouse with columns, a cold pool, gentle steam, and a boy with his father, respectful classroom style, no nudity, no text.',
     visual: {
@@ -66,7 +66,7 @@ const LATIN_STORY_SCENES = [
     latinCue: 'Marcus cenam parat.',
     englishCue: 'Marcus prepares dinner.',
     listenFor: ['cena', 'mensa', 'cibus', 'servus', 'paro'],
-    pictureCue: 'A Roman dining room with a table, bread, olives, cups, and a servant preparing food.',
+    pictureCue: 'A servant prepares dinner in a Roman home.',
     illustrationPrompt:
       'Children\'s textbook illustration of a Roman dinner preparation scene with bread, olives, cups, a low dining table, and a servant arranging food, warm interior light, no text.',
     visual: {
@@ -85,7 +85,7 @@ const LATIN_STORY_SCENES = [
     latinCue: 'Agricola oves custodit.',
     englishCue: 'The farmer guards the sheep.',
     listenFor: ['agricola', 'ager', 'canis', 'ovis', 'custodit'],
-    pictureCue: 'A farmer by a sheepfold at twilight with a faithful dog watching the field.',
+    pictureCue: 'A farmer and his dog guard sheep near a Roman villa.',
     illustrationPrompt:
       'Children\'s textbook illustration of a Roman farmer near a sheepfold at twilight with a faithful dog and sheep, gentle suspense, no gore, historically plausible farm tools, no text.',
     visual: {
@@ -104,7 +104,7 @@ const LATIN_STORY_SCENES = [
     latinCue: 'Iulia verba nova scribit.',
     englishCue: 'Iulia writes new words.',
     listenFor: ['schola', 'magister', 'liber', 'tabula', 'scribit'],
-    pictureCue: 'A Roman classroom with tablets, styluses, a teacher, and students reciting together.',
+    pictureCue: 'A teacher and students study together in a Roman school.',
     illustrationPrompt:
       'Children\'s textbook illustration of a Roman classroom, teacher with students using wax tablets and styluses, bright focused mood, historically plausible clothing, no text.',
     visual: {
@@ -123,7 +123,7 @@ const LATIN_STORY_SCENES = [
     latinCue: 'Lucius navem in flumine videt.',
     englishCue: 'Lucius sees a ship in the river.',
     listenFor: ['puer', 'navis', 'flumen', 'aqua', 'video'],
-    pictureCue: 'A boy at the Tiber watching a boat with white sail and rowers in the water.',
+    pictureCue: 'Lucius watches sailors on the Tiber River.',
     illustrationPrompt:
       'Children\'s textbook illustration of a Roman boy sitting by the Tiber River watching a boat with sailors and white sail, hopeful mood, clear vocabulary objects, no text.',
     visual: {
@@ -142,7 +142,7 @@ const LATIN_STORY_SCENES = [
     latinCue: 'Romulus urbem novam aedificat.',
     englishCue: 'Romulus builds a new city.',
     listenFor: ['urbs', 'rex', 'murus', 'pastor', 'aedificat'],
-    pictureCue: 'Two brothers near the hills of early Rome, with a simple wall and shepherd imagery.',
+    pictureCue: 'Romulus and Remus sit with a shepherd near early Rome.',
     illustrationPrompt:
       'Children\'s textbook illustration of young Romulus and Remus near the hills of early Rome with a shepherd, simple stone wall, mythic but age-appropriate, no violence, no text.',
     visual: {
@@ -161,7 +161,7 @@ const LATIN_STORY_SCENES = [
     latinCue: 'Mercator piper in portu emit.',
     englishCue: 'The merchant buys pepper in the harbor.',
     listenFor: ['mercator', 'nauta', 'portus', 'navis', 'pretium'],
-    pictureCue: 'A harbor with ships, amphorae, spice goods, and a merchant speaking with a sailor.',
+    pictureCue: 'A merchant speaks with a sailor in a Roman harbor.',
     illustrationPrompt:
       'Children\'s textbook illustration of a Roman harbor trade scene with merchant, sailor, ships, amphorae, spices, and sunlight on the water, historically plausible, no text.',
     visual: {
@@ -180,7 +180,7 @@ const LATIN_STORY_SCENES = [
     latinCue: 'Aeneas patrem portat.',
     englishCue: 'Aeneas carries his father.',
     listenFor: ['Aeneas', 'pater', 'filius', 'navis', 'portat'],
-    pictureCue: 'Aeneas helping his father toward ships, with Troy distant and stylized in the background.',
+    pictureCue: 'Aeneas carries Anchises and leads Ascanius away from Troy.',
     illustrationPrompt:
       'Children\'s textbook illustration of Aeneas carrying Anchises while leading Ascanius toward ships, Troy distant in stylized warm light, heroic and age-appropriate, no graphic danger, no text.',
     visual: {
