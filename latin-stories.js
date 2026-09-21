@@ -326,6 +326,72 @@ const LATIN_SEEK_FIND_SCENES = {
   }
 };
 
+// Original bilingual readings used by the in-app full-story reader. Keeping the
+// paired paragraphs together prevents the Latin and English columns from drifting.
+const LATIN_FULL_STORIES = {
+  'forum-market': [
+    { latin: 'Marcus et Lucia cum patre ad forum Romanum ambulant. Via plena est civibus, mercatoribus, et servis. Lucia multas tabernas videt et uvas pulchras desiderat.', english: 'Marcus and Lucia walk with their father to the Roman Forum. The road is full of citizens, merchants, and servants. Lucia sees many shops and wants some beautiful grapes.' },
+    { latin: 'Pater ad tabernam venit. Mercator panem, mala, et uvas vendit. Lucia uvas emit, et Marcus magnum panem portat.', english: 'Their father comes to a shop. The merchant sells bread, apples, and grapes. Lucia buys grapes, and Marcus carries a large loaf of bread.' },
+    { latin: 'Mercator pretium dicit, et pater nummos numerat. Unus nummus in viam cadit. Marcus nummum invenit et patri reddit.', english: 'The merchant states the price, and their father counts the coins. One coin falls into the road. Marcus finds the coin and returns it to his father.' },
+    { latin: 'Familia per forum ambulat et templum magnum spectat. Lucia dicit, “Forum est pulchrum et valde occupatum.” Tum omnes laeti domum redeunt.', english: 'The family walks through the forum and looks at a great temple. Lucia says, “The forum is beautiful and very busy.” Then everyone happily returns home.' }
+  ],
+  'garden-dog': [
+    { latin: 'Rufus, canis celer, in horto villae habitat. Sub arbore dormit, sed parvam felem prope rosas videt. Statim surgit et per herbam currit.', english: 'Rufus, a fast dog, lives in the villa garden. He sleeps under a tree, but sees a small cat near the roses. He immediately gets up and runs across the grass.' },
+    { latin: 'Felis ad mensam salit, et Rufus circa mensam currit. Puella e villa exit et clamat, “Rufe, consiste!” Canis vocem audit et ad puellam redit.', english: 'The cat jumps onto a table, and Rufus runs around the table. A girl comes out of the villa and calls, “Rufus, stop!” The dog hears her voice and returns to the girl.' },
+    { latin: 'Subito puella sonum apud portam audit. Hospes ignotus intrare conatur. Rufus ad portam festinat et magna voce latrat.', english: 'Suddenly the girl hears a sound near the gate. An unknown visitor tries to enter. Rufus hurries to the gate and barks loudly.' },
+    { latin: 'Pater ad portam venit et hospitem salutat. Puella Rufum laudat: “Canis bonus et fortis es.” Rufus caudam movet et iterum sub arbore quiescit.', english: 'Her father comes to the gate and greets the visitor. The girl praises Rufus: “You are a good and brave dog.” Rufus wags his tail and rests under the tree again.' }
+  ],
+  'roman-baths': [
+    { latin: 'Quintus cum patre ad thermas Romanas venit. Per portam magnam intrant et vestimenta deponunt. Quintus columnas altas et multos cives videt.', english: 'Quintus comes with his father to the Roman baths. They enter through a great doorway and put aside their clothes. Quintus sees tall columns and many citizens.' },
+    { latin: 'Primum in conclavi tepido sedent. Deinde ad aquam calidam ambulant. Vapor ascendit, et Quintus corpus calefacit.', english: 'First they sit in a warm room. Then they walk to the hot water. Steam rises, and Quintus warms his body.' },
+    { latin: 'Postea pater ad piscinam frigidam procedit. Quintus aquam frigidam timet, sed pater ridet et dicit, “Aqua corpus confirmat.”', english: 'Afterward his father goes to the cold pool. Quintus is afraid of the cold water, but his father laughs and says, “The water strengthens the body.”' },
+    { latin: 'Quintus pedem in aquam ponit, deinde totus descendit. “Frigida est, sed bona!” clamat. Pater et filius e thermis laeti discedunt.', english: 'Quintus puts a foot in the water, then goes all the way down. “It is cold, but good!” he shouts. Father and son leave the baths happily.' }
+  ],
+  'roman-dinner': [
+    { latin: 'Gaius hospites ad cenam vocat. Marcus servus cibum parat et mensam ornat. In culina panis, olivae, caseus, et mala sunt.', english: 'Gaius invites guests to dinner. Marcus the servant prepares the food and decorates the table. In the kitchen there are bread, olives, cheese, and apples.' },
+    { latin: 'Marcus ad forum festinat quod piscis deest. Piscem recens emit et domum portat. Coquus piscem cum herbis parat.', english: 'Marcus hurries to the forum because fish is missing. He buys a fresh fish and carries it home. The cook prepares the fish with herbs.' },
+    { latin: 'Hospites in triclinio recumbunt. Marcus pocula implet et cibum in mensa ponit. Gaius omnibus gratias agit.', english: 'The guests recline in the dining room. Marcus fills the cups and places food on the table. Gaius thanks everyone.' },
+    { latin: 'Post cenam hospites fabulas narrant. Gaius Marcum laudat quod cena optima est. Familia et amici vesperum laetum agunt.', english: 'After dinner the guests tell stories. Gaius praises Marcus because the dinner is excellent. Family and friends enjoy a happy evening.' }
+  ],
+  'farmer-wolf': [
+    { latin: 'Agricola in villa rustica habitat. Cotidie ad agrum procedit et oves custodit. Canis fidelis semper cum eo ambulat.', english: 'A farmer lives in a country villa. Every day he goes out to the field and guards the sheep. A faithful dog always walks with him.' },
+    { latin: 'Vespere luna super agrum oritur. Canis subito consistit et ad silvam spectat. Ibi lupus inter arbores movetur.', english: 'In the evening the moon rises over the field. The dog suddenly stops and looks toward the woods. There a wolf moves among the trees.' },
+    { latin: 'Agricola oves in ovile ducit. Canis ante ovile stat et fortiter latrat. Lupus sonum audit et in silvam fugit.', english: 'The farmer leads the sheep into the fold. The dog stands before the fold and barks bravely. The wolf hears the sound and flees into the woods.' },
+    { latin: 'Agricola portam claudit et canem laudat. Omnes oves tutae sunt. Sub clara luna agricola et canis ad villam redeunt.', english: 'The farmer closes the gate and praises the dog. All the sheep are safe. Under the bright moon, the farmer and dog return to the villa.' }
+  ],
+  school: [
+    { latin: 'Iulia, puella Romana, cotidie ad scholam it. Amici eius, Marcus et Lucia, quoque ibi discunt. Mane discipuli in atrio conveniunt, et magister eos salutat.', english: 'Julia, a Roman girl, goes to school every day. Her friends Marcus and Lucia study there too. In the morning the students gather in the courtyard, and the teacher greets them.' },
+    { latin: 'Discipuli in tablinum intrant et tabulas ac stilos portant. Iulia ad sellam suam it et tabulam in mensa ponit. Marcus rogat, “Quid hodie discimus?”', english: 'The students enter the classroom carrying tablets and styluses. Julia goes to her seat and places her tablet on the desk. Marcus asks, “What are we learning today?”' },
+    { latin: 'Magister verba nova in tabula magna scribit: domus, liber, stilus, tabula. Discipuli verba legunt, scribunt, et memoria tenent.', english: 'The teacher writes new words on the large board: house, book, stylus, tablet. The students read, write, and remember the words.' },
+    { latin: 'Deinde magister librum aperit et carmen breve legit. Iulia manum tollit et carmen bene interpretatur. Magister eam laudat, et discipuli carmen semel scribunt.', english: 'Then the teacher opens a book and reads a short poem. Julia raises her hand and explains the poem well. The teacher praises her, and the students write the poem once.' },
+    { latin: 'Post scholam amici domum redeunt. In via verba nova repetunt et de carmine loquuntur. Cras parati ad scholam redibunt.', english: 'After school the friends return home. On the way they repeat the new words and talk about the poem. Tomorrow they will return to school prepared.' }
+  ],
+  'river-boat': [
+    { latin: 'Lucius prope flumen Tiberim sedet. Aquam spectat et magnam navem videt. Nauta velum parat, dum alii remos tenent.', english: 'Lucius sits near the Tiber River. He watches the water and sees a large ship. A sailor prepares the sail while others hold the oars.' },
+    { latin: 'Navis lente e portu movet. Lucius funem in ripa et pisces in aqua videt. Ventus velum implet, et nautae laeti clamant.', english: 'The ship moves slowly out of the harbor. Lucius sees a rope on the bank and fish in the water. The wind fills the sail, and the sailors shout happily.' },
+    { latin: 'Senex nauta ad puerum venit. Multas terras et insulas describit. Lucius attente audit et de mari cogitat.', english: 'An old sailor comes to the boy. He describes many lands and islands. Lucius listens carefully and thinks about the sea.' },
+    { latin: 'Lucius dicit, “Olim nauta ero et navem gubernabo.” Senex ridet et eum hortatur. Puer domum redit, sed in animo iter iam incipit.', english: 'Lucius says, “One day I will be a sailor and steer a ship.” The old man smiles and encourages him. The boy returns home, but in his mind the journey has already begun.' }
+  ],
+  'romulus-remus': [
+    { latin: 'Romulus et Remus fratres gemini sunt. Pastor eos nutrit, et pueri inter colles crescunt. Fortes fiunt et multos amicos congregant.', english: 'Romulus and Remus are twin brothers. A shepherd raises them, and the boys grow up among the hills. They become strong and gather many friends.' },
+    { latin: 'Fratres urbem novam aedificare volunt. Sed de colle non consentiunt. Romulus Palatium eligit, Remus autem alium collem mavult.', english: 'The brothers want to build a new city. But they do not agree about the hill. Romulus chooses the Palatine, while Remus prefers another hill.' },
+    { latin: 'Romulus murum circa collem aedificat. Pastores et familiae ad novam urbem veniunt. Viae, domus, et forum paulatim apparent.', english: 'Romulus builds a wall around the hill. Shepherds and families come to the new city. Roads, houses, and a forum gradually appear.' },
+    { latin: 'Nova urbs Roma vocatur, et Romulus rex fit. Fabula antiqua originem Romae narrat. Romani hanc fabulam per multas aetates memorant.', english: 'The new city is called Rome, and Romulus becomes king. The ancient tale tells the origin of Rome. Romans remember this story through many generations.' }
+  ],
+  'harbor-trade': [
+    { latin: 'Mercator mane ad portum venit. Magnae naves ex terris longinquis adsunt. Nauta amphoras et saccos e nave portat.', english: 'A merchant comes to the harbor in the morning. Great ships from distant lands are present. A sailor carries amphorae and sacks from a ship.' },
+    { latin: 'Mercator piper emere vult. Sacculum aperit et grana nigra spectat. “Quod est pretium?” nautam rogat.', english: 'The merchant wants to buy pepper. He opens a sack and examines the black grains. “What is the price?” he asks the sailor.' },
+    { latin: 'Nauta pretium dicit, sed mercator minus offert. Diu amice disputant. Tandem de pretio consentiunt et manus iungunt.', english: 'The sailor names a price, but the merchant offers less. They bargain amicably for a long time. At last they agree on the price and clasp hands.' },
+    { latin: 'Servi piper et amphoras ad tabernam portant. Nauta funem solvit et navem parat. Portus clamoribus et labore plenus est.', english: 'Servants carry the pepper and amphorae to the shop. The sailor unties the rope and prepares the ship. The harbor is full of noise and work.' }
+  ],
+  'aeneas-troy': [
+    { latin: 'Troia ardet, et Aeneas familiam servare debet. Patrem Anchisen umeris portat et filium Ascanium manu ducit. Per vias obscuras ad mare festinant.', english: 'Troy is burning, and Aeneas must save his family. He carries his father Anchises on his shoulders and leads his son Ascanius by the hand. They hurry through dark streets toward the sea.' },
+    { latin: 'Anchises parva sacra familiae tenet. Ascanius patrem fortiter sequitur. Aeneas saepe retro spectat, sed iter pergere debet.', english: 'Anchises holds the family’s small sacred objects. Ascanius bravely follows his father. Aeneas often looks back, but he must continue the journey.' },
+    { latin: 'Ad litus socii cum navibus exspectant. Familia navem ascendit, et nautae vela tollunt. Troia paulatim e conspectu discedit.', english: 'At the shore their companions wait with ships. The family boards a ship, and the sailors raise the sails. Troy slowly disappears from sight.' },
+    { latin: 'Aeneas de nova patria cogitat. Iter longum et difficile erit, sed spem non amittit. Pietas erga familiam eum semper ducit.', english: 'Aeneas thinks about a new homeland. The journey will be long and difficult, but he does not lose hope. Devotion to his family always guides him.' }
+  ]
+};
+
 const STORY_SEQUENCE_BY_GRADE = {
   3: ['garden-dog', 'school', 'forum-market', 'river-boat', 'roman-dinner', 'farmer-wolf'],
   4: ['school', 'forum-market', 'garden-dog', 'roman-baths', 'river-boat', 'roman-dinner', 'farmer-wolf'],
@@ -340,11 +406,28 @@ const LATIN_STORY_BY_ID = LATIN_STORY_SCENES.reduce((storiesById, story) => {
   return storiesById;
 }, {});
 
+const FULL_STORY_SEQUENCE = LATIN_STORY_SCENES.map((story) => story.id);
+
+function getUniqueStorySequenceForGrade(grade) {
+  const sequence = STORY_SEQUENCE_BY_GRADE[grade] || FULL_STORY_SEQUENCE;
+  const seen = new Set();
+
+  return [...sequence, ...FULL_STORY_SEQUENCE].filter((storyId) => {
+    if (!LATIN_STORY_BY_ID[storyId] || seen.has(storyId)) return false;
+    seen.add(storyId);
+    return true;
+  });
+}
+
 function getStorySceneForLesson(grade, lessonIndex) {
-  const sequence = STORY_SEQUENCE_BY_GRADE[grade] || LATIN_STORY_SCENES.map((story) => story.id);
+  const sequence = getUniqueStorySequenceForGrade(grade);
   const storyId = sequence[lessonIndex % sequence.length];
   const story = LATIN_STORY_BY_ID[storyId];
   return story
-    ? { ...story, seekFind: LATIN_SEEK_FIND_SCENES[storyId] || null }
+    ? {
+        ...story,
+        seekFind: LATIN_SEEK_FIND_SCENES[storyId] || null,
+        fullStory: LATIN_FULL_STORIES[storyId] || []
+      }
     : null;
 }

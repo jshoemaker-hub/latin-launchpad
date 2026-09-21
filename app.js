@@ -30,8 +30,23 @@ const VOCAB_LESSONS = Object.entries(GRADE_WORDS).flatMap(([grade, words]) => {
     };
   });
 });
+
+const grammarStoryIndexByGrade = {};
+const GRAMMAR_LESSONS_WITH_STORIES = (typeof GRAMMAR_LESSONS !== 'undefined' ? GRAMMAR_LESSONS : []).map((lesson) => {
+  const storyIndex = grammarStoryIndexByGrade[lesson.grade] || 0;
+  grammarStoryIndexByGrade[lesson.grade] = storyIndex + 1;
+  return {
+    ...lesson,
+    story: lesson.story || (
+      typeof getStorySceneForLesson === 'function'
+        ? getStorySceneForLesson(lesson.grade, storyIndex)
+        : null
+    )
+  };
+});
+
 const LESSONS = [
-  ...(typeof GRAMMAR_LESSONS !== 'undefined' ? GRAMMAR_LESSONS : []),
+  ...GRAMMAR_LESSONS_WITH_STORIES,
   ...VOCAB_LESSONS
 ];
 
@@ -309,6 +324,8 @@ const elements = {
   lessonResourceTabs: document.getElementById('lessonResourceTabs'),
   lessonResourcePanels: document.getElementById('lessonResourcePanels'),
   storyScene: document.getElementById('storyScene'),
+  storyReader: document.getElementById('storyReader'),
+  storyReaderContent: document.getElementById('storyReaderContent'),
   cultureCard: document.getElementById('cultureCard'),
   lessonNotes: document.getElementById('lessonNotes'),
   phraseFocus: document.getElementById('phraseFocus'),
@@ -1769,7 +1786,7 @@ function openLesson(lessonId) {
   AppState.currentLessonMissed = [];
   AppState.reviewQueue = [];
   AppState.reviewTitle = '';
-  if (elements.lessonResources) elements.lessonResources.open = false;
+  if (elements.lessonResources) elements.lessonResources.open = true;
   saveState();
   renderLesson();
   showPage('lesson');
@@ -1792,7 +1809,7 @@ function renderLesson() {
     renderQuestion();
     return;
   }
-  renderStoryScene(lesson.story);
+  renderStoryScene(lesson);
   renderCultureCard(lesson.culture);
   renderLessonNotes(lesson);
   renderPhraseFocus(lesson);
@@ -3129,28 +3146,84 @@ function shuffleClassroomPhrases() {
 }
 
 
-function renderStoryScene(story) {
+function getLatinKeywordStems(words) {
+  const suffixes = ['ibus', 'arum', 'orum', 'ae', 'am', 'as', 'is', 'us', 'um', 'em', 'es', 'os', 'at', 'it', 'nt', 'a', 'e', 'i', 'o'];
+  const stems = new Set();
+
+  words.forEach((word) => {
+    const pieces = String(word || '')
+      .toLowerCase()
+      .split(/[^a-z]+/)
+      .filter((piece) => piece.length > 2);
+
+    pieces.forEach((piece) => {
+      stems.add(piece);
+      if (piece.endsWith('er') && piece.length > 4) stems.add(`${piece.slice(0, -2)}r`);
+      suffixes.forEach((suffix) => {
+        if (piece.endsWith(suffix) && piece.length - suffix.length >= 3) {
+          stems.add(piece.slice(0, -suffix.length));
+        }
+      });
+    });
+  });
+
+  return stems;
+}
+
+function tokenMatchesLatinKeyword(token, stems) {
+  const normalized = String(token || '').toLowerCase().replace(/[^a-z]/g, '');
+  if (normalized.length <= 2) return false;
+  if (stems.has(normalized)) return true;
+  return [...getLatinKeywordStems([normalized])].some((stem) => stems.has(stem));
+}
+
+function renderHighlightedLatin(text, words) {
+  const stems = getLatinKeywordStems(words);
+  return String(text || '')
+    .split(/([A-Za-z]+)/)
+    .map((part) => {
+      const escapedPart = escapeHtml(part);
+      return tokenMatchesLatinKeyword(part, stems)
+        ? `<strong class="latin-keyword">${escapedPart}</strong>`
+        : escapedPart;
+    })
+    .join('');
+}
+
+function renderStoryScene(lessonOrStory) {
   if (!elements.storyScene) return;
+  const lesson = lessonOrStory?.story ? lessonOrStory : null;
+  const story = lesson ? lesson.story : lessonOrStory;
   if (!story) {
     elements.storyScene.innerHTML = '';
     return;
   }
   const listenItems = story.listenFor.map((word) => `<li>${escapeHtml(word)}</li>`).join('');
-  const icons = story.visual.icons
-    .map((icon) => `<span aria-hidden="true">${escapeHtml(icon)}</span>`)
-    .join('');
+  const storyImage = story.seekFind?.image;
+  const keywordWords = [
+    ...story.listenFor,
+    ...(story.seekFind?.targets || []).map((target) => target.latin),
+    ...(lesson ? getLessonVocabularyWords(lesson) : []).map((word) => word.latin)
+  ];
+  const highlightedLatinCue = renderHighlightedLatin(story.latinCue, keywordWords);
   const storyBadgeEarned = Boolean(AppState.badges['story-explorer']);
   const awardText = storyBadgeEarned ? 'Story Explorer earned' : 'Earn Story Explorer + 15 points';
   elements.storyScene.innerHTML = `
     <section class="story-scene-panel" style="--scene-bg: ${escapeHtml(story.visual.bg)}; --scene-accent: ${escapeHtml(story.visual.accent)};">
-      <div class="story-visual" role="img" aria-label="${escapeHtml(story.pictureCue)}">
-        ${icons}
-      </div>
+      <figure class="story-visual">
+        ${storyImage
+          ? `<img src="${escapeHtml(storyImage)}" alt="${escapeHtml(story.pictureCue)}" width="1536" height="1024" loading="lazy" />`
+          : `<div class="story-visual-fallback" role="img" aria-label="${escapeHtml(story.pictureCue)}">${story.visual.icons.map((icon) => `<span aria-hidden="true">${escapeHtml(icon)}</span>`).join('')}</div>`}
+        <figcaption>Original scene artwork</figcaption>
+      </figure>
       <div class="story-copy">
         <span class="story-eyebrow">Story scene</span>
         <h3>${escapeHtml(story.title)}</h3>
         <p>${escapeHtml(story.summary)}</p>
-        <p class="latin-cue"><strong>${escapeHtml(story.latinCue)}</strong> ${escapeHtml(story.englishCue)}</p>
+        <div class="latin-cue">
+          <p lang="la">${highlightedLatinCue}</p>
+          <p>${escapeHtml(story.englishCue)}</p>
+        </div>
         <div class="story-meta">
           <div>
             <h4>Listen for</h4>
@@ -3162,12 +3235,58 @@ function renderStoryScene(story) {
           </div>
         </div>
         <div class="story-read-action">
-          <a class="story-link" data-story-read href="${escapeHtml(story.sourceUrl)}" target="_blank" rel="noopener">Read the full story</a>
+          <button class="story-link" data-story-read type="button">Read the full story</button>
           <span class="story-award${storyBadgeEarned ? ' earned' : ''}">${escapeHtml(awardText)}</span>
         </div>
       </div>
     </section>
   `;
+}
+
+function renderFullStory(lesson) {
+  const story = lesson?.story;
+  if (!story || !elements.storyReader || !elements.storyReaderContent) return;
+
+  const vocabulary = [
+    ...story.listenFor,
+    ...(story.seekFind?.targets || []).map((target) => target.latin),
+    ...getLessonVocabularyWords(lesson).map((word) => word.latin)
+  ];
+  const seen = new Set();
+  const paragraphs = (story.fullStory || []).filter((paragraph) => {
+    const key = `${paragraph.latin.trim().toLowerCase()}|${paragraph.english.trim().toLowerCase()}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+  const rows = paragraphs.map((paragraph) => `
+    <div class="story-reader-row">
+      <p lang="la">${renderHighlightedLatin(paragraph.latin, vocabulary)}</p>
+      <p>${escapeHtml(paragraph.english)}</p>
+    </div>
+  `).join('');
+
+  elements.storyReaderContent.innerHTML = `
+    <article style="--scene-accent: ${escapeHtml(story.visual.accent)};">
+      <header class="story-reader-header">
+        <div>
+          <span class="story-eyebrow">Full bilingual story</span>
+          <h2 id="storyReaderTitle">${escapeHtml(story.title)}</h2>
+          <p>${escapeHtml(story.englishTitle)}</p>
+        </div>
+        <button class="story-reader-close" type="button" data-story-close aria-label="Close full story">&times;</button>
+      </header>
+      <figure class="story-reader-illustration">
+        <img src="${escapeHtml(story.seekFind?.image || '')}" alt="${escapeHtml(story.pictureCue)}" width="1536" height="1024" />
+        <figcaption>${escapeHtml(story.pictureCue)}</figcaption>
+      </figure>
+      <div class="story-reader-labels" aria-hidden="true">
+        <strong>Latin</strong><strong>English</strong>
+      </div>
+      <div class="story-reader-text">${rows}</div>
+    </article>
+  `;
+  elements.storyReader.showModal();
 }
 
 function getEndingHint(latin) {
@@ -4645,11 +4764,12 @@ function setupEvents() {
 
       const storyReadLink = target?.closest('[data-story-read]');
       if (storyReadLink) {
+        const lesson = getSelectedLesson();
         const earnedBadge = persistAchievement('story-explorer');
         if (earnedBadge) {
-          const lesson = getSelectedLesson();
-          if (lesson?.story) renderStoryScene(lesson.story);
+          if (lesson?.story) renderStoryScene(lesson);
         }
+        renderFullStory(lesson);
         return;
       }
 
@@ -4714,6 +4834,12 @@ function setupEvents() {
     if (classroomAction) {
       if (classroomAction.dataset.classroomAction === 'shuffle') shuffleClassroomPhrases();
       if (classroomAction.dataset.classroomAction === 'reveal-all') revealAllClassroomMeanings();
+    }
+  });
+  elements.storyReader?.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    if (target?.closest('[data-story-close]') || target === elements.storyReader) {
+      elements.storyReader.close();
     }
   });
   pages.dashboard?.addEventListener('click', (event) => {
