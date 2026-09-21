@@ -4678,8 +4678,11 @@ function setupEvents() {
     }
     try {
       const formData = new FormData(elements.contactForm);
-      formData.append('form-name', 'contact');
-      const res = await fetch('/', { method: 'POST', body: formData });
+      const res = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(formData).toString()
+      });
       if (res.ok) {
         if (elements.contactFormMessage) {
           elements.contactFormMessage.textContent = 'Message sent! We\'ll be in touch.';

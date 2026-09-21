@@ -507,16 +507,8 @@
             <button id="contactBackButton" class="secondary-button">Back</button>
           </div>
 
-          <!-- Netlify Forms: this hidden form registers the schema at build time -->
-          <form name="contact" data-netlify="true" hidden>
-            <input type="text" name="name" />
-            <input type="email" name="email" />
-            <input type="text" name="subject" />
-            <textarea name="message"></textarea>
-          </form>
-
-          <!-- The visible form that submits via JS fetch -->
-          <form id="contactForm" class="contact-form" novalidate>
+          <form id="contactForm" class="contact-form" name="contact" method="POST" data-netlify="true" novalidate>
+            <input type="hidden" name="form-name" value="contact" />
             <p class="collection-notice">If you are under 13, ask a parent, guardian, or teacher to contact us. Do not include sensitive student information. See our <a href="privacy.html">Privacy Policy</a>.</p>
             <div class="contact-form-grid">
               <label>

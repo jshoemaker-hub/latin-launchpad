@@ -252,6 +252,22 @@ function checkTrustPages() {
   );
 }
 
+function checkContactFormContract() {
+  assert(
+    /<form[^>]*id="contactForm"[^>]*name="contact"[^>]*method="POST"[^>]*data-netlify="true"/.test(html),
+    'The in-app contact form must be statically detectable by Netlify'
+  );
+  assert(
+    /<input[^>]*type="hidden"[^>]*name="form-name"[^>]*value="contact"/.test(html),
+    'The in-app contact form must submit its Netlify form name'
+  );
+  assert(
+    app.includes("'Content-Type': 'application/x-www-form-urlencoded'") &&
+      app.includes('new URLSearchParams(formData).toString()'),
+    'The contact form AJAX request must use Netlify-compatible URL encoding'
+  );
+}
+
 checkJavaScriptSyntax();
 checkContentData();
 checkElementIds();
@@ -261,5 +277,6 @@ checkGrammarStoryResources();
 checkVocabularyStudyHooks();
 checkDictionaryHooks();
 checkTrustPages();
+checkContactFormContract();
 
 console.log('Smoke tests passed.');
