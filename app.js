@@ -3021,7 +3021,6 @@ function renderCultureCard(culture) {
   const linkedWords = culture.linkedWords
     .map((word) => `<span>${escapeHtml(word)}</span>`)
     .join('');
-  const sourceImages = culture.sourceImages.map((image) => escapeHtml(image)).join(', ');
   elements.cultureCard.innerHTML = `
     <section class="culture-card-panel" aria-label="Roman culture connection">
       <div class="culture-mark" aria-hidden="true">${escapeHtml(culture.mark || 'R')}</div>
@@ -3033,7 +3032,6 @@ function renderCultureCard(culture) {
         <p class="culture-connection">${escapeHtml(culture.connection)}</p>
         <div class="culture-footer">
           <div class="culture-words" aria-label="Related Latin words">${linkedWords}</div>
-          <small>Reference: ${sourceImages}</small>
         </div>
       </div>
     </section>
@@ -3214,7 +3212,6 @@ function renderStoryScene(lessonOrStory) {
         ${storyImage
           ? `<img src="${escapeHtml(storyImage)}" alt="${escapeHtml(story.pictureCue)}" width="1536" height="1024" loading="lazy" />`
           : `<div class="story-visual-fallback" role="img" aria-label="${escapeHtml(story.pictureCue)}">${story.visual.icons.map((icon) => `<span aria-hidden="true">${escapeHtml(icon)}</span>`).join('')}</div>`}
-        <figcaption>Original scene artwork</figcaption>
       </figure>
       <div class="story-copy">
         <span class="story-eyebrow">Story scene</span>
