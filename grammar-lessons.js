@@ -880,5 +880,107 @@ const GRAMMAR_LESSONS = [
       { latin: 'qui, quae, quod', english: 'who / which; relative pronoun', emoji: '🔗', prompt: 'Which pronoun family connects a describing clause?', choices: ['relative', 'personal', 'interrogative', 'reflexive'], hint: 'A relative pronoun relates its clause to an earlier noun.', explanation: 'qui, quae, quod introduces a relative clause.' },
       { latin: 'quis? quid?', english: 'who? what?; interrogative pronoun', emoji: '❓', prompt: 'Which pronoun family asks a question?', choices: ['interrogative', 'relative', 'intensive', 'possessive'], hint: 'Interrogative comes from a word meaning to ask.', explanation: 'quis? and quid? are interrogative pronouns.' }
     ]
+  },
+  {
+    id: 'grade3-grammar-latin-sounds',
+    grade: 3,
+    kind: 'grammar',
+    title: 'Grade 3 Grammar: Latin Letters and Sounds',
+    description: 'Practice the first pronunciation clues: letters, vowels, diphthongs, and accent.',
+    sourceNote: 'References: IMG_2493.jpeg-IMG_2497.jpeg on the Latin alphabet, vowels, diphthongs, consonants, and accent.',
+    focus: ['Latin alphabet', 'vowels', 'diphthongs', 'accent'],
+    words: [
+      { latin: 'littera', english: 'letter', emoji: '🔤', prompt: 'What does littera mean in the alphabet lesson?', choices: ['letter', 'city', 'soldier', 'meal'], hint: 'English "letter" and Latin littera are close cousins.', explanation: 'littera can mean a letter of the alphabet.' },
+      { latin: 'V / U', english: 'one old Roman letter later divided in writing', emoji: 'V', prompt: 'What later writing habit affected V and U?', choices: ['V once did work now divided between V and U', 'Latin had no vowel sounds', 'U was always written as W', 'V only appeared in Greek words'], hint: 'Older inscriptions often use V where modern editions print U.', explanation: 'Classical inscriptions used one sign for sounds later written as U and V.' },
+      { latin: 'ae', english: 'a diphthong', emoji: 'ae', prompt: 'What is ae in Latin pronunciation?', choices: ['a diphthong', 'a consonant', 'a case ending only', 'a sentence pattern'], hint: 'A diphthong combines two vowels into one syllable sound.', explanation: 'ae is one of the common Latin diphthongs.' },
+      { latin: 'au', english: 'a diphthong as in aurum', emoji: 'au', prompt: 'Which Latin word shows the diphthong au?', choices: ['aurum', 'littera', 'bene', 'urbs'], hint: 'The sound appears at the start of the word for gold.', explanation: 'aurum begins with au.' },
+      { latin: 'penult', english: 'second-to-last syllable', emoji: '2', prompt: 'What is the penult of a word?', choices: ['second-to-last syllable', 'last syllable', 'first letter', 'main verb'], hint: 'Think "almost ultimate."', explanation: 'The penult is the second-to-last syllable.' },
+      { latin: 'accent', english: 'stress falls on the penult or antepenult', emoji: '´', prompt: 'Where does Latin stress usually fall?', choices: ['on the penult or antepenult', 'always on the last syllable', 'always on the first letter', 'only on nouns'], hint: 'The lesson names ultima, penult, and antepenult.', explanation: 'Latin accent normally falls on the penult if it is long, otherwise on the antepenult.' }
+    ]
+  },
+  {
+    id: 'grade5-grammar-declension-review',
+    grade: 5,
+    kind: 'grammar',
+    title: 'Grade 5 Grammar: Declension Review',
+    description: 'Review how noun patterns keep the same case jobs across different declensions.',
+    sourceNote: 'References: IMG_2504.jpeg-IMG_2508.jpeg on noun paradigms for first through fifth declensions.',
+    focus: ['declensions', 'case review', 'noun number'],
+    words: [
+      { latin: 'lupa / lupae', english: 'she-wolf / she-wolves', emoji: '🐺', prompt: 'What does lupa become as a plural subject?', choices: ['lupae', 'lupam', 'lupa', 'lupis'], hint: 'First-declension plural subjects often end in -ae.', explanation: 'lupae can be the nominative plural form.' },
+      { latin: 'amicus / amici', english: 'friend / friends', emoji: '🤝', prompt: 'What does amici mean as a plural subject?', choices: ['friends', 'of a friend', 'to a friend', 'one friend'], hint: 'Second-declension masculine plural subjects often end in -i.', explanation: 'amicus is singular; amici can be plural.' },
+      { latin: 'bellum / bella', english: 'war / wars', emoji: '⚔️', prompt: 'What ending do many neuter plural subjects and objects use?', choices: ['-a', '-us', '-am', '-arum'], hint: 'bellum becomes bella.', explanation: 'Many neuter plurals use -a for nominative and accusative.' },
+      { latin: 'tempus / tempora', english: 'time / times', emoji: '⏳', prompt: 'Which pair shows a third-declension neuter pattern?', choices: ['tempus / tempora', 'puella / puellae', 'amicus / amici', 'lupa / lupam'], hint: 'The plural adds -ora in this model.', explanation: 'tempus is a third-declension neuter noun; tempora is its plural.' },
+      { latin: 'res / rei', english: 'thing / of a thing', emoji: 'R', prompt: 'Which declension includes the model noun res?', choices: ['fifth declension', 'first declension', 'second declension', 'fourth conjugation'], hint: 'The source page places res under fifth declension.', explanation: 'res is a fifth-declension noun.' },
+      { latin: 'case names', english: 'nominative, genitive, dative, accusative, ablative, vocative', emoji: '📋', prompt: 'Which list gives Latin noun cases?', choices: ['nominative, genitive, dative, accusative, ablative, vocative', 'present, imperfect, future, perfect', 'first, second, third person', 'masculine, feminine, neuter only'], hint: 'Cases name noun jobs.', explanation: 'The major case names identify how nouns function in a sentence.' }
+    ]
+  },
+  {
+    id: 'grade7-grammar-syntax-agreement',
+    grade: 7,
+    kind: 'grammar',
+    title: 'Grade 7 Grammar: Syntax and Agreement',
+    description: 'Connect case functions, prepositions, conjunctions, and agreement rules.',
+    sourceNote: 'References: IMG_2516.jpeg-IMG_2517.jpeg on Latin syntax, prepositions, conjunctions, and agreement.',
+    focus: ['syntax', 'prepositions', 'agreement'],
+    words: [
+      { latin: 'nominative', english: 'subject or predicate nominative', emoji: '👤', prompt: 'Which jobs can the nominative case do?', choices: ['subject or predicate nominative', 'direct object only', 'agent with passive voice only', 'place to which only'], hint: 'The syntax chart lists subject first.', explanation: 'The nominative can name the subject and can also rename it after a linking verb.' },
+      { latin: 'dative', english: 'indirect object or possession', emoji: '🎁', prompt: 'Which answer fits a common dative use?', choices: ['indirect object or possession', 'direct object', 'place from which', 'direct address'], hint: 'Think "to" or "for."', explanation: 'The dative often marks the indirect object and can express possession.' },
+      { latin: 'accusative', english: 'direct object or place to which', emoji: '🎯', prompt: 'Which two uses belong with the accusative?', choices: ['direct object or place to which', 'subject and predicate noun', 'instrument and agent', 'direct address and possession'], hint: 'Motion toward often uses accusative.', explanation: 'The accusative can mark the direct object and motion toward a place.' },
+      { latin: 'cum amico', english: 'with a friend', emoji: '🤝', prompt: 'Which case follows cum?', choices: ['ablative', 'accusative', 'nominative', 'vocative'], hint: 'The syntax appendix lists cum with the ablative.', explanation: 'cum takes the ablative.' },
+      { latin: 'per viam', english: 'through the road / along the road', emoji: '🛣️', prompt: 'Which case follows per?', choices: ['accusative', 'ablative', 'genitive', 'dative'], hint: 'per belongs with the accusative prepositions.', explanation: 'per takes the accusative.' },
+      { latin: 'adjective agreement', english: 'case, number, and gender', emoji: '🧩', prompt: 'A Latin adjective agrees with its noun in what?', choices: ['case, number, and gender', 'tense, voice, and mood', 'person and tense only', 'word order only'], hint: 'The syntax page states the noun-adjective agreement rule.', explanation: 'Adjectives agree with nouns in case, number, and gender.' }
+    ]
+  },
+  {
+    id: 'grade8-grammar-infinitives-possession',
+    grade: 8,
+    kind: 'grammar',
+    title: 'Grade 8 Grammar: Infinitives and Possession',
+    description: 'Practice indirect statement, possessive adjectives, and participles as verbal adjectives.',
+    sourceNote: 'References: IMG_2518.jpeg-IMG_2520.jpeg on infinitives, possession, relative pronouns, and participles.',
+    focus: ['infinitives', 'indirect statement', 'possession', 'participles'],
+    words: [
+      { latin: 'Putō librum esse bonum.', english: 'I think that the book is good.', emoji: '📘', prompt: 'In an indirect statement, what case is librum?', choices: ['accusative', 'nominative', 'dative', 'ablative'], hint: 'Latin uses accusative plus infinitive after many verbs of thinking and saying.', explanation: 'librum is the accusative subject of the infinitive esse.' },
+      { latin: 'esse', english: 'to be', emoji: '∞', prompt: 'What form is esse?', choices: ['present infinitive', 'perfect active verb', 'accusative noun', 'future participle'], hint: 'Infinitives often translate "to..." in English.', explanation: 'esse is the present infinitive of sum.' },
+      { latin: 'legisse', english: 'to have read', emoji: '📖', prompt: 'In indirect statement, what time does the perfect infinitive show relative to the main verb?', choices: ['before', 'same time', 'after', 'never'], hint: 'Perfect looks back.', explanation: 'The perfect infinitive shows time before the main verb.' },
+      { latin: 'librum meum', english: 'my book', emoji: '📚', prompt: 'How does Latin usually express "my" with a first-person possessor?', choices: ['with the possessive adjective meus', 'with the genitive mei only', 'with the accusative me only', 'with no word at all'], hint: 'The syntax appendix contrasts personal pronouns and possessive adjectives.', explanation: 'First- and second-person possession usually uses possessive adjectives such as meus and tuus.' },
+      { latin: 'Mihi sunt multi libri.', english: 'I have many books.', emoji: '🎁', prompt: 'What construction is shown by mihi sunt multi libri?', choices: ['dative of possession', 'ablative of means', 'vocative direct address', 'accusative subject'], hint: 'Literally, many books are to me.', explanation: 'Latin can express possession with the dative.' },
+      { latin: 'datum', english: 'given', emoji: '📦', prompt: 'In Librum ab amico datum habeo, what is datum?', choices: ['a participle', 'a conjunction', 'a preposition', 'an interrogative pronoun'], hint: 'A participle is part verb and part adjective.', explanation: 'datum describes the book while keeping the verbal idea "given."' }
+    ]
+  },
+  {
+    id: 'grade6-grammar-commands-infinitives',
+    grade: 6,
+    kind: 'grammar',
+    title: 'Grade 6 Grammar: Commands and Infinitives',
+    description: 'Recognize singular and plural commands and distinguish an infinitive from a finite verb.',
+    sourceNote: 'References: IMG_2510.jpeg-IMG_2515.jpeg on active and passive imperatives and present, perfect, and future infinitives.',
+    focus: ['imperatives', 'infinitives', 'verb person'],
+    words: [
+      { latin: 'ama!', english: 'love! (one person)', emoji: '!', prompt: 'To how many people is ama addressed?', choices: ['one person', 'two or more people', 'no one', 'only a narrator'], hint: 'The singular imperative commonly uses the present stem.', explanation: 'ama is the singular command of amo.' },
+      { latin: 'amate!', english: 'love! (more than one person)', emoji: '!', prompt: 'What does -te often signal in an active command?', choices: ['a plural command', 'a past action', 'a passive subject', 'a question'], hint: 'Compare ama and amate.', explanation: 'The ending -te marks the plural active imperative.' },
+      { latin: 'audi!', english: 'listen! (one person)', emoji: '👂', prompt: 'Which form is a singular command?', choices: ['audi', 'audite', 'audire', 'audivi'], hint: 'The command is built from the present stem.', explanation: 'audi is the singular imperative of audio.' },
+      { latin: 'amare', english: 'to love', emoji: '∞', prompt: 'What kind of form is amare?', choices: ['present active infinitive', 'plural command', 'perfect tense', 'passive participle'], hint: 'It translates with "to."', explanation: 'amare is a present active infinitive.' },
+      { latin: 'amavisse', english: 'to have loved', emoji: '↩', prompt: 'What time relationship does amavisse express?', choices: ['action before the main verb', 'action at the same time only', 'a future command', 'no action'], hint: 'The perfect infinitive looks backward.', explanation: 'A perfect infinitive usually expresses action prior to the main verb.' },
+      { latin: 'amaturus esse', english: 'to be about to love', emoji: '↪', prompt: 'Which form expresses action after the main verb?', choices: ['future active infinitive', 'present imperative', 'perfect passive participle alone', 'imperfect indicative'], hint: 'The future participle combines with esse.', explanation: 'amaturus esse is a future active infinitive.' }
+    ]
+  },
+  {
+    id: 'grade8-grammar-complete-verb-system',
+    grade: 8,
+    kind: 'grammar',
+    title: 'Grade 8 Grammar: The Complete Verb System',
+    description: 'Organize Latin verbs by tense, voice, and the principal part used to build each form.',
+    sourceNote: 'References: IMG_2509.jpeg-IMG_2515.jpeg on conjugations, the perfect system, passive forms, sum, possum, participles, and infinitives.',
+    focus: ['six indicative tenses', 'active and passive voice', 'principal parts'],
+    words: [
+      { latin: 'amo / amabam / amabo', english: 'I love / was loving / will love', emoji: '1', prompt: 'Which three tenses make up the present system?', choices: ['present, imperfect, future', 'perfect, pluperfect, future perfect', 'present, perfect, future perfect', 'imperfect, pluperfect, imperative'], hint: 'These forms use the present stem.', explanation: 'Present, imperfect, and future belong to the present system.' },
+      { latin: 'amavi / amaveram / amavero', english: 'I loved / had loved / will have loved', emoji: '2', prompt: 'Which principal part supplies the active perfect stem?', choices: ['the third principal part', 'the first principal part only', 'the infinitive ending', 'the fourth principal part'], hint: 'Remove -i from amavi.', explanation: 'The third principal part gives the perfect active stem.' },
+      { latin: 'amor', english: 'I am loved', emoji: 'P', prompt: 'What voice is amor?', choices: ['passive', 'active', 'infinitive', 'imperative'], hint: 'The subject receives the action.', explanation: 'The ending -or marks first-person singular passive voice.' },
+      { latin: 'amatus sum', english: 'I was loved / have been loved', emoji: 'P', prompt: 'How is the perfect passive formed?', choices: ['perfect passive participle plus a form of sum', 'perfect stem plus active endings', 'present stem plus -ba-', 'infinitive plus possum'], hint: 'amatus agrees with the subject.', explanation: 'Latin combines a perfect passive participle with sum for the perfect passive system.' },
+      { latin: 'possum', english: 'I am able', emoji: '+', prompt: 'From what two elements does possum historically combine?', choices: ['pot- and sum', 'post and sum', 'pro and sum', 'posse and amo'], hint: 'The stem changes before s.', explanation: 'possum combines the ability stem pot- with sum.' },
+      { latin: 'amandus', english: 'to be loved / needing to be loved', emoji: 'G', prompt: 'What does the future passive participle often express?', choices: ['necessity or obligation', 'completed active action', 'a simple past fact', 'a direct command by itself'], hint: 'It is also called the gerundive.', explanation: 'The future passive participle can express what ought or needs to be done.' }
+    ]
   }
 ];
