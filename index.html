@@ -202,9 +202,27 @@
                   Password
                   <input type="password" id="accountPasswordInput" placeholder="Your password" autocomplete="current-password" minlength="8" />
                 </label>
+                <div id="signupEligibility" class="signup-eligibility" hidden>
+                  <p><strong>Who is creating this account?</strong></p>
+                  <label>
+                    Account creator
+                    <select id="accountCreatorRole">
+                      <option value="">Choose one</option>
+                      <option value="adult-self">I am age 18 or older</option>
+                      <option value="student-13-plus">I am a student age 13 or older</option>
+                      <option value="educator-review">I am an educator reviewing the service</option>
+                    </select>
+                  </label>
+                  <label class="consent-check">
+                    <input id="accountEligibilityConfirmation" type="checkbox" />
+                    <span>I confirm that no child under 13 will use or be identified in this synced account, and I agree to the <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</span>
+                  </label>
+                  <p class="privacy-context">Students under 13 may use guest mode, which keeps learning progress in this browser. The public service does not currently offer synced accounts for children under 13.</p>
+                </div>
                 <button id="emailLoginButton" type="submit" class="primary-button">Sign in</button>
                 <button type="button" id="forgotPasswordButton" class="text-button auth-forgot">Forgot password?</button>
                 <p id="accountMessage" class="account-message" aria-live="polite"></p>
+                <p class="collection-notice">Account data is handled as described in the <a href="privacy.html">Privacy Policy</a>.</p>
               </form>
 
               <!-- Forgot-password sub-form (hidden by default) -->
@@ -259,7 +277,7 @@
       <section id="signupPage" class="page">
         <div class="card">
           <h2>What should we call you?</h2>
-          <p>Your name is optional. You can continue without adding one.</p>
+          <p>Your name is optional. Use a first name, nickname, initials, or classroom identifier rather than a full legal name.</p>
           <label>
             Name <span class="optional-label">Optional</span>
             <input type="text" id="studentNameInput" placeholder="Your name (optional)" />
@@ -489,16 +507,9 @@
             <button id="contactBackButton" class="secondary-button">Back</button>
           </div>
 
-          <!-- Netlify Forms: this hidden form registers the schema at build time -->
-          <form name="contact" data-netlify="true" hidden>
-            <input type="text" name="name" />
-            <input type="email" name="email" />
-            <input type="text" name="subject" />
-            <textarea name="message"></textarea>
-          </form>
-
-          <!-- The visible form that submits via JS fetch -->
-          <form id="contactForm" class="contact-form" novalidate>
+          <form id="contactForm" class="contact-form" name="contact" method="POST" data-netlify="true" novalidate>
+            <input type="hidden" name="form-name" value="contact" />
+            <p class="collection-notice">If you are under 13, ask a parent, guardian, or teacher to contact us. Do not include sensitive student information. See our <a href="privacy.html">Privacy Policy</a>.</p>
             <div class="contact-form-grid">
               <label>
                 Name
@@ -529,6 +540,17 @@
         </div>
       </section>
     </main>
+    <footer class="site-footer" aria-label="Site information">
+      <p><strong>Latin Launchpad</strong><span>Independent Latin practice for grades 3–8.</span></p>
+      <nav aria-label="Trust and support">
+        <a href="about.html">About</a>
+        <a href="parents-teachers.html">For Parents / Teachers</a>
+        <a href="school-privacy.html">School Privacy</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </footer>
   </div>
   <div id="printArea" class="print-area" role="dialog" aria-label="Printable preview" aria-hidden="true"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

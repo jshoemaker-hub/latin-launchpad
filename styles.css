@@ -3602,6 +3602,69 @@ input {
   color: var(--muted);
 }
 
+.signup-eligibility {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid #bfd3f7;
+  border-radius: 8px;
+  background: #f6f9ff;
+}
+
+.signup-eligibility > p:first-child {
+  margin: 0;
+  color: var(--text);
+}
+
+.signup-eligibility label {
+  margin-top: 12px;
+}
+
+.signup-eligibility select {
+  width: 100%;
+  margin-top: 8px;
+  padding: 13px 38px 13px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--text);
+}
+
+.consent-check {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  color: var(--text);
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.consent-check input {
+  width: 18px;
+  height: 18px;
+  margin: 3px 0 0;
+}
+
+.privacy-context,
+.collection-notice {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.55;
+}
+
+.privacy-context {
+  margin: 12px 0 0;
+}
+
+.collection-notice {
+  margin: 14px 0 0;
+}
+
+.collection-notice a,
+.consent-check a {
+  color: var(--primary);
+}
+
 /* ── Contact page ───────────────────────────────────────────────────────────── */
 
 .contact-card {
@@ -3653,6 +3716,213 @@ input {
   color: var(--primary);
 }
 
+/* Site information and standalone trust pages */
+
+.site-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  margin-top: 42px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.site-footer p {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+}
+
+.site-footer strong {
+  color: var(--text);
+}
+
+.site-footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px 18px;
+}
+
+.site-footer a,
+.trust-page a {
+  color: var(--primary);
+  text-underline-offset: 3px;
+}
+
+.trust-shell {
+  max-width: 920px;
+}
+
+.trust-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.trust-brand {
+  color: var(--text);
+  font-size: 1.35rem;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.trust-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 16px;
+  font-size: 0.9rem;
+}
+
+.trust-header nav a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.trust-header nav a[aria-current="page"] {
+  color: var(--primary);
+  font-weight: 750;
+}
+
+.trust-page {
+  max-width: 780px;
+  padding: 38px;
+}
+
+.trust-page h1 {
+  margin: 0;
+  font-size: 2.35rem;
+  line-height: 1.08;
+}
+
+.trust-page .trust-lead {
+  margin: 16px 0 30px;
+  color: var(--muted);
+  font-size: 1.08rem;
+  line-height: 1.65;
+}
+
+.trust-page h2 {
+  margin: 32px 0 10px;
+  font-size: 1.25rem;
+}
+
+.trust-page h3 {
+  margin: 22px 0 8px;
+  font-size: 1rem;
+}
+
+.trust-page p,
+.trust-page li {
+  line-height: 1.7;
+}
+
+.trust-page p {
+  margin: 10px 0;
+}
+
+.trust-page ul {
+  margin: 10px 0;
+  padding-left: 22px;
+}
+
+.trust-page .effective-date {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.trust-note {
+  margin: 24px 0;
+  padding: 18px;
+  border-left: 4px solid var(--accent);
+  border-radius: 0 8px 8px 0;
+  background: #fffaf0;
+}
+
+.trust-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 24px 0;
+}
+
+.trust-grid section {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.trust-grid h2 {
+  margin-top: 0;
+}
+
+.privacy-table-wrap {
+  margin: 18px 0 26px;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.privacy-table {
+  width: 100%;
+  min-width: 660px;
+  border-collapse: collapse;
+  background: #ffffff;
+  font-size: 0.92rem;
+}
+
+.privacy-table th,
+.privacy-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+  line-height: 1.55;
+}
+
+.privacy-table th {
+  background: #f6f9ff;
+  color: var(--text);
+  font-size: 0.82rem;
+  text-transform: uppercase;
+}
+
+.privacy-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.standalone-contact-form {
+  display: grid;
+  gap: 4px;
+  margin-top: 24px;
+}
+
+.standalone-contact-form textarea {
+  width: 100%;
+  min-height: 140px;
+  margin-top: 8px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  font: inherit;
+  resize: vertical;
+}
+
+.standalone-contact-form button {
+  justify-self: start;
+  margin-top: 18px;
+}
+
 @media (max-width: 520px) {
   .word-intro-card {
     grid-template-columns: 46px minmax(0, 1fr);
@@ -3670,6 +3940,28 @@ input {
   .celebration-burst span:nth-child(5) { --x: 76px; }
 
   .contact-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .site-footer,
+  .trust-header {
+    flex-direction: column;
+  }
+
+  .site-footer nav,
+  .trust-header nav {
+    justify-content: flex-start;
+  }
+
+  .trust-page {
+    padding: 24px 20px;
+  }
+
+  .trust-page h1 {
+    font-size: 2rem;
+  }
+
+  .trust-grid {
     grid-template-columns: 1fr;
   }
 }

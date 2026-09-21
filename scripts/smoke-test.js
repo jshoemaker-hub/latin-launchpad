@@ -12,6 +12,14 @@ const phrasesPath = path.join(root, 'latin-phrases.js');
 const culturePath = path.join(root, 'latin-culture.js');
 const classroomPath = path.join(root, 'classroom-latin.js');
 const grammarPath = path.join(root, 'grammar-lessons.js');
+const trustPageFiles = [
+  'about.html',
+  'privacy.html',
+  'terms.html',
+  'contact.html',
+  'parents-teachers.html',
+  'school-privacy.html'
+];
 
 const app = fs.readFileSync(appPath, 'utf8');
 const html = fs.readFileSync(htmlPath, 'utf8');
@@ -216,6 +224,50 @@ function checkDictionaryHooks() {
   });
 }
 
+function checkTrustPages() {
+  trustPageFiles.forEach((fileName) => {
+    const filePath = path.join(root, fileName);
+    assert(fs.existsSync(filePath), `Missing trust page: ${fileName}`);
+    const pageHtml = fs.readFileSync(filePath, 'utf8');
+    assert(pageHtml.includes('href="index.html"'), `${fileName} needs a return link`);
+    trustPageFiles.forEach((linkedFile) => {
+      assert(pageHtml.includes(`href="${linkedFile}"`), `${fileName} does not link to ${linkedFile}`);
+    });
+  });
+
+  trustPageFiles.forEach((fileName) => {
+    assert(html.includes(`href="${fileName}"`), `Main footer does not link to ${fileName}`);
+  });
+  assert(fs.existsSync(path.join(root, 'og-image.png')), 'Missing Open Graph image');
+  [
+    'signupEligibility',
+    'accountCreatorRole',
+    'accountEligibilityConfirmation'
+  ].forEach((needle) => {
+    assert(app.includes(needle) || html.includes(needle), `Missing child privacy control: ${needle}`);
+  });
+  assert(
+    fs.readFileSync(path.join(root, 'parents-teachers.html'), 'utf8').includes('privacy.html#children'),
+    'Parent guidance must link directly to the child privacy notice'
+  );
+}
+
+function checkContactFormContract() {
+  assert(
+    /<form[^>]*id="contactForm"[^>]*name="contact"[^>]*method="POST"[^>]*data-netlify="true"/.test(html),
+    'The in-app contact form must be statically detectable by Netlify'
+  );
+  assert(
+    /<input[^>]*type="hidden"[^>]*name="form-name"[^>]*value="contact"/.test(html),
+    'The in-app contact form must submit its Netlify form name'
+  );
+  assert(
+    app.includes("'Content-Type': 'application/x-www-form-urlencoded'") &&
+      app.includes('new URLSearchParams(formData).toString()'),
+    'The contact form AJAX request must use Netlify-compatible URL encoding'
+  );
+}
+
 checkJavaScriptSyntax();
 checkContentData();
 checkElementIds();
@@ -224,5 +276,7 @@ checkLessonLoopHooks();
 checkGrammarStoryResources();
 checkVocabularyStudyHooks();
 checkDictionaryHooks();
+checkTrustPages();
+checkContactFormContract();
 
 console.log('Smoke tests passed.');

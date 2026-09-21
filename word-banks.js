@@ -774,18 +774,22 @@ const GRADE_WORDS = {
   )
 };
 
-// Curated additions from ref/IMG_2472.jpeg and ref/IMG_2483.jpeg-IMG_2490.jpeg.
+// Curated additions from ref/IMG_2472.jpeg, ref/IMG_2483.jpeg-IMG_2490.jpeg,
+// and the newer ref/IMG_2493.jpeg-IMG_2543.jpeg batch.
 // A headword is added only if it does not already occur anywhere in the grade banks.
 const REFERENCE_VOCABULARY_BY_GRADE = {
   3: [
     { latin: 'nomen', english: 'name', emoji: '🏷️' },
     { latin: 'discipulus', english: 'student', emoji: '🧑‍🎓' },
     { latin: 'magistra', english: 'female teacher', emoji: '👩‍🏫' },
+    { latin: 'littera', english: 'letter of the alphabet', emoji: '🔤' },
     { latin: 'tabella', english: 'writing tablet', emoji: '📋' },
     { latin: 'sella', english: 'seat', emoji: '🪑' },
     { latin: 'ianua', english: 'door', emoji: '🚪' },
     { latin: 'folium', english: 'leaf / sheet of paper', emoji: '📄' },
-    { latin: 'culpa', english: 'fault / blame', emoji: '🙋' }
+    { latin: 'culpa', english: 'fault / blame', emoji: '🙋' },
+    { latin: 'lupa', english: 'she-wolf', emoji: '🐺' },
+    { latin: 'et', english: 'and', emoji: '&' }
   ],
   4: [
     { latin: 'campus', english: 'field / plain', emoji: '🌾' },
@@ -796,7 +800,9 @@ const REFERENCE_VOCABULARY_BY_GRADE = {
     { latin: 'frater', english: 'brother', emoji: '👦' },
     { latin: 'soror', english: 'sister', emoji: '👧' },
     { latin: 'mater', english: 'mother', emoji: '👩' },
-    { latin: 'nauta', english: 'sailor', emoji: '⛵' }
+    { latin: 'nauta', english: 'sailor', emoji: '⛵' },
+    { latin: 'aedifico', english: 'build', emoji: '🏗️' },
+    { latin: 'initium', english: 'beginning', emoji: '🚩' }
   ],
   5: [
     { latin: 'provincia', english: 'province', emoji: '🗺️' },
@@ -809,7 +815,9 @@ const REFERENCE_VOCABULARY_BY_GRADE = {
     { latin: 'ad', english: 'to / toward / at', emoji: '➡️' },
     { latin: 'ante', english: 'before', emoji: '⏮️' },
     { latin: 'post', english: 'after / behind', emoji: '⏭️' },
-    { latin: 'festino', english: 'hurry / hasten', emoji: '⏩' }
+    { latin: 'festino', english: 'hurry / hasten', emoji: '⏩' },
+    { latin: 'causa', english: 'cause / reason', emoji: '💭' },
+    { latin: 'vestimentum', english: 'garment / clothing', emoji: '🧥' }
   ],
   6: [
     { latin: 'a / ab', english: 'by / from', emoji: '⬅️' },
@@ -824,7 +832,10 @@ const REFERENCE_VOCABULARY_BY_GRADE = {
     { latin: 'ubi?', english: 'where?', emoji: '📍' },
     { latin: 'hodie', english: 'today', emoji: '📅' },
     { latin: 'nunc', english: 'now', emoji: '⏱️' },
-    { latin: 'semper', english: 'always', emoji: '♾️' }
+    { latin: 'semper', english: 'always', emoji: '♾️' },
+    { latin: 'divitiae', english: 'wealth / riches', emoji: '💰' },
+    { latin: 'ientaculum', english: 'breakfast', emoji: '🥣' },
+    { latin: 'prandium', english: 'lunch', emoji: '🍞' }
   ],
   7: [
     { latin: 'circum', english: 'around', emoji: '🔄' },
@@ -875,7 +886,7 @@ Object.entries(REFERENCE_VOCABULARY_BY_GRADE).forEach(([grade, words]) => {
     if (existingReferenceHeadwords.has(headword)) return;
     GRADE_WORDS[grade].push({
       ...word,
-      sourceImages: ['IMG_2472.jpeg', 'IMG_2483.jpeg-IMG_2490.jpeg']
+      sourceImages: word.sourceImages || ['IMG_2472.jpeg', 'IMG_2483.jpeg-IMG_2490.jpeg']
     });
     existingReferenceHeadwords.add(headword);
   });

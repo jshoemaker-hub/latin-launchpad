@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>School and Vendor Privacy Summary | Latin Launchpad</title>
+  <meta name="description" content="Student-data and vendor privacy summary for schools evaluating Latin Launchpad.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell trust-shell">
+    <header class="trust-header">
+      <a class="trust-brand" href="index.html">Latin Launchpad</a>
+      <nav aria-label="Site information">
+        <a href="about.html">About</a>
+        <a href="parents-teachers.html">For Parents / Teachers</a>
+        <a href="school-privacy.html" aria-current="page">School Privacy</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="contact.html">Contact</a>
+      </nav>
+    </header>
+    <main class="card trust-page">
+      <span class="section-kicker">District review</span>
+      <h1>School and Vendor Privacy Summary</h1>
+      <p class="effective-date">Updated September 21, 2026</p>
+      <p class="trust-lead">This summary helps schools evaluate Latin Launchpad as an online educational tool. It describes the current product and is not a FERPA certification, district approval, or substitute for a signed data privacy agreement.</p>
+
+      <div class="trust-note">
+        <strong>Current deployment model</strong>
+        <p>Latin Launchpad is presently a direct-use educational website. It does not yet provide district administration, rosters, single sign-on, teacher access controls, or a standard district data-processing agreement. A school should not treat the service as operating under FERPA's school-official exception without completing its own review and any required agreement.</p>
+      </div>
+
+      <h2>Educational purpose</h2>
+      <p>The service provides Latin vocabulary, grammar, phrase, culture, quiz, printable, and progress-tracking activities for grades 3–8. Student information is used to provide authentication, save progress, personalize learning, support users, secure the service, and maintain its operation.</p>
+
+      <h2>Data inventory</h2>
+      <div class="privacy-table-wrap">
+        <table class="privacy-table">
+          <thead><tr><th>Context</th><th>Data handled</th><th>Location and purpose</th></tr></thead>
+          <tbody>
+            <tr><td>Guest learning</td><td>Nickname or first name, grade, progress, scores, mastered words, badges</td><td>Stored in that browser for local personalization and progress</td></tr>
+            <tr><td>Synced account</td><td>Email, optional learner name, grade, progress, scores, mastered words, badges</td><td>Supabase authentication and database for account access and progress sync</td></tr>
+            <tr><td>Support</td><td>Name, email, subject, message</td><td>Netlify form handling and operator support records</td></tr>
+            <tr><td>Technical operation</td><td>IP address, browser/device details, timestamps, request and security logs</td><td>Service delivery, security, troubleshooting, and internal operations</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Data practices</h2>
+      <ul>
+        <li>No sale of student personal information.</li>
+        <li>No third-party advertising or behavioral advertising.</li>
+        <li>No public student profiles, messaging, social feed, location feature, camera, or microphone access.</li>
+        <li>No use of student information to build an unrelated commercial profile.</li>
+        <li>Collection is limited to information used for learning, authentication, support, security, and operation.</li>
+      </ul>
+
+      <h2>Service providers</h2>
+      <ul>
+        <li><strong>Netlify:</strong> website hosting, delivery, request logs, and contact-form handling.</li>
+        <li><strong>Supabase:</strong> optional account authentication and synced learning records.</li>
+        <li><strong>jsDelivr:</strong> delivery of the Supabase browser library.</li>
+      </ul>
+      <p>A school should review these providers and any applicable contractual terms as part of its vendor assessment.</p>
+
+      <h2>Access, correction, and deletion</h2>
+      <p>An account holder, parent, or authorizing school may request a description of maintained information, review or correction, deletion, or an end to further collection by contacting <a href="mailto:jshoemakerhwc@gmail.com">jshoemakerhwc@gmail.com</a>. Requests should identify the account email and the requester's authority. Identity and authority may be verified before records are disclosed or changed.</p>
+
+      <h2>Retention</h2>
+      <p>Guest records remain on the device until browser storage is cleared. Synced account information is retained while needed to provide and protect the account and should be deleted when no longer reasonably necessary for its educational or operational purpose. A district agreement should define any required deletion schedule, end-of-contract return or deletion process, and legally required exceptions.</p>
+
+      <h2>Security</h2>
+      <p>The site uses HTTPS, restricted browser security headers, Supabase authentication, and database row-level access policies described in the project's deployment configuration. No system can guarantee absolute security. Before district adoption, the school should request and assess the applicable hosting and authentication security materials and agree on incident-notification contacts and timelines.</p>
+
+      <h2>FERPA review points</h2>
+      <p>If a school discloses education-record information under FERPA's school-official exception, the school must determine that the service performs an institutional function, remains under the school's direct control regarding use and maintenance of education-record PII, operates consistently with the school's annual FERPA notice, and does not re-disclose or use the data for unauthorized purposes.</p>
+      <p>Latin Launchpad will not represent itself as a school official or FERPA-compliant vendor for a district merely because a teacher uses the public site. Those obligations must be established through the district's approval process and, where required, a written agreement.</p>
+
+      <h2>COPPA and school authorization</h2>
+      <p>For learners under 13, a school may authorize collection only within the educational context and for the school's benefit, not for unrelated commercial purposes. The current public service does not have a verified school-authorization workflow and does not permit synced accounts for children under 13. Those students may use guest mode. Any future school-managed synced accounts require prior district review, an appropriate agreement, and an authorization process reasonably designed to verify that the school is providing authorization. The operator remains responsible for its own COPPA obligations.</p>
+
+      <h2>District diligence checklist</h2>
+      <ul>
+        <li>Confirm the service is approved by district administration and IT.</li>
+        <li>Determine whether student use will involve education-record PII.</li>
+        <li>Review provider contracts, security terms, and applicable state student-privacy law.</li>
+        <li>Define authorized data, purpose, retention, deletion, incident notice, and re-disclosure restrictions.</li>
+        <li>Provide any required parent notices and preserve parent/student access rights.</li>
+        <li>Prefer guest mode when a synced account is not necessary.</li>
+      </ul>
+
+      <h2>Review contact</h2>
+      <p>Schools may send vendor questionnaires or agreement requests to <a href="mailto:jshoemakerhwc@gmail.com">jshoemakerhwc@gmail.com</a>.</p>
+    </main>
+    <footer class="site-footer">
+      <p><strong>Latin Launchpad</strong><span>Independent Latin practice for grades 3–8.</span></p>
+      <nav aria-label="Footer links"><a href="index.html">Return to learning</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></nav>
+    </footer>
+  </div>
+</body>
+</html>

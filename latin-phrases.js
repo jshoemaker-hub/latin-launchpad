@@ -583,6 +583,240 @@ const LATIN_PHRASES = [
     linkedWords: ['mater', 'studeo', 'schola'],
     minGrade: 4,
     icon: 'R'
+  },
+  {
+    id: 'alis-volat-propriis',
+    latin: 'Alis volat propriis',
+    meaning: 'she flies with her own wings',
+    note: 'The motto of Oregon and a memorable way to connect ala, wing, with responsible freedom.',
+    linkedWords: ['ala', 'volo'],
+    minGrade: 5,
+    icon: 'A'
+  },
+  {
+    id: 'arma-cedant-togae',
+    latin: 'Arma cedant togae',
+    meaning: 'let arms yield to the toga',
+    note: 'A civic motto from Cicero: public order and law should govern force.',
+    linkedWords: ['arma', 'lex', 'pax'],
+    minGrade: 7,
+    icon: 'T'
+  },
+  {
+    id: 'deo-gratias-habeamus',
+    latin: 'Deo gratias habeamus',
+    meaning: 'let us give thanks to God',
+    note: 'Kentucky\'s motto in Latin form; a useful bridge between gratitude, grammar, and Christian thanksgiving.',
+    linkedWords: ['deus', 'gratia', 'habeo'],
+    minGrade: 6,
+    icon: 'G'
+  },
+  {
+    id: 'ditat-deus',
+    latin: 'Ditat Deus',
+    meaning: 'God enriches',
+    note: 'Arizona\'s motto, short enough for students to parse while discussing what true riches mean.',
+    linkedWords: ['deus', 'divitiae'],
+    minGrade: 6,
+    icon: 'D'
+  },
+  {
+    id: 'esse-quam-videri',
+    latin: 'Esse quam videri',
+    meaning: 'to be rather than to seem',
+    note: 'North Carolina\'s motto and a strong classical Christian character phrase: reality matters more than appearance.',
+    linkedWords: ['sum', 'video'],
+    minGrade: 7,
+    icon: 'E'
+  },
+  {
+    id: 'labor-omnia-vincit',
+    latin: 'Labor omnia vincit',
+    meaning: 'work conquers all things',
+    note: 'Oklahoma\'s motto, useful for contrasting diligent work with the Christian virtue of humility.',
+    linkedWords: ['labor', 'omnis', 'vinco'],
+    minGrade: 6,
+    icon: 'L'
+  },
+  {
+    id: 'casus-belli',
+    latin: 'Casus belli',
+    meaning: 'a case for war',
+    note: 'A modern Latin expression for an event used to justify war; it opens careful discussion about justice and restraint.',
+    linkedWords: ['bellum', 'causa'],
+    minGrade: 7,
+    icon: 'B'
+  },
+  {
+    id: 'et-cetera',
+    latin: 'Et cetera',
+    meaning: 'and the other things',
+    note: 'The source of the common abbreviation etc., still used constantly in English writing.',
+    linkedWords: ['et', 'res', 'verbum'],
+    minGrade: 4,
+    icon: '&'
+  },
+  {
+    id: 'divide-et-impera',
+    latin: 'Divide et impera',
+    meaning: 'divide and rule',
+    note: 'A political maxim about controlling opponents by keeping them separated; it is useful for recognizing manipulation, not recommending it.',
+    linkedWords: ['et', 'imperium', 'rego'],
+    minGrade: 7,
+    icon: 'D'
+  },
+  {
+    id: 'vae-victis',
+    latin: 'Vae victis',
+    meaning: 'woe to the conquered',
+    note: 'A harsh saying associated with the Gallic capture of Rome. It contrasts domination with the Christian duties of justice and mercy.',
+    linkedWords: ['vinco', 'victoria', 'Roma'],
+    minGrade: 7,
+    icon: 'V'
+  },
+  {
+    id: 'solitudinem-faciunt-pacem-appellant',
+    latin: 'Ubi solitudinem faciunt, pacem appellant',
+    meaning: 'where they make a wasteland, they call it peace',
+    note: 'Tacitus puts this criticism of conquest into a British leader\'s speech, reminding readers that peace without justice may be only a name.',
+    linkedWords: ['facio', 'pax', 'bellum'],
+    minGrade: 8,
+    icon: 'P'
+  },
+  {
+    id: 'vade-mecum',
+    latin: 'Vade mecum',
+    meaning: 'go with me',
+    note: 'The phrase came to mean a small handbook carried for ready reference, which gives English the noun vademecum.',
+    linkedWords: ['cum', 'mecum', 'venio'],
+    minGrade: 6,
+    icon: 'V'
+  },
+  {
+    id: 'verbatim',
+    latin: 'Verbatim',
+    meaning: 'word for word',
+    note: 'Still used in English when speech or writing is reproduced exactly rather than summarized.',
+    linkedWords: ['verbum', 'dico', 'scribo'],
+    minGrade: 5,
+    icon: 'W'
+  },
+  {
+    id: 'exempli-gratia',
+    latin: 'Exempli gratia',
+    meaning: 'for the sake of an example',
+    note: 'Usually abbreviated e.g.; it introduces an example and is different from i.e., which restates or explains.',
+    linkedWords: ['exemplum', 'gratia'],
+    minGrade: 6,
+    icon: 'E'
+  },
+  {
+    id: 'post-scriptum',
+    latin: 'Post scriptum',
+    meaning: 'written afterward',
+    note: 'The source of P.S., traditionally used for a note added after the main body of a letter.',
+    linkedWords: ['post', 'scribo', 'epistula'],
+    minGrade: 5,
+    icon: 'P'
+  },
+  {
+    id: 'esto-perpetua',
+    latin: 'Esto perpetua',
+    meaning: 'let it be perpetual',
+    note: 'Idaho\'s state motto uses an imperative of sum and invites discussion of what things truly endure.',
+    linkedWords: ['sum', 'aeternus'],
+    minGrade: 7,
+    icon: 'E'
+  },
+  {
+    id: 'crescit-eundo',
+    latin: 'Crescit eundo',
+    meaning: 'it grows as it goes',
+    note: 'New Mexico\'s motto adapts a line from Lucretius and connects motion with growth.',
+    linkedWords: ['cresco', 'eo'],
+    minGrade: 6,
+    icon: 'C'
+  },
+  {
+    id: 'dirigo',
+    latin: 'Dirigo',
+    meaning: 'I direct',
+    note: 'Maine\'s motto suggests guidance, traditionally pictured by the North Star.',
+    linkedWords: ['duco', 'stella'],
+    minGrade: 5,
+    icon: 'D'
+  },
+  {
+    id: 'excelsior',
+    latin: 'Excelsior',
+    meaning: 'ever upward / higher',
+    note: 'New York\'s comparative-form motto points upward and encourages worthy aspiration.',
+    linkedWords: ['altus', 'magnus'],
+    minGrade: 6,
+    icon: 'E'
+  },
+  {
+    id: 'nil-sine-numine',
+    latin: 'Nil sine numine',
+    meaning: 'nothing without divine providence',
+    note: 'Colorado\'s motto uses numen for divine will or providence; Christian readers can distinguish providence from pagan ideas of fate.',
+    linkedWords: ['nihil', 'sine', 'deus'],
+    minGrade: 7,
+    icon: 'N'
+  },
+  {
+    id: 'quae-sursum-volo-videre',
+    latin: 'Quae sursum volo videre',
+    meaning: 'I wish to see the things that are above',
+    note: 'Minnesota\'s Latin motto joins aspiration with the verbs volo and video.',
+    linkedWords: ['video', 'caelum'],
+    minGrade: 7,
+    icon: 'Q'
+  },
+  {
+    id: 'qui-transtulit-sustinet',
+    latin: 'Qui transtulit sustinet',
+    meaning: 'he who transplanted still sustains',
+    note: 'Connecticut\'s motto uses the image of transplanting and sustaining, historically applied to a community under God\'s care.',
+    linkedWords: ['trans', 'servo', 'ager'],
+    minGrade: 7,
+    icon: 'Q'
+  },
+  {
+    id: 'si-quaeris-paeninsulam',
+    latin: 'Si quaeris paeninsulam amoenam, circumspice',
+    meaning: 'if you seek a pleasant peninsula, look around',
+    note: 'Michigan\'s motto is a full conditional sentence tied directly to the state\'s geography.',
+    linkedWords: ['si', 'quaero', 'circum'],
+    minGrade: 7,
+    icon: 'S'
+  },
+  {
+    id: 'virtute-et-armis',
+    latin: 'Virtute et armis',
+    meaning: 'by courage and arms',
+    note: 'Mississippi\'s motto uses two ablatives; it can prompt discussion about courage governed by justice rather than force alone.',
+    linkedWords: ['virtus', 'et', 'arma'],
+    minGrade: 6,
+    icon: 'V'
+  },
+  {
+    id: 'alumnus-alumna',
+    latin: 'Alumnus / alumna',
+    meaning: 'a nurtured son / daughter; a graduate',
+    note: 'English keeps these Latin forms for a former student, with alumni and alumnae as traditional plurals.',
+    linkedWords: ['discipulus', 'filius', 'filia'],
+    minGrade: 5,
+    icon: 'A'
+  },
+  {
+    id: 'floruit',
+    latin: 'Floruit',
+    meaning: 'he or she flourished',
+    note: 'Often abbreviated fl., this word gives the active period of a person whose exact birth or death dates are unknown.',
+    linkedWords: ['flos', 'vivo', 'tempus'],
+    minGrade: 7,
+    icon: 'F'
   }
 ];
 

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact | Latin Launchpad</title>
+  <meta name="description" content="Contact Latin Launchpad with questions, corrections, suggestions, or support requests.">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-shell trust-shell">
+    <header class="trust-header">
+      <a class="trust-brand" href="index.html">Latin Launchpad</a>
+      <nav aria-label="Site information">
+        <a href="about.html">About</a>
+        <a href="parents-teachers.html">For Parents / Teachers</a>
+        <a href="school-privacy.html">School Privacy</a>
+        <a href="privacy.html">Privacy</a>
+        <a href="terms.html">Terms</a>
+        <a href="contact.html" aria-current="page">Contact</a>
+      </nav>
+    </header>
+    <main class="card trust-page">
+      <span class="section-kicker">Support</span>
+      <h1>Contact Latin Launchpad</h1>
+      <p class="trust-lead">Send a question, report a content correction or technical issue, or share an idea for improving the learning experience.</p>
+
+      <form class="standalone-contact-form" name="contact" method="POST" data-netlify="true">
+        <input type="hidden" name="form-name" value="contact">
+        <p class="collection-notice">If you are under 13, ask a parent, guardian, or teacher to contact us. Do not include sensitive student information. See the <a href="privacy.html">Privacy Policy</a>.</p>
+        <div class="contact-form-grid">
+          <label>Name<input type="text" name="name" autocomplete="name" required></label>
+          <label>Email<input type="email" name="email" autocomplete="email" required></label>
+        </div>
+        <label>Subject<input type="text" name="subject" required></label>
+        <label>Message<textarea name="message" required></textarea></label>
+        <button type="submit" class="primary-button">Send message</button>
+      </form>
+
+      <div class="contact-alt">
+        <p>You can also email <a href="mailto:jshoemakerhwc@gmail.com">jshoemakerhwc@gmail.com</a>.</p>
+        <p>For privacy or account-data requests, include the email address associated with the account. Do not send passwords or other sensitive information.</p>
+      </div>
+    </main>
+    <footer class="site-footer">
+      <p><strong>Latin Launchpad</strong><span>Independent Latin practice for grades 3–8.</span></p>
+      <nav aria-label="Footer links"><a href="index.html">Return to learning</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></nav>
+    </footer>
+  </div>
+</body>
+</html>

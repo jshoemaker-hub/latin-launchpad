@@ -1,6 +1,6 @@
 # Reference Content Backlog
 
-Source set reviewed: `ref/IMG_2450.jpeg` through `ref/IMG_2490.jpeg`.
+Source set reviewed: `ref/IMG_2450.jpeg` through `ref/IMG_2490.jpeg`, plus the new batch `ref/IMG_2493.jpeg` through `ref/IMG_2543.jpeg`.
 
 This file organizes content from the photographed reference pages for later website integration. Treat OCR as a first pass: every publishable item should be checked against the source image or a public-domain source before going live. Items are grouped by the destination they most naturally fit in the current site.
 
@@ -11,6 +11,45 @@ This file organizes content from the photographed reference pages for later webs
 3. Add conversational and classroom phrases as a new "say it in class" resource or mini-practice mode.
 4. Expand `word-banks.js` with verified vocabulary clusters rather than importing the full photographed vocabulary index at once.
 5. Keep oral drills and grammar charts as teacher-facing source material until the quiz format can represent forms cleanly.
+
+## New Reference Batch: IMG_2493-IMG_2543
+
+The September 17 batch expands the source library beyond the earlier phrase and grammar pages. OCR has been reviewed enough for planning and first-pass app integration; still verify exact macrons and punctuation before publishing formal handouts.
+
+| Images | Main information | First integration |
+| --- | --- | --- |
+| IMG_2493-IMG_2497 | Latin alphabet, letter names, U/V and J history, vowel length, diphthongs, consonant sounds, and accent rules. | Added `grade3-grammar-latin-sounds`; added `roman-alphabet` culture card. |
+| IMG_2498 | Roman world map, including Britannia, Gallia, Hispania, Africa, Italia, Graecia, Asia, Syria, Aegyptus, and major seas. | Added `roman-world-map` culture card. |
+| IMG_2499 | Ennius, early Latin literature, Cato the Elder, Carthage, the Punic Wars, and `Carthago delenda est`. | Added `ennius-cato-carthage` culture card with moral framing. |
+| IMG_2500 | Short Romulus and Remus reading with Mars, Rhea Silvia, Amulius, the twins, the river, the she-wolf, and the founding of Rome. | Added `romulus-remus-reading` culture card and vocabulary support. |
+| IMG_2501 | Chronological list of authors and works: Plautus through Boethius, including Cicero, Caesar, Vergil, Livy, Augustine, and Boethius. | Added `roman-authors-timeline`. |
+| IMG_2502, IMG_2503, IMG_2543 | School, library, book, state motto, and abbreviation phrases: `Alma mater`, `Ex libris`, `AD`, `e.g.`, `Ditat Deus`, `Esse quam videri`, `etc.`, `P.S.`, and `@` from `apud`. | Integrated every distinct Latin saying or term, retained existing equivalents only once, and added `latin-abbreviations-today`. |
+| IMG_2504-IMG_2515 | Noun, adjective, pronoun, and verb paradigms through perfect, pluperfect, future perfect, imperatives, participles, infinitives, `sum`, and `possum`. | Added declension review, commands and infinitives, and complete verb-system lessons; existing adjective, pronoun, and participle lessons cover the overlapping charts. |
+| IMG_2516-IMG_2520 | Syntax appendix: case uses, prepositions, conjunctions, interrogatives, agreement, infinitives, possession, transitive/intransitive verbs, substantive adjectives, relative pronouns, and participles. | Added `grade7-grammar-syntax-agreement` and `grade8-grammar-infinitives-possession`. |
+| IMG_2521-IMG_2524 | Historical timeline from legendary Troy and Rome's founding through Republic, Empire, Constantine, Augustine, the fall of Rome, Justinian, and Constantinople in 1453. | Added cards on the Twelve Tables, republican government, expansion, civil wars, Augustus, Pompeii, Christianity in late Rome, and Constantinople and Justinian. |
+| IMG_2525-IMG_2538 | English-Latin and Latin-English glossary pages with vocabulary from Latin for the New Millennium. | Compared both directions against the existing 392-entry index and added 144 distinct reading-vocabulary records; runtime normalization prevents overlap with existing grade banks. |
+| IMG_2539 | City of Rome map with Forum, Curia Julia, Via Sacra, temples, Capitoline, Palatine, Aventine, Circus Maximus, Colosseum, and Via Appia. | Added `city-of-rome-map` culture card. |
+| IMG_2540 | War and peace phrases: `Arma cedant togae`, `Casus belli`, `Divide et impera`, Horace on patriotic death, Vegetius on peace and war, Tacitus on conquest, and `Vae victis`. | Integrated the distinct phrases and `roman-war-peace`; duplicate ideas already represented by `Dulce et decorum est` and `Si vis pacem, para bellum` were not repeated. |
+| IMG_2541 | Roman food and dining: `ientaculum`, `prandium`, `cena`, light breakfast/lunch, dinner after baths, triclinium, reclining, handwashing, utensils, and napkins. | Added `roman-food-triclinium` culture card and meal vocabulary. |
+
+### Classical Christian Framing Notes
+
+| Topic | Teaching angle |
+| --- | --- |
+| Roman gods and founding legends | Teach them as Roman myth and cultural memory, not as objects of devotion. Compare pagan civic identity with Christian providence, humility, and the worth of persons. |
+| Roman government and war | Admire ordered law, civic duty, and rhetoric while judging conquest, slavery, and domination by justice and charity. |
+| Roman meals and customs | Use ordinary customs to discuss gratitude, moderation, hospitality, and fellowship. |
+| Literature and history | Present pagan and Christian authors together in historical sequence, with Augustine and Boethius showing how Christian thought inherited and corrected classical learning. |
+
+### Integration Totals
+
+| Content area | Integrated total after this batch |
+| --- | ---: |
+| Reference index vocabulary | 392 |
+| New reading-glossary records added | 144 |
+| Sayings and common expressions | 91 |
+| Culture and history cards | 32 |
+| Grammar lesson packs | 23 |
 
 ## Latin Phrases And Sayings
 
