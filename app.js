@@ -30,8 +30,23 @@ const VOCAB_LESSONS = Object.entries(GRADE_WORDS).flatMap(([grade, words]) => {
     };
   });
 });
+
+const grammarStoryIndexByGrade = {};
+const GRAMMAR_LESSONS_WITH_STORIES = (typeof GRAMMAR_LESSONS !== 'undefined' ? GRAMMAR_LESSONS : []).map((lesson) => {
+  const storyIndex = grammarStoryIndexByGrade[lesson.grade] || 0;
+  grammarStoryIndexByGrade[lesson.grade] = storyIndex + 1;
+  return {
+    ...lesson,
+    story: lesson.story || (
+      typeof getStorySceneForLesson === 'function'
+        ? getStorySceneForLesson(lesson.grade, storyIndex)
+        : null
+    )
+  };
+});
+
 const LESSONS = [
-  ...(typeof GRAMMAR_LESSONS !== 'undefined' ? GRAMMAR_LESSONS : []),
+  ...GRAMMAR_LESSONS_WITH_STORIES,
   ...VOCAB_LESSONS
 ];
 
@@ -3188,7 +3203,7 @@ function renderStoryScene(lessonOrStory) {
   const keywordWords = [
     ...story.listenFor,
     ...(story.seekFind?.targets || []).map((target) => target.latin),
-    ...(lesson?.vocabularyWords || []).map((word) => word.latin)
+    ...(lesson ? getLessonVocabularyWords(lesson) : []).map((word) => word.latin)
   ];
   const highlightedLatinCue = renderHighlightedLatin(story.latinCue, keywordWords);
   const storyBadgeEarned = Boolean(AppState.badges['story-explorer']);
@@ -3235,7 +3250,7 @@ function renderFullStory(lesson) {
   const vocabulary = [
     ...story.listenFor,
     ...(story.seekFind?.targets || []).map((target) => target.latin),
-    ...(lesson.vocabularyWords || []).map((word) => word.latin)
+    ...getLessonVocabularyWords(lesson).map((word) => word.latin)
   ];
   const seen = new Set();
   const paragraphs = (story.fullStory || []).filter((paragraph) => {

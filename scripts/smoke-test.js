@@ -37,7 +37,7 @@ function loadContentData() {
     vm.runInContext(source, context, { filename: filePath });
   });
   vm.runInContext(
-    'globalThis.__CONTENT = { GRADE_WORDS, REFERENCE_VOCABULARY_BY_GRADE, REFERENCE_INDEX_WORDS, LATIN_PHRASES, LATIN_CULTURE_CARDS, CLASSROOM_LATIN_PHRASES, GRAMMAR_LESSONS };',
+    'globalThis.__CONTENT = { GRADE_WORDS, REFERENCE_VOCABULARY_BY_GRADE, REFERENCE_INDEX_WORDS, NEW_REFERENCE_GLOSSARY_WORDS, LATIN_PHRASES, LATIN_CULTURE_CARDS, CLASSROOM_LATIN_PHRASES, GRAMMAR_LESSONS };',
     context
   );
   return context.__CONTENT;
@@ -55,6 +55,7 @@ function checkContentData() {
     GRADE_WORDS,
     REFERENCE_VOCABULARY_BY_GRADE,
     REFERENCE_INDEX_WORDS,
+    NEW_REFERENCE_GLOSSARY_WORDS,
     LATIN_PHRASES,
     LATIN_CULTURE_CARDS,
     CLASSROOM_LATIN_PHRASES,
@@ -65,13 +66,13 @@ function checkContentData() {
   assertUniqueIds(CLASSROOM_LATIN_PHRASES, 'classroom phrase');
   assertUniqueIds(GRAMMAR_LESSONS, 'grammar lesson');
 
-  assert(LATIN_PHRASES.length === 65, `Expected 65 phrases, found ${LATIN_PHRASES.length}`);
-  assert(LATIN_CULTURE_CARDS.length === 13, `Expected 13 culture cards, found ${LATIN_CULTURE_CARDS.length}`);
+  assert(LATIN_PHRASES.length === 91, `Expected 91 phrases, found ${LATIN_PHRASES.length}`);
+  assert(LATIN_CULTURE_CARDS.length === 32, `Expected 32 culture cards, found ${LATIN_CULTURE_CARDS.length}`);
   assert(CLASSROOM_LATIN_PHRASES.length === 40, `Expected 40 classroom phrases, found ${CLASSROOM_LATIN_PHRASES.length}`);
-  assert(GRAMMAR_LESSONS.length === 17, `Expected 17 grammar lessons, found ${GRAMMAR_LESSONS.length}`);
+  assert(GRAMMAR_LESSONS.length === 23, `Expected 23 grammar lessons, found ${GRAMMAR_LESSONS.length}`);
 
   const referenceWords = Object.values(REFERENCE_VOCABULARY_BY_GRADE).flat();
-  assert(referenceWords.length === 66, `Expected 66 reference vocabulary entries, found ${referenceWords.length}`);
+  assert(referenceWords.length === 76, `Expected 76 reference vocabulary entries, found ${referenceWords.length}`);
   const normalizeTerm = (value) => value.toLowerCase().replace(/[^a-z]/g, '');
   const referenceHeadwords = referenceWords.map((word) => normalizeTerm(word.latin));
   assert(
@@ -81,6 +82,14 @@ function checkContentData() {
   assert(REFERENCE_INDEX_WORDS.length === 392, `Expected 392 index entries, found ${REFERENCE_INDEX_WORDS.length}`);
   const indexHeadwords = REFERENCE_INDEX_WORDS.map(([latin]) => normalizeTerm(latin));
   assert(new Set(indexHeadwords).size === indexHeadwords.length, 'Reference index contains duplicate headwords');
+  assert(NEW_REFERENCE_GLOSSARY_WORDS.length === 144, `Expected 144 new glossary entries, found ${NEW_REFERENCE_GLOSSARY_WORDS.length}`);
+  const newGlossaryHeadwords = NEW_REFERENCE_GLOSSARY_WORDS.map(([latin]) => normalizeTerm(latin));
+  assert(new Set(newGlossaryHeadwords).size === newGlossaryHeadwords.length, 'New glossary contains duplicate headwords');
+  NEW_REFERENCE_GLOSSARY_WORDS.forEach(([latin, english, grade, , sourceImage]) => {
+    assert(latin && english, 'New glossary entries need Latin and English text');
+    assert(grade >= 3 && grade <= 8, `Invalid new glossary grade: ${latin}`);
+    assert(/^IMG_253[1-8]\.jpeg$/.test(sourceImage), `Invalid new glossary source image: ${latin}`);
+  });
 
   const vocabulary = new Set(
     Object.values(GRADE_WORDS).flat().map((word) => normalizeTerm(word.latin))
@@ -92,6 +101,9 @@ function checkContentData() {
   });
   indexHeadwords.forEach((headword) => {
     assert(vocabulary.has(headword), `Reference index headword is missing from lessons: ${headword}`);
+  });
+  newGlossaryHeadwords.forEach((headword) => {
+    assert(vocabulary.has(headword), `New glossary headword is missing from lessons: ${headword}`);
   });
 
   const normalizedPhrases = LATIN_PHRASES.map((phrase) => normalizeTerm(phrase.latin));
@@ -159,6 +171,21 @@ function checkLessonLoopHooks() {
   });
 }
 
+function checkGrammarStoryResources() {
+  assert(
+    app.includes('const GRAMMAR_LESSONS_WITH_STORIES'),
+    'Grammar lessons must be enriched with story resources'
+  );
+  assert(
+    app.includes('getStorySceneForLesson(lesson.grade, storyIndex)'),
+    'Grammar lessons must receive grade-appropriate illustrated stories'
+  );
+  assert(
+    app.includes('...GRAMMAR_LESSONS_WITH_STORIES'),
+    'The lesson catalog must use the story-enriched grammar lessons'
+  );
+}
+
 function checkVocabularyStudyHooks() {
   [
     'studyPage',
@@ -194,6 +221,7 @@ checkContentData();
 checkElementIds();
 checkCssBraces();
 checkLessonLoopHooks();
+checkGrammarStoryResources();
 checkVocabularyStudyHooks();
 checkDictionaryHooks();
 
