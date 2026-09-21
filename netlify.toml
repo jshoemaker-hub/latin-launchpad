@@ -1,6 +1,6 @@
 [build]
   publish = "dist"
-  command = "mkdir -p dist && cp index.html flashcards.html styles.css app.js word-banks.js reference-vocabulary.js latin-phrases.js latin-stories.js latin-culture.js classroom-latin.js learning-objectives.js grammar-lessons.js dist/ && cp -R assets dist/assets"
+  command = "mkdir -p dist && cp index.html flashcards.html about.html privacy.html terms.html contact.html parents-teachers.html school-privacy.html styles.css app.js word-banks.js reference-vocabulary.js latin-phrases.js latin-stories.js latin-culture.js classroom-latin.js learning-objectives.js grammar-lessons.js og-image.png dist/ && cp -R assets dist/assets"
 
 [[headers]]
   for = "/*"

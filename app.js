@@ -295,6 +295,9 @@ const elements = {
   accountPasswordInput: document.getElementById('accountPasswordInput'),
   authTabSignIn: document.getElementById('authTabSignIn'),
   authTabSignUp: document.getElementById('authTabSignUp'),
+  signupEligibility: document.getElementById('signupEligibility'),
+  accountCreatorRole: document.getElementById('accountCreatorRole'),
+  accountEligibilityConfirmation: document.getElementById('accountEligibilityConfirmation'),
   forgotPasswordButton: document.getElementById('forgotPasswordButton'),
   forgotPasswordForm: document.getElementById('forgotPasswordForm'),
   resetEmailInput: document.getElementById('resetEmailInput'),
@@ -943,6 +946,15 @@ function setAuthMode(mode) {
     elements.accountForm.dataset.authMode = mode;
     const submitButton = document.getElementById('emailLoginButton');
     if (submitButton) submitButton.textContent = isSignIn ? 'Sign in' : 'Create account';
+  }
+  if (elements.signupEligibility) elements.signupEligibility.hidden = isSignIn;
+  if (elements.accountCreatorRole) {
+    elements.accountCreatorRole.disabled = isSignIn;
+    elements.accountCreatorRole.required = !isSignIn;
+  }
+  if (elements.accountEligibilityConfirmation) {
+    elements.accountEligibilityConfirmation.disabled = isSignIn;
+    elements.accountEligibilityConfirmation.required = !isSignIn;
   }
   // Update autocomplete hint on password field
   if (elements.accountPasswordInput) {
@@ -4628,6 +4640,10 @@ function setupEvents() {
     const email = elements.accountEmailInput.value;
     const password = elements.accountPasswordInput?.value || '';
     if (_authMode === 'signup') {
+      if (!elements.accountCreatorRole?.value || !elements.accountEligibilityConfirmation?.checked) {
+        setAccountMessage('Confirm who is creating the account and accept the privacy terms.', 'error');
+        return;
+      }
       signUpWithEmail(email, password);
     } else {
       signInWithEmail(email, password);
