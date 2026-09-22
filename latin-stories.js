@@ -57,6 +57,25 @@ const LATIN_STORY_SCENES = [
     }
   },
   {
+    id: 'trevi-fountain',
+    title: 'Lucia ad Fontem Trevi',
+    englishTitle: 'Lucia at the Trevi Fountain',
+    sourceUrl: '',
+    summary: 'Lucia visits the Trevi Fountain, learns about the Virgo Aqueduct, and thinks about old Roman waterworks in the modern city.',
+    teacherMove: 'Use it with Year 3 or Year 4 when students meet Rome, water, buildings, and travel vocabulary.',
+    latinCue: 'Lucia aquam claram in fonte videt.',
+    englishCue: 'Lucia sees clear water in the fountain.',
+    listenFor: ['aqua', 'fons', 'Roma', 'urbs', 'nummus'],
+    pictureCue: 'Lucia stands before a bright Roman fountain.',
+    illustrationPrompt:
+      'Children\'s textbook illustration of a student visiting the Trevi Fountain in Rome, clear water, coins, warm stone architecture, respectful classroom style, no text.',
+    visual: {
+      icons: ['💧', '🏛️', '🪙'],
+      bg: '#e0f2fe',
+      accent: '#0369a1'
+    }
+  },
+  {
     id: 'roman-dinner',
     title: 'Cena Romana: Gaius et Servus Suus',
     englishTitle: 'A Roman Dinner: Gaius and His Servant',
@@ -347,6 +366,12 @@ const LATIN_FULL_STORIES = {
     { latin: 'Postea pater ad piscinam frigidam procedit. Quintus aquam frigidam timet, sed pater ridet et dicit, “Aqua corpus confirmat.”', english: 'Afterward his father goes to the cold pool. Quintus is afraid of the cold water, but his father laughs and says, “The water strengthens the body.”' },
     { latin: 'Quintus pedem in aquam ponit, deinde totus descendit. “Frigida est, sed bona!” clamat. Pater et filius e thermis laeti discedunt.', english: 'Quintus puts a foot in the water, then goes all the way down. “It is cold, but good!” he shouts. Father and son leave the baths happily.' }
   ],
+  'trevi-fountain': [
+    { latin: 'Lucia cum magistra per urbem Romam ambulat. Subito magnum fontem videt. Aqua clara per saxa currit, et multi viatores consistunt.', english: 'Lucia walks through the city of Rome with her teacher. Suddenly she sees a great fountain. Clear water runs over the rocks, and many travelers stop.' },
+    { latin: 'Magistra dicit, “Hic est Fons Trevi. Aqua olim per aquaeductum Virginem ad urbem veniebat.” Lucia verba attente audit.', english: 'The teacher says, “This is the Trevi Fountain. Water once came to the city through the Virgo Aqueduct.” Lucia listens carefully to the words.' },
+    { latin: 'Puer parvum nummum in aquam iacit. Lucia ridet, sed etiam antiquam industriam Romanorum laudat. Aqua urbi vitam dat.', english: 'A boy throws a small coin into the water. Lucia smiles, but she also praises the ancient skill of the Romans. Water gives life to the city.' },
+    { latin: 'Postea Lucia in tabella scribit: Roma antiqua in Roma nova manet. Fons pulcher historiam et aquam simul monstrat.', english: 'Afterward Lucia writes on her tablet: ancient Rome remains in new Rome. The beautiful fountain shows history and water together.' }
+  ],
   'roman-dinner': [
     { latin: 'Gaius hospites ad cenam vocat. Marcus servus cibum parat et mensam ornat. In culina panis, olivae, caseus, et mala sunt.', english: 'Gaius invites guests to dinner. Marcus the servant prepares the food and decorates the table. In the kitchen there are bread, olives, cheese, and apples.' },
     { latin: 'Marcus ad forum festinat quod piscis deest. Piscem recens emit et domum portat. Coquus piscem cum herbis parat.', english: 'Marcus hurries to the forum because fish is missing. He buys a fresh fish and carries it home. The cook prepares the fish with herbs.' },
@@ -395,10 +420,10 @@ const LATIN_FULL_STORIES = {
 const STORY_SEQUENCE_BY_GRADE = {
   3: ['garden-dog', 'school', 'forum-market', 'river-boat', 'roman-dinner', 'farmer-wolf'],
   4: ['school', 'forum-market', 'garden-dog', 'roman-baths', 'river-boat', 'roman-dinner', 'farmer-wolf'],
-  5: ['forum-market', 'roman-dinner', 'river-boat', 'harbor-trade', 'roman-baths', 'farmer-wolf', 'romulus-remus'],
-  6: ['school', 'roman-baths', 'forum-market', 'roman-dinner', 'farmer-wolf', 'river-boat', 'harbor-trade', 'romulus-remus'],
-  7: ['romulus-remus', 'aeneas-troy', 'harbor-trade', 'farmer-wolf', 'roman-baths', 'school', 'river-boat'],
-  8: ['aeneas-troy', 'romulus-remus', 'harbor-trade', 'forum-market', 'roman-dinner', 'farmer-wolf', 'river-boat']
+  5: ['trevi-fountain', 'forum-market', 'roman-dinner', 'river-boat', 'harbor-trade', 'roman-baths', 'farmer-wolf', 'romulus-remus'],
+  6: ['trevi-fountain', 'school', 'roman-baths', 'forum-market', 'roman-dinner', 'farmer-wolf', 'river-boat', 'harbor-trade', 'romulus-remus'],
+  7: ['romulus-remus', 'aeneas-troy', 'trevi-fountain', 'harbor-trade', 'farmer-wolf', 'roman-baths', 'school', 'river-boat'],
+  8: ['aeneas-troy', 'romulus-remus', 'trevi-fountain', 'harbor-trade', 'forum-market', 'roman-dinner', 'farmer-wolf', 'river-boat']
 };
 
 const LATIN_STORY_BY_ID = LATIN_STORY_SCENES.reduce((storiesById, story) => {

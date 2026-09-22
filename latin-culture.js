@@ -350,6 +350,28 @@ const LATIN_CULTURE_CARDS = [
     minGrade: 7,
     sourceImages: ['IMG_2524.jpeg'],
     mark: 'J'
+  },
+  {
+    id: 'trevi-fountain',
+    title: 'The Trevi Fountain',
+    latinTitle: 'Fons Trevi',
+    summary: 'Third Form introduces the Trevi Fountain as a famous modern Roman landmark at the terminus of the ancient Virgo Aqueduct. The aqueduct served Rome with fresh water for centuries before later rebuilding and the baroque fountain completed in 1762.',
+    connection: 'The card links aqua, fons, urbs, and Roman engineering so students can see ancient infrastructure inside modern Rome.',
+    linkedWords: ['aqua', 'fons', 'urbs', 'Roma', 'aedifico'],
+    minGrade: 5,
+    sourceImages: ['IMG_2628.jpeg'],
+    mark: 'T'
+  },
+  {
+    id: 'dies-irae-sequence',
+    title: 'The Dies Irae',
+    latinTitle: 'Dies Irae',
+    summary: 'Third Form describes the Dies Irae as a medieval Latin sequence associated with the Requiem Mass and traditionally attributed to Thomas of Celano. Its opening words became one of the most recognizable Latin texts in sacred music.',
+    connection: 'The phrase lets older students connect dies, ira, judgment, poetry, and musical settings such as Mozart\'s Requiem.',
+    linkedWords: ['dies', 'ira', 'carmen', 'tempus'],
+    minGrade: 7,
+    sourceImages: ['IMG_2640.jpeg'],
+    mark: 'D'
   }
 ];
 

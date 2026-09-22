@@ -3,26 +3,26 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Latin Launchpad — Latin Practice for Grades 3–8</title>
+  <title>Latin Launchpad — Latin Practice for Years 1–4</title>
 
   <!-- SEO -->
-  <meta name="description" content="Latin Launchpad is a free Latin practice site for grades 3–8. Build vocabulary, master grammar, and explore popular Latin phrases with interactive lessons, quizzes, and printable worksheets.">
+  <meta name="description" content="Latin Launchpad is a free Latin practice site for Years 1–4. Build vocabulary, master grammar, and explore popular Latin phrases with interactive lessons, quizzes, and printable worksheets.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://latin-launchpad.netlify.app/">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://latin-launchpad.netlify.app/">
-  <meta property="og:title" content="Latin Launchpad — Latin Practice for Grades 3–8">
-  <meta property="og:description" content="Free Latin lessons, quizzes, and printables for grades 3–8. Vocabulary, grammar, and popular Latin phrases — all in one place.">
+  <meta property="og:title" content="Latin Launchpad — Latin Practice for Years 1–4">
+  <meta property="og:description" content="Free Latin lessons, quizzes, and printables for Years 1–4. Vocabulary, grammar, and popular Latin phrases — all in one place.">
   <meta property="og:image" content="https://latin-launchpad.netlify.app/og-image.png">
   <meta property="og:site_name" content="Latin Launchpad">
   <meta property="og:locale" content="en_US">
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Latin Launchpad — Latin Practice for Grades 3–8">
-  <meta name="twitter:description" content="Free Latin lessons, quizzes, and printables for grades 3–8.">
+  <meta name="twitter:title" content="Latin Launchpad — Latin Practice for Years 1–4">
+  <meta name="twitter:description" content="Free Latin lessons, quizzes, and printables for Years 1–4.">
   <meta name="twitter:image" content="https://latin-launchpad.netlify.app/og-image.png">
 
   <!-- Favicon (SVG inline data URI) -->
@@ -40,15 +40,13 @@
       </div>
       <div class="header-actions">
         <label class="header-grade-control" for="headerGradeSelect">
-          <span>Grade</span>
-          <select id="headerGradeSelect" aria-label="Change grade level">
+          <span>Year</span>
+          <select id="headerGradeSelect" aria-label="Change curriculum year">
             <option value="">Choose</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-            <option value="6">6</option>
-            <option value="7">7</option>
-            <option value="8">8</option>
+            <option value="3">Year 1</option>
+            <option value="4">Year 2</option>
+            <option value="5">Year 3</option>
+            <option value="6">Year 4</option>
           </select>
         </label>
         <button type="button" id="homeButton" class="pill-button">Home</button>
@@ -68,7 +66,7 @@
           <div class="login-copy">
             <span class="section-kicker">Latin Launchpad</span>
             <h2>Focused Latin practice for every class day.</h2>
-            <p>Build vocabulary, grammar, and phrase fluency with grade-level lessons, quick checks, and progress that stays organized.</p>
+            <p>Build vocabulary, grammar, and phrase fluency with year-level lessons, quick checks, and progress that stays organized.</p>
             <div class="welcome-actions">
               <button id="startButton" class="primary-button">Start learning</button>
               <button id="welcomeAccountButton" class="secondary-button">Email login</button>
@@ -137,11 +135,11 @@
               <div class="panel-heading">
                 <div>
                   <span class="section-kicker">Next up</span>
-                  <h3 id="homeNextTitle">Choose a grade</h3>
+                  <h3 id="homeNextTitle">Choose a year</h3>
                 </div>
                 <button id="homeLessonsButton" type="button" class="secondary-button">Lessons</button>
               </div>
-              <p id="homeNextMeta">Lessons unlock after you choose a grade.</p>
+              <p id="homeNextMeta">Lessons unlock after you choose a year.</p>
               <div id="homePathList" class="home-path-list"></div>
             </section>
 
@@ -163,7 +161,7 @@
                 </button>
                 <button id="homePracticeDictionary" type="button" class="practice-link">
                   <strong>Dictionary</strong>
-                  <span>Search every vocabulary word across grades.</span>
+                  <span>Search every vocabulary word across years.</span>
                 </button>
                 <button id="homePracticeDashboard" type="button" class="practice-link">
                   <strong>Dashboard</strong>
@@ -288,8 +286,8 @@
 
       <section id="gradePage" class="page">
         <div class="card">
-          <h2>Choose your grade</h2>
-          <p>Pick the grade that matches your Latin studies.</p>
+          <h2>Choose your year</h2>
+          <p>Pick the book year that matches your Latin studies.</p>
           <div class="grade-grid" id="gradeGrid"></div>
         </div>
       </section>
@@ -301,7 +299,7 @@
               <h2 id="lessonListTitle">Lessons</h2>
               <p id="lessonListSubtitle">Choose a lesson to practice Latin.</p>
             </div>
-            <button id="changeGradeButton" class="secondary-button">Change grade</button>
+            <button id="changeGradeButton" class="secondary-button">Change year</button>
           </div>
           <div id="objectivesCard" class="objectives-card"></div>
           <div id="lessonCards" class="lesson-grid"></div>
@@ -330,7 +328,7 @@
             <div>
               <span class="section-kicker">Vocabulary study</span>
               <h2 id="studyTitle">Study vocabulary</h2>
-              <p id="studySummary">Browse your grade-level words or practice with timed flashcards.</p>
+              <p id="studySummary">Browse your year-level words and phrases or practice with timed flashcards.</p>
             </div>
             <button id="studyBackButton" type="button" class="secondary-button">Home</button>
           </div>
@@ -377,7 +375,7 @@
             <div>
               <span class="section-kicker">Latin dictionary</span>
               <h2>Site-wide vocabulary</h2>
-              <p>Search every Latin headword and English meaning used across grades 3–8.</p>
+              <p>Search every Latin headword and English meaning used across Years 1–4.</p>
             </div>
             <button id="dictionaryBackButton" type="button" class="secondary-button">Back</button>
           </div>
@@ -387,15 +385,13 @@
               <input id="dictionarySearch" type="search" placeholder="Search Latin or English" autocomplete="off" />
             </label>
             <label>
-              <span>Grade</span>
+              <span>Year</span>
               <select id="dictionaryGradeFilter">
-                <option value="all">All grades</option>
-                <option value="3">Grade 3</option>
-                <option value="4">Grade 4</option>
-                <option value="5">Grade 5</option>
-                <option value="6">Grade 6</option>
-                <option value="7">Grade 7</option>
-                <option value="8">Grade 8</option>
+                <option value="all">All years</option>
+                <option value="1">Year 1</option>
+                <option value="2">Year 2</option>
+                <option value="3">Year 3</option>
+                <option value="4">Year 4</option>
               </select>
             </label>
             <strong id="dictionaryCount"></strong>
@@ -541,7 +537,7 @@
       </section>
     </main>
     <footer class="site-footer" aria-label="Site information">
-      <p><strong>Latin Launchpad</strong><span>Independent Latin practice for grades 3–8.</span></p>
+      <p><strong>Latin Launchpad</strong><span>Independent Latin practice for Years 1–4.</span></p>
       <nav aria-label="Trust and support">
         <a href="about.html">About</a>
         <a href="parents-teachers.html">For Parents / Teachers</a>

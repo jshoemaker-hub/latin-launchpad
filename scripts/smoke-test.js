@@ -9,6 +9,7 @@ const cssPath = path.join(root, 'styles.css');
 const wordBanksPath = path.join(root, 'word-banks.js');
 const referenceIndexPath = path.join(root, 'reference-vocabulary.js');
 const phrasesPath = path.join(root, 'latin-phrases.js');
+const storiesPath = path.join(root, 'latin-stories.js');
 const culturePath = path.join(root, 'latin-culture.js');
 const classroomPath = path.join(root, 'classroom-latin.js');
 const grammarPath = path.join(root, 'grammar-lessons.js');
@@ -32,7 +33,7 @@ function assert(condition, message) {
 }
 
 function checkJavaScriptSyntax() {
-  [appPath, wordBanksPath, referenceIndexPath, phrasesPath, culturePath, classroomPath, grammarPath].forEach((filePath) => {
+  [appPath, wordBanksPath, referenceIndexPath, phrasesPath, storiesPath, culturePath, classroomPath, grammarPath].forEach((filePath) => {
     new vm.Script(fs.readFileSync(filePath, 'utf8'), { filename: filePath });
   });
 }
@@ -74,8 +75,8 @@ function checkContentData() {
   assertUniqueIds(CLASSROOM_LATIN_PHRASES, 'classroom phrase');
   assertUniqueIds(GRAMMAR_LESSONS, 'grammar lesson');
 
-  assert(LATIN_PHRASES.length === 91, `Expected 91 phrases, found ${LATIN_PHRASES.length}`);
-  assert(LATIN_CULTURE_CARDS.length === 32, `Expected 32 culture cards, found ${LATIN_CULTURE_CARDS.length}`);
+  assert(LATIN_PHRASES.length === 94, `Expected 94 phrases, found ${LATIN_PHRASES.length}`);
+  assert(LATIN_CULTURE_CARDS.length === 34, `Expected 34 culture cards, found ${LATIN_CULTURE_CARDS.length}`);
   assert(CLASSROOM_LATIN_PHRASES.length === 40, `Expected 40 classroom phrases, found ${CLASSROOM_LATIN_PHRASES.length}`);
   assert(GRAMMAR_LESSONS.length === 23, `Expected 23 grammar lessons, found ${GRAMMAR_LESSONS.length}`);
 
@@ -224,6 +225,21 @@ function checkDictionaryHooks() {
   });
 }
 
+function checkYearBasedLessonLabels() {
+  [
+    'function getLessonDisplayTitle(lesson)',
+    'elements.lessonTitle.textContent = getLessonDisplayTitle(lesson);',
+    'elements.homeNextTitle.textContent = getLessonDisplayTitle(nextLesson);',
+    'sourceLessonTitle: getLessonDisplayTitle(lesson)'
+  ].forEach((needle) => {
+    assert(app.includes(needle), `Expected year-based lesson title hook not found: ${needle}`);
+  });
+  assert(
+    !app.includes('textContent = nextLesson.title') && !app.includes('${escapeHtml(lesson.title)}'),
+    'Learner-facing lesson titles must use the curriculum year display mapper'
+  );
+}
+
 function checkTrustPages() {
   trustPageFiles.forEach((fileName) => {
     const filePath = path.join(root, fileName);
@@ -276,6 +292,7 @@ checkLessonLoopHooks();
 checkGrammarStoryResources();
 checkVocabularyStudyHooks();
 checkDictionaryHooks();
+checkYearBasedLessonLabels();
 checkTrustPages();
 checkContactFormContract();
 
