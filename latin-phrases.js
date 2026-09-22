@@ -817,6 +817,33 @@ const LATIN_PHRASES = [
     linkedWords: ['flos', 'vivo', 'tempus'],
     minGrade: 7,
     icon: 'F'
+  },
+  {
+    id: 'in-umbra-igitur-pugnabimus',
+    latin: 'In umbra, igitur, pugnabimus',
+    meaning: 'Then we will fight in the shade',
+    note: 'First Form connects this saying with the Spartan answer at Thermopylae and Cicero\'s Latin version.',
+    linkedWords: ['in + ablative', 'umbra', 'pugno'],
+    minGrade: 4,
+    icon: 'U'
+  },
+  {
+    id: 'in-choro-recitemus',
+    latin: 'In choro recitemus',
+    meaning: 'Let us recite together',
+    note: 'A classroom-friendly saying from the Form Latin review lists for practicing group recitation.',
+    linkedWords: ['in + ablative', 'canto', 'verbum'],
+    minGrade: 5,
+    icon: 'C'
+  },
+  {
+    id: 'dies-irae',
+    latin: 'Dies irae, dies illa',
+    meaning: 'Day of wrath, that day',
+    note: 'Third Form notes this as the opening of the Dies Irae sequence, a medieval meditation on judgment.',
+    linkedWords: ['dies', 'ira', 'tempus'],
+    minGrade: 7,
+    icon: 'D'
   }
 ];
 

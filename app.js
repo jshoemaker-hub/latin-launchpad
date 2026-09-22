@@ -1,3 +1,73 @@
+const CURRICULUM_LEVELS = [
+  { grade: 3, year: 1, label: 'Year 1', shortLabel: 'Y1', book: 'First Form Latin', lessonGrades: [3] },
+  { grade: 4, year: 2, label: 'Year 2', shortLabel: 'Y2', book: 'Second Form Latin', lessonGrades: [4] },
+  { grade: 5, year: 3, label: 'Year 3', shortLabel: 'Y3', book: 'Third Form Latin', lessonGrades: [5] },
+  { grade: 6, year: 4, label: 'Year 4', shortLabel: 'Y4', book: 'Advanced Latin', lessonGrades: [6, 7, 8] }
+];
+
+function getCurriculumLevelByGrade(grade) {
+  const numericGrade = Number(grade);
+  return CURRICULUM_LEVELS.find((level) => level.grade === numericGrade)
+    || CURRICULUM_LEVELS.find((level) => level.lessonGrades.includes(numericGrade))
+    || null;
+}
+
+function normalizeCurriculumGrade(grade) {
+  const level = getCurriculumLevelByGrade(grade);
+  return level ? level.grade : null;
+}
+
+function getCurriculumGradesForSelection(grade) {
+  const level = getCurriculumLevelByGrade(grade);
+  return level ? level.lessonGrades : [];
+}
+
+function isYearFourReferenceVocabularyWord(word) {
+  return Array.isArray(word?.sourceImages)
+    && word.sourceImages.some((image) => /^IMG_253[1-8]\.jpeg$/.test(image));
+}
+
+function getVocabularyWordsForCurriculumLevel(level) {
+  if (!level) return [];
+  const baseWords = level.lessonGrades.flatMap((grade) => GRADE_WORDS[grade] || []);
+  if (level.year === 4) {
+    const yearFourReferenceWords = (GRADE_WORDS[5] || []).filter(isYearFourReferenceVocabularyWord);
+    return [...baseWords, ...yearFourReferenceWords];
+  }
+  return baseWords.filter((word) => !isYearFourReferenceVocabularyWord(word));
+}
+
+function getCurriculumGradesThroughSelection(grade) {
+  const level = getCurriculumLevelByGrade(grade);
+  if (!level) return [];
+  return CURRICULUM_LEVELS
+    .filter((candidate) => candidate.year <= level.year)
+    .flatMap((candidate) => candidate.lessonGrades);
+}
+
+function getLessonLevelName(grade) {
+  const level = getCurriculumLevelByGrade(grade);
+  return level ? level.label : `Grade ${grade}`;
+}
+
+function getLessonDisplayTitle(lesson) {
+  if (!lesson?.title) return '';
+  return String(lesson.title).replace(
+    /^Grade\s+\d+\b/i,
+    getLessonLevelName(lesson.grade)
+  );
+}
+
+function getCurriculumLevelTitle(grade) {
+  const level = getCurriculumLevelByGrade(grade);
+  return level ? `${level.label}: ${level.book}` : 'Latin practice';
+}
+
+function getLessonsForSelection(grade) {
+  const grades = new Set(getCurriculumGradesForSelection(grade));
+  return LESSONS.filter((lesson) => grades.has(lesson.grade));
+}
+
 const LESSON_CHUNK_SIZE = 10;
 const VOCAB_LESSONS = Object.entries(GRADE_WORDS).flatMap(([grade, words]) => {
   return Array.from({ length: Math.ceil(words.length / LESSON_CHUNK_SIZE) }, (_, index) => {
@@ -20,7 +90,7 @@ const VOCAB_LESSONS = Object.entries(GRADE_WORDS).flatMap(([grade, words]) => {
       classroomPhrases: typeof getClassroomPhrasesForLesson === 'function'
         ? getClassroomPhrasesForLesson(Number(grade), index)
         : [],
-      title: `Grade ${grade}: Lesson ${index + 1}`,
+      title: `${getLessonLevelName(Number(grade))}: Lesson ${index + 1}`,
       description: phrases.length > 0
         ? `Practice Latin vocabulary words ${start + 1}-${start + lessonWords.length}, then connect them to popular Latin phrases.`
         : `Practice Latin vocabulary words ${start + 1}-${start + lessonWords.length}.`,
@@ -86,7 +156,7 @@ function getSupabase() {
   }
   return _supabaseClient;
 }
-const VALID_GRADES = [3, 4, 5, 6, 7, 8];
+const VALID_GRADES = CURRICULUM_LEVELS.map((level) => level.grade);
 const FLASHCARD_SESSION_DURATIONS = [300, 600, 900];
 const PUZZLE_CACHE = new Map();
 const QUESTION_COUNT_OPTIONS = [10, 25, 50, 100];
@@ -519,7 +589,7 @@ function createStateSnapshot(state = AppState, accountOverride = state.account) 
   return {
     account: normalizeAccount(accountOverride),
     studentName: typeof state.studentName === 'string' ? state.studentName : '',
-    grade: VALID_GRADES.includes(state.grade) ? state.grade : null,
+    grade: normalizeCurriculumGrade(state.grade),
     selectedLesson: typeof state.selectedLesson === 'string' ? state.selectedLesson : null,
     currentQuestionIndex: Number.isInteger(state.currentQuestionIndex)
       ? Math.max(0, state.currentQuestionIndex)
@@ -538,7 +608,7 @@ function applyStoredState(storedState, fallbackAccount = createGuestAccount()) {
   if (!isPlainObject(storedState)) return;
   AppState.account = normalizeAccount(storedState.account, fallbackAccount);
   AppState.studentName = typeof storedState.studentName === 'string' ? storedState.studentName : '';
-  AppState.grade = VALID_GRADES.includes(storedState.grade) ? storedState.grade : null;
+  AppState.grade = normalizeCurriculumGrade(storedState.grade);
   AppState.selectedLesson = typeof storedState.selectedLesson === 'string' ? storedState.selectedLesson : null;
   AppState.currentQuestionIndex = Number.isInteger(storedState.currentQuestionIndex)
     ? Math.max(0, storedState.currentQuestionIndex)
@@ -655,7 +725,7 @@ async function supabaseLoadProfile(email) {
     return {
       account: createEmailAccount(email),
       studentName: profile?.student_name ?? '',
-      grade: VALID_GRADES.includes(profile?.grade) ? profile.grade : null,
+      grade: normalizeCurriculumGrade(profile?.grade),
       selectedLesson: null,
       currentQuestionIndex: 0,
       selectedOption: null,
@@ -1257,12 +1327,12 @@ async function init() {
 
 function renderGradeOptions() {
   elements.gradeGrid.innerHTML = '';
-  VALID_GRADES.forEach((grade) => {
+  CURRICULUM_LEVELS.forEach((level) => {
     const button = document.createElement('button');
     button.className = 'grade-option';
-    button.textContent = `Grade ${grade}`;
-    if (AppState.grade === grade) button.classList.add('selected');
-    button.addEventListener('click', () => selectGrade(grade));
+    button.innerHTML = `<strong>${escapeHtml(level.label)}</strong><span>${escapeHtml(level.book)}</span>`;
+    if (AppState.grade === level.grade) button.classList.add('selected');
+    button.addEventListener('click', () => selectGrade(level.grade));
     elements.gradeGrid.appendChild(button);
   });
   if (elements.headerGradeSelect) {
@@ -1274,9 +1344,10 @@ function renderGradeOptions() {
 }
 
 function selectGrade(grade) {
-  if (!VALID_GRADES.includes(grade)) return;
-  AppState.grade = grade;
-  localStorage.setItem(GRADE_STORAGE_KEY, String(grade));
+  const normalizedGrade = normalizeCurriculumGrade(grade);
+  if (!normalizedGrade) return;
+  AppState.grade = normalizedGrade;
+  localStorage.setItem(GRADE_STORAGE_KEY, String(normalizedGrade));
   saveState();
   renderGradeOptions();
   renderLessonList();
@@ -1287,14 +1358,14 @@ function selectGrade(grade) {
 
 function renderLessonList() {
   if (!VALID_GRADES.includes(AppState.grade)) {
-    elements.lessonListTitle.textContent = 'Choose your grade';
-    elements.lessonListSubtitle.textContent = 'Pick a grade before starting a lesson.';
+    elements.lessonListTitle.textContent = 'Choose your year';
+    elements.lessonListSubtitle.textContent = 'Pick a curriculum year before starting a lesson.';
     elements.lessonCards.innerHTML = '';
     showPage(AppState.studentName ? 'grade' : 'signup');
     return;
   }
-  const lessons = LESSONS.filter((lesson) => lesson.grade === AppState.grade);
-  elements.lessonListTitle.textContent = `Grade ${AppState.grade} Lessons`;
+  const lessons = getLessonsForSelection(AppState.grade);
+  elements.lessonListTitle.textContent = `${getCurriculumLevelTitle(AppState.grade)} Lessons`;
   elements.lessonListSubtitle.textContent = `Pick a lesson to practice Latin vocabulary and grammar.`;
   renderObjectives();
   elements.lessonCards.innerHTML = '';
@@ -1319,7 +1390,7 @@ function renderLessonList() {
     if (lesson.kind === 'grammar') card.classList.add('grammar-lesson');
     card.innerHTML = `
       <div>
-        <h3>${lesson.title}</h3>
+        <h3>${escapeHtml(getLessonDisplayTitle(lesson))}</h3>
         <p>${lesson.description}</p>
         ${tagsHtml}
       </div>
@@ -1363,7 +1434,7 @@ function renderObjectives() {
   const goalsHtml = objectives.goals.map((goal) => `<li>${goal}</li>`).join('');
   elements.objectivesCard.innerHTML = `
     <div class="objectives-header">
-      <span class="objectives-eyebrow">Grade ${AppState.grade} • ${objectives.theme}</span>
+      <span class="objectives-eyebrow">${escapeHtml(getCurriculumLevelTitle(AppState.grade))} • ${objectives.theme}</span>
       <h3>What you'll learn this year</h3>
       <p>${objectives.intro}</p>
     </div>
@@ -1807,7 +1878,7 @@ function openLesson(lessonId) {
 function renderLesson() {
   const lesson = getSelectedLesson();
   if (!lesson) return;
-  elements.lessonTitle.textContent = lesson.title;
+  elements.lessonTitle.textContent = getLessonDisplayTitle(lesson);
   elements.lessonDescription.textContent = lesson.description;
   if (lesson.id === REVIEW_LESSON_ID) {
     renderStoryScene(null);
@@ -2746,7 +2817,7 @@ function printLessonResource(type) {
     <div class="print-preview-toolbar">
       <div>
         <span class="printables-eyebrow">Printable preview</span>
-        <h2>${escapeHtml(lesson.title)}</h2>
+        <h2>${escapeHtml(getLessonDisplayTitle(lesson))}</h2>
       </div>
       <div class="print-preview-actions">
         <button type="button" class="secondary-button" data-print-action="close">Close</button>
@@ -2891,8 +2962,8 @@ function renderPrintHeader(lesson, sheetTitle) {
   return `
     <header class="print-header">
       <div>
-        <p class="print-kicker">Grade ${lesson.grade} ${lesson.kind === 'grammar' ? 'Grammar' : 'Vocabulary'}</p>
-        <h1>${escapeHtml(sheetTitle)}: ${escapeHtml(lesson.title)}</h1>
+        <p class="print-kicker">${escapeHtml(getLessonLevelName(lesson.grade))} ${lesson.kind === 'grammar' ? 'Grammar' : 'Vocabulary'}</p>
+        <h1>${escapeHtml(sheetTitle)}: ${escapeHtml(getLessonDisplayTitle(lesson))}</h1>
       </div>
       <div class="print-name-lines">
         <span>Name: ____________________</span>
@@ -3815,7 +3886,7 @@ function renderDashboard() {
   renderBadges();
   renderWeakWords();
   const visibleLessons = VALID_GRADES.includes(AppState.grade)
-    ? LESSONS.filter((lesson) => lesson.grade === AppState.grade)
+    ? getLessonsForSelection(AppState.grade)
     : LESSONS;
   elements.progressList.innerHTML = visibleLessons.map((lesson) => {
     const lessonProgress = AppState.progress.lessons[lesson.id];
@@ -3824,8 +3895,8 @@ function renderDashboard() {
       : 'Not started';
     return `
       <div class="progress-item">
-        <h3>${lesson.title}</h3>
-        <p>Grade ${lesson.grade} • ${status}</p>
+        <h3>${escapeHtml(getLessonDisplayTitle(lesson))}</h3>
+        <p>${escapeHtml(getLessonLevelName(lesson.grade))} • ${status}</p>
       </div>
     `;
   }).join('');
@@ -3855,7 +3926,7 @@ function renderWeakWords() {
 
 function getCurrentGradeLessons() {
   return VALID_GRADES.includes(AppState.grade)
-    ? LESSONS.filter((lesson) => lesson.grade === AppState.grade)
+    ? getLessonsForSelection(AppState.grade)
     : [];
 }
 
@@ -3873,7 +3944,7 @@ function getNextLesson() {
 function renderHome() {
   if (!elements.homeGreeting) return;
   const name = AppState.studentName || 'Learner';
-  const gradeLabel = VALID_GRADES.includes(AppState.grade) ? `Grade ${AppState.grade}` : 'Latin practice';
+  const gradeLabel = VALID_GRADES.includes(AppState.grade) ? getCurriculumLevelTitle(AppState.grade) : 'Latin practice';
   const lessons = getCurrentGradeLessons();
   const completedCount = lessons.filter((lesson) => AppState.progress.lessons[lesson.id]).length;
   const nextLesson = getNextLesson();
@@ -3882,18 +3953,18 @@ function renderHome() {
   elements.homeGreeting.textContent = `Welcome back, ${name}.`;
   elements.homeSummary.textContent = lessons.length > 0
     ? `${completedCount}/${lessons.length} chapters complete. Keep lessons, quizzes, and tests in one place.`
-    : 'Choose a grade to unlock your Latin learning path.';
+    : 'Choose a year to unlock your Latin learning path.';
   elements.homePointsValue.textContent = AppState.progress.points;
   elements.homeLessonsValue.textContent = Object.keys(AppState.progress.lessons).length;
   elements.homeSkillsValue.textContent = Object.keys(AppState.progress.wordsMastered).length;
 
   if (nextLesson) {
-    elements.homeNextTitle.textContent = nextLesson.title;
+    elements.homeNextTitle.textContent = getLessonDisplayTitle(nextLesson);
     elements.homeNextMeta.textContent = `${getLessonCountLabel(nextLesson)} · ${getLessonProgressLabel(nextLesson)}`;
     elements.homeContinueButton.disabled = false;
   } else {
-    elements.homeNextTitle.textContent = 'Choose your grade';
-    elements.homeNextMeta.textContent = 'Pick a grade before starting lessons or assessments.';
+    elements.homeNextTitle.textContent = 'Choose your year';
+    elements.homeNextMeta.textContent = 'Pick a curriculum year before starting lessons or assessments.';
     elements.homeContinueButton.disabled = false;
   }
 
@@ -3904,7 +3975,7 @@ function renderHome() {
     return `
       <button type="button" class="home-path-item${complete ? ' complete' : ''}${current ? ' current' : ''}" data-home-lesson-id="${escapeHtml(lesson.id)}">
         <span>${escapeHtml(type)}</span>
-        <strong>${escapeHtml(lesson.title)}</strong>
+        <strong>${escapeHtml(getLessonDisplayTitle(lesson))}</strong>
         <small>${escapeHtml(getLessonProgressLabel(lesson))}</small>
       </button>
     `;
@@ -3923,13 +3994,39 @@ function showHomeOrWelcome() {
 function getStudyWords() {
   if (!VALID_GRADES.includes(AppState.grade)) return [];
   const seen = new Set();
-  return GRADE_WORDS[AppState.grade]
+  const selectedGrades = getCurriculumGradesForSelection(AppState.grade);
+  const level = getCurriculumLevelByGrade(AppState.grade);
+  const vocabulary = getVocabularyWordsForCurriculumLevel(level)
     .filter((word) => {
       const key = normalizeVocabularyHeadword(word.latin);
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
     })
+    .sort((a, b) => a.latin.localeCompare(b.latin));
+  const phraseCards = getStudyPhraseCards(selectedGrades);
+  return [...vocabulary, ...phraseCards];
+}
+
+function getStudyPhraseCards(selectedGrades) {
+  if (typeof LATIN_PHRASES === 'undefined') return [];
+  const minGrade = Math.min(...selectedGrades);
+  const maxGrade = Math.max(...selectedGrades);
+  return LATIN_PHRASES
+    .filter((phrase) => {
+      const phraseMin = phrase.minGrade || 3;
+      const phraseMax = phrase.maxGrade || 8;
+      return phraseMin <= maxGrade && phraseMax >= minGrade;
+    })
+    .map((phrase) => ({
+      latin: phrase.latin,
+      english: phrase.meaning,
+      emoji: phrase.icon || 'P',
+      note: phrase.note,
+      masteryKey: `phrase:${phrase.id}`,
+      isPhrase: true,
+      studyType: 'phrase'
+    }))
     .sort((a, b) => a.latin.localeCompare(b.latin));
 }
 
@@ -3947,8 +4044,10 @@ function ensureStudyWords() {
 
 function renderStudyPage() {
   ensureStudyWords();
-  elements.studyTitle.textContent = `Grade ${AppState.grade} vocabulary`;
-  elements.studySummary.textContent = `${StudyState.words.length} unique words ready to review.`;
+  const phraseCount = StudyState.words.filter((word) => word.isPhrase).length;
+  const vocabularyCount = StudyState.words.length - phraseCount;
+  elements.studyTitle.textContent = `${getCurriculumLevelTitle(AppState.grade)} study`;
+  elements.studySummary.textContent = `${vocabularyCount} vocabulary ${vocabularyCount === 1 ? 'word' : 'words'} and ${phraseCount} ${phraseCount === 1 ? 'phrase' : 'phrases'} ready to review.`;
   renderVocabularyList();
   renderFlashcard();
   document.querySelectorAll('[data-study-mode]').forEach((button) => {
@@ -3964,7 +4063,7 @@ function renderStudyPage() {
 function renderVocabularyList() {
   const query = (elements.vocabularySearch?.value || '').trim().toLowerCase();
   const words = StudyState.words.filter((word) => {
-    const searchable = `${word.latin} ${word.principalParts || ''} ${word.english}`.toLowerCase();
+    const searchable = `${word.latin} ${word.principalParts || ''} ${word.english} ${word.note || ''}`.toLowerCase();
     return !query || searchable.includes(query);
   });
   elements.vocabularyCount.textContent = `${words.length} ${words.length === 1 ? 'word' : 'words'}`;
@@ -3975,6 +4074,7 @@ function renderVocabularyList() {
           <div>
             <strong>${escapeHtml(word.principalParts || word.latin)}</strong>
             ${word.principalParts ? `<small>Headword: ${escapeHtml(word.latin)}</small>` : ''}
+            ${word.isPhrase ? '<small>Phrase card</small>' : ''}
           </div>
           <span>${escapeHtml(word.english)}</span>
           ${renderSpeakButton(word.latin, 'Listen', 0.74)}
@@ -3985,19 +4085,21 @@ function renderVocabularyList() {
 
 function getDictionaryWords() {
   const entries = new Map();
-  VALID_GRADES.forEach((grade) => {
-    (GRADE_WORDS[grade] || []).forEach((word) => {
+  CURRICULUM_LEVELS.forEach((level) => {
+    getVocabularyWordsForCurriculumLevel(level).forEach((word) => {
       const key = normalizeVocabularyHeadword(word.latin);
       if (!key) return;
       if (!entries.has(key)) {
         entries.set(key, {
           ...word,
           grades: [],
+          levels: [],
           meanings: []
         });
       }
       const entry = entries.get(key);
-      if (!entry.grades.includes(grade)) entry.grades.push(grade);
+      if (!entry.grades.includes(level.grade)) entry.grades.push(level.grade);
+      if (!entry.levels.includes(level.year)) entry.levels.push(level.year);
       if (word.english && !entry.meanings.includes(word.english)) entry.meanings.push(word.english);
       if (!entry.principalParts && word.principalParts) entry.principalParts = word.principalParts;
     });
@@ -4011,7 +4113,7 @@ function renderDictionary() {
   const query = elements.dictionarySearch.value.trim().toLowerCase();
   const grade = elements.dictionaryGradeFilter.value;
   const words = getDictionaryWords().filter((word) => {
-    const matchesGrade = grade === 'all' || word.grades.includes(Number(grade));
+    const matchesGrade = grade === 'all' || word.levels.includes(Number(grade));
     const searchable = `${word.latin} ${word.principalParts || ''} ${word.english}`.toLowerCase();
     return matchesGrade && (!query || searchable.includes(query));
   });
@@ -4025,8 +4127,8 @@ function renderDictionary() {
             ${word.principalParts ? `<small>Headword: ${escapeHtml(word.latin)}</small>` : ''}
           </div>
           <span>${escapeHtml(word.english)}</span>
-          <span class="dictionary-grades" aria-label="Used in grades ${word.grades.join(', ')}">
-            ${word.grades.map((item) => `<span>G${item}</span>`).join('')}
+          <span class="dictionary-grades" aria-label="Used in years ${word.levels.join(', ')}">
+            ${word.levels.map((item) => `<span>Y${item}</span>`).join('')}
           </span>
           ${renderSpeakButton(word.latin, 'Listen', 0.74)}
         </div>
@@ -4049,7 +4151,7 @@ function selectStudyMode(mode) {
 function renderFlashcard() {
   const word = StudyState.words[StudyState.index];
   if (!word) {
-    elements.flashcardStage.innerHTML = '<p class="study-empty">Choose a grade to load flashcards.</p>';
+    elements.flashcardStage.innerHTML = '<p class="study-empty">Choose a year to load flashcards.</p>';
     return;
   }
   const totalMs = StudyState.durationSeconds * 1000;
@@ -4058,9 +4160,10 @@ function renderFlashcard() {
     <div class="flashcard-progress" aria-hidden="true"><span style="width:${elapsedPercent}%"></span></div>
     <div class="flashcard-counter">Card ${StudyState.index + 1} of ${StudyState.words.length}</div>
     <div class="flashcard-face">
-      <span class="flashcard-kicker">${StudyState.showingAnswer ? 'Meaning' : 'Latin'}</span>
+      <span class="flashcard-kicker">${StudyState.showingAnswer ? 'Meaning' : (word.isPhrase ? 'Latin phrase' : 'Latin')}</span>
       <strong>${escapeHtml(StudyState.showingAnswer ? word.english : (word.principalParts || word.latin))}</strong>
       ${StudyState.showingAnswer && word.principalParts ? `<small>Headword: ${escapeHtml(word.latin)}</small>` : ''}
+      ${StudyState.showingAnswer && word.isPhrase && word.note ? `<small>${escapeHtml(word.note)}</small>` : ''}
       ${StudyState.showingAnswer ? '' : renderSpeakButton(word.latin, 'Listen', 0.74)}
     </div>
     <div class="flashcard-time">${formatFlashcardTime(StudyState.remainingMs)}</div>
@@ -4242,7 +4345,8 @@ function getTestLessons() {
   const testGrade = VALID_GRADES.includes(AssessmentState.testGrade)
     ? AssessmentState.testGrade
     : AppState.grade;
-  return LESSONS.filter((lesson) => lesson.grade <= testGrade);
+  const grades = new Set(getCurriculumGradesThroughSelection(testGrade));
+  return LESSONS.filter((lesson) => grades.has(lesson.grade));
 }
 
 function getAssessmentType(question, lesson) {
@@ -4258,7 +4362,7 @@ function getAssessmentBank(lessons) {
       assessmentId: `${lesson.id}-${index}`,
       assessmentType: getAssessmentType(question, lesson),
       sourceLessonId: lesson.id,
-      sourceLessonTitle: lesson.title,
+      sourceLessonTitle: getLessonDisplayTitle(lesson),
       sourceGrade: lesson.grade
     }));
   });
@@ -4345,7 +4449,7 @@ function renderQuizBuilder(chapters, bank) {
     return `
       <button type="button" class="chapter-option${selected ? ' selected' : ''}" data-chapter-id="${escapeHtml(lesson.id)}">
         <span>Chapter ${index + 1} · ${escapeHtml(type)}</span>
-        <strong>${escapeHtml(lesson.title)}</strong>
+        <strong>${escapeHtml(getLessonDisplayTitle(lesson))}</strong>
         <small>${escapeHtml(detail)}</small>
       </button>
     `;
@@ -4370,12 +4474,12 @@ function renderQuizBuilder(chapters, bank) {
 }
 
 function renderTestBuilder(bank) {
-  const gradeButtons = VALID_GRADES.map((grade) => `
+  const gradeButtons = CURRICULUM_LEVELS.map((level) => `
     <button
       type="button"
-      class="segmented-button${AssessmentState.testGrade === grade ? ' active' : ''}"
-      data-test-grade="${grade}"
-    >Grade ${grade}</button>
+      class="segmented-button${AssessmentState.testGrade === level.grade ? ' active' : ''}"
+      data-test-grade="${level.grade}"
+    >${escapeHtml(level.label)}</button>
   `).join('');
   return `
     <section class="assessment-setup-panel">
@@ -4385,7 +4489,7 @@ function renderTestBuilder(bank) {
       <label class="field-label">Questions</label>
       <div class="segmented-control">${renderQuestionCountButtons('test')}</div>
       <p class="assessment-summary">
-        Covers grades 3-${AssessmentState.testGrade}: ${escapeHtml(getAssessmentTypeSummary(bank) || 'no questions available')}.
+        Covers through ${escapeHtml(getCurriculumLevelTitle(AssessmentState.testGrade))}: ${escapeHtml(getAssessmentTypeSummary(bank) || 'no questions available')}.
       </p>
     </section>
   `;
@@ -4425,7 +4529,7 @@ function renderAssessmentRunner() {
         <span>${escapeHtml(typeLabel)}</span>
         <strong>${AssessmentState.currentQuestionIndex + 1}/${AssessmentState.questions.length}</strong>
       </div>
-      <p class="assessment-source">${escapeHtml(question.sourceLessonTitle)} · Grade ${question.sourceGrade}</p>
+      <p class="assessment-source">${escapeHtml(question.sourceLessonTitle)} · ${escapeHtml(getLessonLevelName(question.sourceGrade))}</p>
       ${contextHtml}
       <h3>${promptHtml}</h3>
       <div class="options-grid assessment-options-grid">

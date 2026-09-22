@@ -80,13 +80,14 @@
     .mode-label { font-weight: 700; font-size: 1rem; }
     .mode-sub   { font-size: 0.8rem; color: #6b7280; margin-top: 2px; }
 
-    /* Grade */
+    /* Year */
     .grade-row { display: flex; gap: 8px; flex-wrap: wrap; }
     .grade-chip {
       background: #f3f4f6; border: 2px solid transparent;
       border-radius: 8px; padding: 8px 14px; font-weight: 600; cursor: pointer; transition: all .15s;
     }
     .grade-chip.selected { border-color: #4f46e5; background: #eef2ff; color: #4f46e5; }
+    .grade-chip small { display: block; margin-top: 2px; color: #6b7280; font-size: 0.72rem; font-weight: 500; }
 
     /* Week dots */
     .week-row { display: flex; gap: 8px; justify-content: center; }
@@ -336,7 +337,7 @@
     </div>
   </div>
 
-  <!-- Grade -->
+  <!-- Year -->
   <div>
     <h2 style="margin-bottom:10px">Grade</h2>
     <div class="grade-row" id="gradeRow"></div>
@@ -529,7 +530,7 @@
       <h3>Student Information</h3>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.9rem">
         <div><span style="color:#6b7280">Name: </span><strong id="reportName">—</strong></div>
-        <div><span style="color:#6b7280">Grade: </span><strong id="reportGrade">—</strong></div>
+        <div><span style="color:#6b7280">Year: </span><strong id="reportGrade">—</strong></div>
         <div><span style="color:#6b7280">Week: </span><strong id="reportWeek">—</strong></div>
         <div><span style="color:#6b7280">Days practiced: </span><strong id="reportDayCount">—</strong></div>
       </div>
@@ -589,6 +590,7 @@
 
 
 <script src="word-banks.js"></script>
+<script src="latin-phrases.js"></script>
 <script>
 // ═══════════════════════════════════════
 //  STORAGE
@@ -596,6 +598,12 @@
 const STORE = 'latinFlashcards_v2';
 const GRADE_STORE = 'latinLaunchpadGrade';
 const SESSION_LENGTHS = [5, 10, 15];
+const CURRICULUM_LEVELS = [
+  { grade: 3, year: 1, label: 'Year 1', book: 'First Form Latin', lessonGrades: [3] },
+  { grade: 4, year: 2, label: 'Year 2', book: 'Second Form Latin', lessonGrades: [4] },
+  { grade: 5, year: 3, label: 'Year 3', book: 'Third Form Latin', lessonGrades: [5] },
+  { grade: 6, year: 4, label: 'Year 4', book: 'Advanced Latin', lessonGrades: [6, 7, 8] }
+];
 function load() { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch { return {}; } }
 function save(d) { localStorage.setItem(STORE, JSON.stringify(d)); }
 function normaliseSessionLength(mode) {
@@ -604,7 +612,45 @@ function normaliseSessionLength(mode) {
 }
 function normaliseGrade(grade) {
   const value = Number(grade);
-  return value >= 3 && value <= 8 ? value : 3;
+  const level = CURRICULUM_LEVELS.find(item => item.grade === value || item.lessonGrades.includes(value));
+  return level ? level.grade : 3;
+}
+function getLevel(grade) {
+  return CURRICULUM_LEVELS.find(item => item.grade === normaliseGrade(grade)) || CURRICULUM_LEVELS[0];
+}
+function isYearFourReferenceVocabularyWord(word) {
+  return Array.isArray(word?.sourceImages)
+    && word.sourceImages.some(image => /^IMG_253[1-8]\.jpeg$/.test(image));
+}
+function getVocabularyWordsForLevel(level) {
+  const baseWords = level.lessonGrades.flatMap(g => GRADE_WORDS[g] || []);
+  if (level.year === 4) {
+    return [...baseWords, ...(GRADE_WORDS[5] || []).filter(isYearFourReferenceVocabularyWord)];
+  }
+  return baseWords.filter(word => !isYearFourReferenceVocabularyWord(word));
+}
+function getLevelDeck(grade) {
+  const level = getLevel(grade);
+  const seen = new Set();
+  const words = getVocabularyWordsForLevel(level)
+    .filter(word => {
+      const key = word.latin.toLowerCase().replace(/[^a-z]/g, '');
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  const minGrade = Math.min(...level.lessonGrades);
+  const maxGrade = Math.max(...level.lessonGrades);
+  const phrases = (typeof LATIN_PHRASES === 'undefined' ? [] : LATIN_PHRASES)
+    .filter(phrase => (phrase.minGrade || 3) <= maxGrade && (phrase.maxGrade || 8) >= minGrade)
+    .map(phrase => ({
+      latin: phrase.latin,
+      english: phrase.meaning,
+      emoji: phrase.icon || 'P',
+      note: phrase.note,
+      isPhrase: true
+    }));
+  return [...words, ...phrases];
 }
 function getData() {
   const d = load();
@@ -851,9 +897,8 @@ function renderHome() {
 
   if (data.name) { document.getElementById('studentName').value = data.name; showNameDisplay(data.name); }
 
-  const grades = Object.keys(GRADE_WORDS).map(Number).sort((a,b)=>a-b);
-  document.getElementById('gradeRow').innerHTML = grades.map(g =>
-    `<div class="grade-chip${g===state.grade?' selected':''}" onclick="selectGrade(${g})">Grade ${g}</div>`
+  document.getElementById('gradeRow').innerHTML = CURRICULUM_LEVELS.map(level =>
+    `<div class="grade-chip${level.grade===state.grade?' selected':''}" data-grade="${level.grade}" onclick="selectGrade(${level.grade})">${level.label}<small>${level.book}</small></div>`
   ).join('');
 
   updateModeHighlight();
@@ -897,7 +942,7 @@ function selectMode(m, type) {
 function selectGrade(g) {
   state.grade = normaliseGrade(g);
   document.querySelectorAll('.grade-chip').forEach(el =>
-    el.classList.toggle('selected', parseInt(el.textContent.replace('Grade ',''))===g)
+    el.classList.toggle('selected', Number(el.dataset.grade) === state.grade)
   );
   localStorage.setItem(GRADE_STORE, String(state.grade));
   const d = getData(); d.grade = state.grade; save(d);
@@ -913,7 +958,7 @@ function shuffle(arr) {
 }
 
 function startSession() {
-  const words = GRADE_WORDS[state.grade] || [];
+  const words = getLevelDeck(state.grade);
   const count = state.mode * 3;
   state.deck    = shuffle(words).slice(0, count);
   state.index   = 0; state.correct = 0; state.missed = 0;
@@ -1165,7 +1210,7 @@ function showReport() {
   const bestPct = wSess.length>0 ? Math.max(...wSess.map(s=>s.pct)) : null;
 
   document.getElementById('reportName').textContent     = data.name || '—';
-  document.getElementById('reportGrade').textContent    = `Grade ${data.grade}`;
+  document.getElementById('reportGrade').textContent    = getLevel(data.grade).label;
   document.getElementById('reportWeek').textContent     = getWeekRange();
   document.getElementById('reportDayCount').textContent = `${weekDays.length} of 4`;
   document.getElementById('reportDateRange').textContent= `Week of ${getWeekRange()}`;

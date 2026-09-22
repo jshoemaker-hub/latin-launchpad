@@ -572,9 +572,26 @@ input {
 .progress-item {
   background: #f8f9ff;
   border: 1px solid transparent;
-  border-radius: 18px;
+  border-radius: 8px;
   padding: 18px;
   cursor: pointer;
+}
+
+.grade-option {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+}
+
+.grade-option strong,
+.grade-option span {
+  display: block;
+}
+
+.grade-option span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.35;
 }
 
 .grade-option:hover,
