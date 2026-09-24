@@ -4771,41 +4771,6 @@ function setupEvents() {
     );
   });
 
-  // Contact form
-  elements.contactForm?.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    const submitButton = elements.contactForm.querySelector('[type="submit"]');
-    if (submitButton) submitButton.disabled = true;
-    if (elements.contactFormMessage) {
-      elements.contactFormMessage.textContent = 'Sending…';
-      elements.contactFormMessage.dataset.tone = 'neutral';
-    }
-    try {
-      const formData = new FormData(elements.contactForm);
-      const res = await fetch('/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(formData).toString()
-      });
-      if (res.ok) {
-        if (elements.contactFormMessage) {
-          elements.contactFormMessage.textContent = 'Message sent! We\'ll be in touch.';
-          elements.contactFormMessage.dataset.tone = 'success';
-        }
-        elements.contactForm.reset();
-      } else {
-        throw new Error(`HTTP ${res.status}`);
-      }
-    } catch (err) {
-      console.warn('Contact form error:', err);
-      if (elements.contactFormMessage) {
-        elements.contactFormMessage.textContent = 'Could not send message. Please email us directly.';
-        elements.contactFormMessage.dataset.tone = 'error';
-      }
-    }
-    if (submitButton) submitButton.disabled = false;
-  });
-
   elements.continueGuestButton.addEventListener('click', continueAsGuest);
   elements.signOutButton.addEventListener('click', continueAsGuest);
   elements.signupNextButton.addEventListener('click', () => {

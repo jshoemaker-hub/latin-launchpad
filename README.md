@@ -37,3 +37,9 @@ npm test
 
 ## Deployment
 Netlify builds the site from `main` using `netlify.toml`. The build copies the runtime web files into `dist/` and publishes that folder.
+
+The contact form sends through a Netlify Function and Resend. Add these environment variables in Netlify before deploying, with access to the Functions scope:
+
+- `RESEND_API_KEY`: a Resend API key with sending access
+- `RESEND_FROM_EMAIL`: `Latin Launchpad <contact@send.latinlaunchpad.com>`
+- `CONTACT_TO_EMAIL`: optional destination address; defaults to `jshoemakercb@yahoo.com`
