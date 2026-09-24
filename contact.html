@@ -25,8 +25,9 @@
       <h1>Contact Latin Launchpad</h1>
       <p class="trust-lead">Send a question, report a content correction or technical issue, or share an idea for improving the learning experience.</p>
 
-      <form class="standalone-contact-form" name="contact" method="POST" data-netlify="true">
-        <input type="hidden" name="form-name" value="contact">
+      <form class="standalone-contact-form" action="/api/contact" method="POST" data-contact-form data-status-target="contactFormMessage">
+        <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" hidden>
+        <input type="hidden" name="submittedAt" value="">
         <p class="collection-notice">If you are under 13, ask a parent, guardian, or teacher to contact us. Do not include sensitive student information. See the <a href="privacy.html">Privacy Policy</a>.</p>
         <div class="contact-form-grid">
           <label>Name<input type="text" name="name" autocomplete="name" required></label>
@@ -35,6 +36,7 @@
         <label>Subject<input type="text" name="subject" required></label>
         <label>Message<textarea name="message" required></textarea></label>
         <button type="submit" class="primary-button">Send message</button>
+        <p id="contactFormMessage" class="account-message" aria-live="polite"></p>
       </form>
 
       <div class="contact-alt">
@@ -47,5 +49,6 @@
       <nav aria-label="Footer links"><a href="index.html">Return to learning</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></nav>
     </footer>
   </div>
+  <script src="contact-form.js"></script>
 </body>
 </html>

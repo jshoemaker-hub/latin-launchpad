@@ -41,7 +41,7 @@
           <tbody>
             <tr><td>Guest learning</td><td>Nickname or first name, grade, progress, scores, mastered words, badges</td><td>Stored in that browser for local personalization and progress</td></tr>
             <tr><td>Synced account</td><td>Email, optional learner name, grade, progress, scores, mastered words, badges</td><td>Supabase authentication and database for account access and progress sync</td></tr>
-            <tr><td>Support</td><td>Name, email, subject, message</td><td>Netlify form handling and operator support records</td></tr>
+            <tr><td>Support</td><td>Name, email, subject, message</td><td>Netlify function processing, Resend email delivery, and operator support records</td></tr>
             <tr><td>Technical operation</td><td>IP address, browser/device details, timestamps, request and security logs</td><td>Service delivery, security, troubleshooting, and internal operations</td></tr>
           </tbody>
         </table>
@@ -58,7 +58,8 @@
 
       <h2>Service providers</h2>
       <ul>
-        <li><strong>Netlify:</strong> website hosting, delivery, request logs, and contact-form handling.</li>
+        <li><strong>Netlify:</strong> website hosting, delivery, contact-form processing, and request logs.</li>
+        <li><strong>Resend:</strong> delivery of contact-form messages to the operator.</li>
         <li><strong>Supabase:</strong> optional account authentication and synced learning records.</li>
         <li><strong>jsDelivr:</strong> delivery of the Supabase browser library.</li>
       </ul>

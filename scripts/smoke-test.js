@@ -4,6 +4,8 @@ const vm = require('vm');
 
 const root = path.resolve(__dirname, '..');
 const appPath = path.join(root, 'app.js');
+const contactFormPath = path.join(root, 'contact-form.js');
+const contactFunctionPath = path.join(root, 'netlify', 'functions', 'contact.mjs');
 const htmlPath = path.join(root, 'index.html');
 const cssPath = path.join(root, 'styles.css');
 const wordBanksPath = path.join(root, 'word-banks.js');
@@ -33,7 +35,7 @@ function assert(condition, message) {
 }
 
 function checkJavaScriptSyntax() {
-  [appPath, wordBanksPath, referenceIndexPath, phrasesPath, storiesPath, culturePath, classroomPath, grammarPath].forEach((filePath) => {
+  [appPath, contactFormPath, wordBanksPath, referenceIndexPath, phrasesPath, storiesPath, culturePath, classroomPath, grammarPath].forEach((filePath) => {
     new vm.Script(fs.readFileSync(filePath, 'utf8'), { filename: filePath });
   });
 }
@@ -270,17 +272,37 @@ function checkTrustPages() {
 
 function checkContactFormContract() {
   assert(
-    /<form[^>]*id="contactForm"[^>]*name="contact"[^>]*method="POST"[^>]*data-netlify="true"/.test(html),
-    'The in-app contact form must be statically detectable by Netlify'
+    /<form[^>]*id="contactForm"[^>]*action="\/api\/contact"[^>]*method="POST"[^>]*data-contact-form/.test(html),
+    'The in-app contact form must submit to the contact endpoint'
   );
   assert(
-    /<input[^>]*type="hidden"[^>]*name="form-name"[^>]*value="contact"/.test(html),
-    'The in-app contact form must submit its Netlify form name'
+    html.includes('<script src="contact-form.js"></script>'),
+    'The in-app contact form needs the contact helper script'
+  );
+  const contactForm = fs.readFileSync(contactFormPath, 'utf8');
+  assert(
+    contactForm.includes("const CONTACT_ENDPOINT = '/api/contact'") &&
+      contactForm.includes('fetch(CONTACT_ENDPOINT'),
+    'The contact helper must post to the contact endpoint'
   );
   assert(
-    app.includes("'Content-Type': 'application/x-www-form-urlencoded'") &&
-      app.includes('new URLSearchParams(formData).toString()'),
-    'The contact form AJAX request must use Netlify-compatible URL encoding'
+    !app.includes('elements.contactForm?.addEventListener'),
+    'The app must leave contact submission to the shared helper'
+  );
+  const standaloneContact = fs.readFileSync(path.join(root, 'contact.html'), 'utf8');
+  assert(
+    standaloneContact.includes('data-contact-form') &&
+      standaloneContact.includes('<script src="contact-form.js"></script>'),
+    'The standalone contact page must use the same contact behavior'
+  );
+  const contactFunction = fs.readFileSync(contactFunctionPath, 'utf8');
+  assert(
+    contactFunction.includes("fetch('https://api.resend.com/emails'") &&
+      contactFunction.includes('process.env.RESEND_API_KEY') &&
+      contactFunction.includes('process.env.RESEND_FROM_EMAIL') &&
+      contactFunction.includes("path: '/api/contact'") &&
+      contactFunction.includes('rateLimit:'),
+    'The server-side contact function must send through Resend using environment variables'
   );
 }
 

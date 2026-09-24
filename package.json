@@ -1,5 +1,5 @@
 {
   "scripts": {
-    "test": "node scripts/smoke-test.js"
+    "test": "node --check netlify/functions/contact.mjs && node scripts/smoke-test.js && node --test tests/*.test.js"
   }
 }

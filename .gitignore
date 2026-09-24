@@ -12,3 +12,8 @@ dist/
 node_modules/
 npm-debug.log*
 .gstack/
+
+# Local secrets. Keep the documented placeholder file.
+.env
+.env.*
+!.env.example
