@@ -388,6 +388,11 @@ const elements = {
   signOutButton: document.getElementById('signOutButton'),
   exportAccountButton: document.getElementById('exportAccountButton'),
   deleteAccountButton: document.getElementById('deleteAccountButton'),
+  deleteAccountDialog: document.getElementById('deleteAccountDialog'),
+  deleteAccountForm: document.getElementById('deleteAccountForm'),
+  deleteAccountConfirmation: document.getElementById('deleteAccountConfirmation'),
+  cancelDeleteAccountButton: document.getElementById('cancelDeleteAccountButton'),
+  confirmDeleteAccountButton: document.getElementById('confirmDeleteAccountButton'),
   accountDataMessage: document.getElementById('accountDataMessage'),
   signupNextButton: document.getElementById('signupNextButton'),
   studentNameInput: document.getElementById('studentNameInput'),
@@ -1302,13 +1307,24 @@ async function exportAccountData() {
   }
 }
 
+function closeDeleteAccountDialog() {
+  if (!elements.deleteAccountDialog?.open) return;
+  elements.deleteAccountDialog.close();
+  if (elements.deleteAccountConfirmation) elements.deleteAccountConfirmation.value = '';
+  if (elements.confirmDeleteAccountButton) elements.confirmDeleteAccountButton.disabled = true;
+}
+
+function openDeleteAccountDialog() {
+  if (!isEmailAccount() || !elements.deleteAccountDialog) return;
+  if (elements.deleteAccountConfirmation) elements.deleteAccountConfirmation.value = '';
+  if (elements.confirmDeleteAccountButton) elements.confirmDeleteAccountButton.disabled = true;
+  elements.deleteAccountDialog.showModal();
+  elements.deleteAccountConfirmation?.focus();
+}
+
 async function deleteAccount() {
-  if (!isEmailAccount()) return;
-  const confirmation = window.prompt('Type DELETE to permanently delete your account and synced learning data.');
-  if (confirmation !== 'DELETE') {
-    setAccountDataMessage('Account deletion canceled.', 'neutral');
-    return;
-  }
+  if (!isEmailAccount() || elements.deleteAccountConfirmation?.value !== 'DELETE') return;
+  closeDeleteAccountDialog();
 
   const button = elements.deleteAccountButton;
   if (button) button.disabled = true;
@@ -4894,7 +4910,21 @@ function setupEvents() {
   elements.continueGuestButton.addEventListener('click', continueAsGuest);
   elements.signOutButton.addEventListener('click', continueAsGuest);
   elements.exportAccountButton?.addEventListener('click', exportAccountData);
-  elements.deleteAccountButton?.addEventListener('click', deleteAccount);
+  elements.deleteAccountButton?.addEventListener('click', openDeleteAccountDialog);
+  elements.cancelDeleteAccountButton?.addEventListener('click', closeDeleteAccountDialog);
+  elements.deleteAccountConfirmation?.addEventListener('input', () => {
+    if (elements.confirmDeleteAccountButton) {
+      elements.confirmDeleteAccountButton.disabled = elements.deleteAccountConfirmation.value !== 'DELETE';
+    }
+  });
+  elements.deleteAccountDialog?.addEventListener('cancel', () => {
+    if (elements.deleteAccountConfirmation) elements.deleteAccountConfirmation.value = '';
+    if (elements.confirmDeleteAccountButton) elements.confirmDeleteAccountButton.disabled = true;
+  });
+  elements.deleteAccountForm?.addEventListener('submit', (event) => {
+    event.preventDefault();
+    deleteAccount();
+  });
   elements.signupNextButton.addEventListener('click', () => {
     const name = elements.studentNameInput.value.trim();
     AppState.studentName = name || 'Learner';

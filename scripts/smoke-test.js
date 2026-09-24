@@ -289,12 +289,21 @@ function checkProductionAuthSafety() {
   [
     'exportAccountButton',
     'deleteAccountButton',
+    'deleteAccountDialog',
+    'deleteAccountConfirmation',
+    'confirmDeleteAccountButton',
     "db.rpc('delete_current_account')",
     'function exportAccountData()',
-    'function deleteAccount()'
+    'function deleteAccount()',
+    'function openDeleteAccountDialog()'
   ].forEach((needle) => {
     assert(app.includes(needle) || html.includes(needle), `Missing account privacy control: ${needle}`);
   });
+  assert(!app.includes('window.prompt('), 'Account deletion must use the accessible in-page confirmation dialog');
+  assert(
+    app.includes("elements.deleteAccountConfirmation?.value !== 'DELETE'"),
+    'Account deletion must require an exact DELETE confirmation'
+  );
 }
 
 function checkContactFormContract() {
