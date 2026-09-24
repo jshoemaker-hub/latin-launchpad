@@ -53,6 +53,39 @@ test('sends a valid contact message through Resend', async (t) => {
   assert.equal(payload.subject, '[Latin Launchpad] Contact test');
 });
 
+test('accepts a native form submission when JavaScript is unavailable', async (t) => {
+  const originalFetch = global.fetch;
+  let payload;
+  t.after(() => { global.fetch = originalFetch; });
+  global.fetch = async (url, options) => {
+    payload = JSON.parse(options.body);
+    return {
+      ok: true,
+      json: async () => ({ id: 'email_native_123' })
+    };
+  };
+
+  const body = new URLSearchParams({
+    name: 'Jerad',
+    email: 'jerad@example.com',
+    subject: 'Native form test',
+    message: 'This form submitted without JavaScript.',
+    website: '',
+    submittedAt: ''
+  });
+  const response = await handler(new Request('https://latin-launchpad.netlify.app/api/contact', {
+    method: 'POST',
+    headers: {
+      origin: 'https://latin-launchpad.netlify.app',
+      host: 'latin-launchpad.netlify.app'
+    },
+    body
+  }));
+
+  assert.equal(response.status, 200);
+  assert.equal(payload.subject, '[Latin Launchpad] Native form test');
+});
+
 test('rejects requests from a different origin', async () => {
   const request = contactEvent();
   request.headers.set('origin', 'https://example.com');

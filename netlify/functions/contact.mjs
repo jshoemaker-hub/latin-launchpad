@@ -50,6 +50,22 @@ function validate(fields) {
   return '';
 }
 
+async function readBody(request) {
+  const contentType = request.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    return request.json();
+  }
+
+  if (
+    contentType.includes('application/x-www-form-urlencoded') ||
+    contentType.includes('multipart/form-data')
+  ) {
+    return Object.fromEntries((await request.formData()).entries());
+  }
+
+  throw new TypeError('Unsupported contact form content type.');
+}
+
 export default async function handler(request) {
   if (request.method !== 'POST') {
     return json(405, { error: 'Method not allowed.' });
@@ -61,7 +77,7 @@ export default async function handler(request) {
 
   let body;
   try {
-    body = await request.json();
+    body = await readBody(request);
   } catch {
     return json(400, { error: 'Invalid request.' });
   }
