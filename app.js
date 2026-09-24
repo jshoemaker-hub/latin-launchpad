@@ -148,6 +148,7 @@ const GUEST_PROFILE_ID = 'guest';
 
 const SUPABASE_URL = 'https://fmwdkpjetpftuuposmog.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_c7bs4AqY2ni-el3GqKxGuA_HbaUA_fJ';
+const AUTH_REDIRECT_URL = 'https://latinlaunchpad.com/';
 let _supabaseClient = null;
 
 function getSupabase() {
@@ -385,6 +386,9 @@ const elements = {
   currentProfileDetail: document.getElementById('currentProfileDetail'),
   continueGuestButton: document.getElementById('continueGuestButton'),
   signOutButton: document.getElementById('signOutButton'),
+  exportAccountButton: document.getElementById('exportAccountButton'),
+  deleteAccountButton: document.getElementById('deleteAccountButton'),
+  accountDataMessage: document.getElementById('accountDataMessage'),
   signupNextButton: document.getElementById('signupNextButton'),
   studentNameInput: document.getElementById('studentNameInput'),
   headerGradeSelect: document.getElementById('headerGradeSelect'),
@@ -930,6 +934,7 @@ function renderAccountControls() {
   }
   if (elements.signOutButton) elements.signOutButton.hidden = !signedIn;
   if (elements.continueGuestButton) elements.continueGuestButton.hidden = !signedIn;
+  if (elements.deleteAccountButton) elements.deleteAccountButton.hidden = !signedIn;
   if (elements.accountEmailInput && signedIn) {
     elements.accountEmailInput.value = AppState.account.email;
   }
@@ -1077,15 +1082,7 @@ async function signInWithEmail(email, password) {
       setAccountMessage('Sign-in failed. Please try again.', 'error');
     }
   } else {
-    // Supabase unavailable — fall back to email-only profile
-    const account = createEmailAccount(normalizedEmail);
-    const existingLocalProfile = getStoredProfile(account.profileId);
-    applyStoredState(existingLocalProfile || createStateSnapshot(AppState, account), account);
-    AppState.account = account;
-    evaluateBadges();
-    saveState();
-    renderAfterProfileChange();
-    setAccountMessage('Signed in (offline mode).', 'success');
+    setAccountMessage('Sign-in is temporarily unavailable. Your account was not accessed.', 'error');
   }
 
   if (submitButton) submitButton.disabled = false;
@@ -1114,7 +1111,7 @@ async function signUpWithEmail(email, password) {
       const { data, error } = await db.auth.signUp({
         email: normalizedEmail,
         password,
-        options: { emailRedirectTo: 'https://latin-launchpad.netlify.app/' }
+        options: { emailRedirectTo: AUTH_REDIRECT_URL }
       });
       if (error) {
         setAccountMessage(error.message || 'Sign-up failed. Please try again.', 'error');
@@ -1158,7 +1155,7 @@ async function sendPasswordReset(email) {
   if (db) {
     try {
       const { error } = await db.auth.resetPasswordForEmail(normalizedEmail, {
-        redirectTo: 'https://latin-launchpad.netlify.app/'
+        redirectTo: AUTH_REDIRECT_URL
       });
       if (error) {
         if (elements.resetMessage) {
@@ -1235,10 +1232,124 @@ async function updatePassword(newPassword, confirmPassword) {
   if (submitButton) submitButton.disabled = false;
 }
 
+function setAccountDataMessage(message, tone = 'neutral') {
+  if (!elements.accountDataMessage) return;
+  elements.accountDataMessage.textContent = message;
+  elements.accountDataMessage.dataset.tone = tone;
+}
+
+function downloadJsonFile(fileName, value) {
+  const blob = new Blob([`${JSON.stringify(value, null, 2)}\n`], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+async function exportAccountData() {
+  const button = elements.exportAccountButton;
+  if (button) button.disabled = true;
+  setAccountDataMessage('Preparing your data export…');
+
+  try {
+    if (!isEmailAccount()) {
+      downloadJsonFile('latin-launchpad-guest-data.json', {
+        exportedAt: new Date().toISOString(),
+        storage: 'this browser only',
+        profile: createStateSnapshot()
+      });
+      setAccountDataMessage('Guest data downloaded.', 'success');
+      return;
+    }
+
+    const db = getSupabase();
+    if (!db) throw new Error('Account service unavailable');
+    const { data: userData, error: userError } = await db.auth.getUser();
+    if (userError || !userData.user?.email) throw userError || new Error('No authenticated user');
+
+    const email = userData.user.email;
+    const [profile, lessons, words, badges] = await Promise.all([
+      db.from('user_profiles').select('*').eq('email', email).maybeSingle(),
+      db.from('lesson_progress').select('*').eq('email', email),
+      db.from('words_mastered').select('*').eq('email', email),
+      db.from('badges').select('*').eq('email', email)
+    ]);
+    const failed = [profile, lessons, words, badges].find((result) => result.error);
+    if (failed) throw failed.error;
+
+    downloadJsonFile('latin-launchpad-account-data.json', {
+      exportedAt: new Date().toISOString(),
+      account: {
+        id: userData.user.id,
+        email,
+        createdAt: userData.user.created_at
+      },
+      profile: profile.data,
+      lessonProgress: lessons.data,
+      wordsMastered: words.data,
+      badges: badges.data
+    });
+    setAccountDataMessage('Account data downloaded.', 'success');
+  } catch (error) {
+    console.warn('Account export error:', error);
+    setAccountDataMessage('Could not export account data. Please try again.', 'error');
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
+async function deleteAccount() {
+  if (!isEmailAccount()) return;
+  const confirmation = window.prompt('Type DELETE to permanently delete your account and synced learning data.');
+  if (confirmation !== 'DELETE') {
+    setAccountDataMessage('Account deletion canceled.', 'neutral');
+    return;
+  }
+
+  const button = elements.deleteAccountButton;
+  if (button) button.disabled = true;
+  setAccountDataMessage('Deleting your account…');
+
+  try {
+    const db = getSupabase();
+    if (!db) throw new Error('Account service unavailable');
+    const profileId = AppState.account.profileId;
+    const { error } = await db.rpc('delete_current_account');
+    if (error) throw error;
+
+    const profiles = loadProfiles();
+    delete profiles[profileId];
+    saveProfiles(profiles);
+    localStorage.removeItem(STORAGE_KEY);
+    await db.auth.signOut({ scope: 'local' }).catch(() => {});
+
+    const guestAccount = createGuestAccount();
+    applyStoredState(getStoredProfile(GUEST_PROFILE_ID) || {}, guestAccount);
+    AppState.account = guestAccount;
+    saveState();
+    renderAfterProfileChange();
+    setAccountDataMessage('Account and synced data deleted.', 'success');
+  } catch (error) {
+    console.warn('Account deletion error:', error);
+    setAccountDataMessage('Could not delete the account. Please try again or contact support.', 'error');
+  } finally {
+    if (button) button.disabled = false;
+  }
+}
+
 function continueAsGuest() {
   saveState();
   const db = getSupabase();
   if (db) db.auth.signOut().catch(() => {});
+  activateGuestProfile();
+  setAccountMessage('Using guest mode.', 'success');
+}
+
+function activateGuestProfile() {
   const guestAccount = createGuestAccount();
   const existingGuestProfile = getStoredProfile(GUEST_PROFILE_ID);
   const nextState = existingGuestProfile || {
@@ -1257,7 +1368,6 @@ function continueAsGuest() {
   AppState.account = guestAccount;
   saveState();
   renderAfterProfileChange();
-  setAccountMessage('Using guest mode.', 'success');
 }
 
 async function init() {
@@ -1310,7 +1420,13 @@ async function init() {
       evaluateBadges();
       saveState();
       renderAfterProfileChange();
+    } else if (!session && isEmailAccount()) {
+      // A cached browser profile is not proof of authentication.
+      activateGuestProfile();
     }
+  } else if (isEmailAccount()) {
+    // Fail closed if the authentication library is unavailable.
+    activateGuestProfile();
   }
 
   if (AppState.studentName && AppState.grade) {
@@ -4773,6 +4889,8 @@ function setupEvents() {
 
   elements.continueGuestButton.addEventListener('click', continueAsGuest);
   elements.signOutButton.addEventListener('click', continueAsGuest);
+  elements.exportAccountButton?.addEventListener('click', exportAccountData);
+  elements.deleteAccountButton?.addEventListener('click', deleteAccount);
   elements.signupNextButton.addEventListener('click', () => {
     const name = elements.studentNameInput.value.trim();
     AppState.studentName = name || 'Learner';

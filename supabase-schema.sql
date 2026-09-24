@@ -74,3 +74,32 @@ CREATE POLICY "owner_all" ON badges
   FOR ALL TO authenticated
   USING  (email = auth.email())
   WITH CHECK (email = auth.email());
+
+-- Authenticated users may permanently remove their own profile records and
+-- Supabase Auth identity. Child tables are removed by ON DELETE CASCADE.
+CREATE OR REPLACE FUNCTION public.delete_current_account()
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+DECLARE
+  account_id uuid := auth.uid();
+  account_email text;
+BEGIN
+  IF account_id IS NULL THEN
+    RAISE EXCEPTION 'Authentication required';
+  END IF;
+
+  SELECT email INTO account_email
+  FROM auth.users
+  WHERE id = account_id;
+
+  DELETE FROM public.user_profiles WHERE email = account_email;
+  DELETE FROM auth.users WHERE id = account_id;
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.delete_current_account() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.delete_current_account() FROM anon;
+GRANT EXECUTE ON FUNCTION public.delete_current_account() TO authenticated;
