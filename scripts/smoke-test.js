@@ -346,6 +346,7 @@ function checkContactFormContract() {
 function checkAnalyticsPrivacyContract() {
   const analytics = fs.readFileSync(analyticsPath, 'utf8');
   const headers = fs.readFileSync(path.join(root, '_headers'), 'utf8');
+  const netlifyConfig = fs.readFileSync(path.join(root, 'netlify.toml'), 'utf8');
   assert(analytics.includes("const MEASUREMENT_ID = 'G-HLK81Y1PK3'"), 'Google Analytics measurement ID is missing');
   assert(
     analytics.includes("if (loaded || readConsent() !== 'granted') return;"),
@@ -368,6 +369,7 @@ function checkAnalyticsPrivacyContract() {
       headers.includes('https://*.analytics.google.com'),
     'The deployed CSP must allow the consent-controlled Google Analytics endpoints'
   );
+  assert(!netlifyConfig.includes('[[headers]]'), 'Netlify headers must have a single source of truth in _headers');
   ['index.html', 'flashcards.html', ...trustPageFiles].forEach((file) => {
     const page = fs.readFileSync(path.join(root, file), 'utf8');
     assert(page.includes('<script src="analytics.js"></script>'), `${file} must load the consent-controlled analytics helper`);
