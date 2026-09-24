@@ -257,6 +257,21 @@
         </div>
       </section>
 
+      <dialog id="deleteAccountDialog" class="confirmation-dialog" aria-labelledby="deleteAccountDialogTitle">
+        <form id="deleteAccountForm" method="dialog">
+          <h2 id="deleteAccountDialogTitle">Delete account?</h2>
+          <p>This permanently deletes your account and all synced learning data. This cannot be undone.</p>
+          <label for="deleteAccountConfirmation">
+            Type <strong>DELETE</strong> to confirm
+            <input id="deleteAccountConfirmation" type="text" autocomplete="off" spellcheck="false" />
+          </label>
+          <div class="confirmation-dialog-actions">
+            <button id="cancelDeleteAccountButton" type="button" class="secondary-button">Cancel</button>
+            <button id="confirmDeleteAccountButton" type="submit" class="danger-button" disabled>Delete permanently</button>
+          </div>
+        </form>
+      </dialog>
+
       <!-- Password-reset page (user lands here after clicking the Supabase reset link) -->
       <section id="resetPasswordPage" class="page">
         <div class="card account-card">

@@ -216,6 +216,35 @@ input {
   opacity: 0.65;
 }
 
+.confirmation-dialog {
+  width: min(460px, calc(100% - 32px));
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0;
+  color: var(--text);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+}
+
+.confirmation-dialog::backdrop {
+  background: rgba(15, 23, 42, 0.58);
+}
+
+.confirmation-dialog form {
+  padding: 24px;
+}
+
+.confirmation-dialog h2,
+.confirmation-dialog p {
+  margin: 0 0 12px;
+}
+
+.confirmation-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 24px;
+}
+
 .section-kicker {
   display: inline-flex;
   align-items: center;
