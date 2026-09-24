@@ -813,6 +813,7 @@ function showPage(page) {
   if (page !== 'study') stopFlashcardTimer();
   pages[page].classList.add('active');
   updateNavState(page);
+  window.LatinLaunchpadAnalytics?.trackPageView(page);
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 

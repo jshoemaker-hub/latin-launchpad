@@ -1,6 +1,6 @@
 [build]
   publish = "dist"
-  command = "mkdir -p dist && cp index.html flashcards.html about.html privacy.html terms.html contact.html parents-teachers.html school-privacy.html styles.css app.js contact-form.js word-banks.js reference-vocabulary.js latin-phrases.js latin-stories.js latin-culture.js classroom-latin.js learning-objectives.js grammar-lessons.js og-image.png dist/ && cp -R assets dist/assets"
+  command = "mkdir -p dist && cp index.html flashcards.html about.html privacy.html terms.html contact.html parents-teachers.html school-privacy.html styles.css app.js analytics.js contact-form.js word-banks.js reference-vocabulary.js latin-phrases.js latin-stories.js latin-culture.js classroom-latin.js learning-objectives.js grammar-lessons.js og-image.png dist/ && cp -R assets dist/assets"
 
 [functions]
   directory = "netlify/functions"
@@ -26,4 +26,4 @@
     # - img-src: same-origin + data: URIs (for the SVG favicon)
     # - font-src: same-origin
     # - frame-ancestors 'none': no framing (redundant with X-Frame-Options but belt-and-suspenders)
-    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.supabase.co https://*.supabase.net https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; frame-ancestors 'none'; form-action 'self';"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.googletagmanager.com; connect-src 'self' https://*.supabase.co https://*.supabase.net https://cdn.jsdelivr.net https://*.google-analytics.com https://*.analytics.google.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://*.google-analytics.com; font-src 'self'; frame-ancestors 'none'; form-action 'self';"

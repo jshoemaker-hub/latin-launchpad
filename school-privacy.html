@@ -23,7 +23,7 @@
     <main class="card trust-page">
       <span class="section-kicker">District review</span>
       <h1>School and Vendor Privacy Summary</h1>
-      <p class="effective-date">Updated September 21, 2026</p>
+      <p class="effective-date">Updated September 24, 2026</p>
       <p class="trust-lead">This summary helps schools evaluate Latin Launchpad as an online educational tool. It describes the current product and is not a FERPA certification, district approval, or substitute for a signed data privacy agreement.</p>
 
       <div class="trust-note">
@@ -43,6 +43,7 @@
             <tr><td>Synced account</td><td>Email, optional learner name, grade, progress, scores, mastered words, badges</td><td>Supabase authentication and database for account access and progress sync</td></tr>
             <tr><td>Support</td><td>Name, email, subject, message</td><td>Netlify function processing, Resend email delivery, and operator support records</td></tr>
             <tr><td>Technical operation</td><td>IP address, browser/device details, timestamps, request and security logs</td><td>Service delivery, security, troubleshooting, and internal operations</td></tr>
+            <tr><td>Optional analytics</td><td>Page views, approximate location derived from IP address, browser/device details, timestamps</td><td>Google Analytics only after an adult opts in; no learner identity or learning records are sent</td></tr>
           </tbody>
         </table>
       </div>
@@ -62,6 +63,7 @@
         <li><strong>Resend:</strong> delivery of contact-form messages to the operator.</li>
         <li><strong>Supabase:</strong> optional account authentication and synced learning records.</li>
         <li><strong>jsDelivr:</strong> delivery of the Supabase browser library.</li>
+        <li><strong>Google Analytics:</strong> optional adult-approved usage measurement with advertising storage, ad personalization, and Google Signals disabled.</li>
       </ul>
       <p>A school should review these providers and any applicable contractual terms as part of its vendor assessment.</p>
 
@@ -99,5 +101,6 @@
       <nav aria-label="Footer links"><a href="index.html">Return to learning</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></nav>
     </footer>
   </div>
+  <script src="analytics.js"></script>
 </body>
 </html>

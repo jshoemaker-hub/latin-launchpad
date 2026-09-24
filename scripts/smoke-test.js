@@ -4,6 +4,7 @@ const vm = require('vm');
 
 const root = path.resolve(__dirname, '..');
 const appPath = path.join(root, 'app.js');
+const analyticsPath = path.join(root, 'analytics.js');
 const contactFormPath = path.join(root, 'contact-form.js');
 const contactFunctionPath = path.join(root, 'netlify', 'functions', 'contact.mjs');
 const htmlPath = path.join(root, 'index.html');
@@ -35,7 +36,7 @@ function assert(condition, message) {
 }
 
 function checkJavaScriptSyntax() {
-  [appPath, contactFormPath, wordBanksPath, referenceIndexPath, phrasesPath, storiesPath, culturePath, classroomPath, grammarPath].forEach((filePath) => {
+  [appPath, analyticsPath, contactFormPath, wordBanksPath, referenceIndexPath, phrasesPath, storiesPath, culturePath, classroomPath, grammarPath].forEach((filePath) => {
     new vm.Script(fs.readFileSync(filePath, 'utf8'), { filename: filePath });
   });
 }
@@ -342,6 +343,35 @@ function checkContactFormContract() {
   );
 }
 
+function checkAnalyticsPrivacyContract() {
+  const analytics = fs.readFileSync(analyticsPath, 'utf8');
+  assert(analytics.includes("const MEASUREMENT_ID = 'G-HLK81Y1PK3'"), 'Google Analytics measurement ID is missing');
+  assert(
+    analytics.includes("if (loaded || readConsent() !== 'granted') return;"),
+    'Google Analytics must not load before consent'
+  );
+  [
+    "ad_storage: 'denied'",
+    "ad_user_data: 'denied'",
+    "ad_personalization: 'denied'",
+    'allow_google_signals: false',
+    'allow_ad_personalization_signals: false'
+  ].forEach((setting) => assert(analytics.includes(setting), `Missing analytics privacy setting: ${setting}`));
+  assert(
+    !html.includes('googletagmanager.com/gtag/js'),
+    'The Google tag must be loaded conditionally instead of directly in page markup'
+  );
+  ['index.html', 'flashcards.html', ...trustPageFiles].forEach((file) => {
+    const page = fs.readFileSync(path.join(root, file), 'utf8');
+    assert(page.includes('<script src="analytics.js"></script>'), `${file} must load the consent-controlled analytics helper`);
+  });
+  const privacy = fs.readFileSync(path.join(root, 'privacy.html'), 'utf8');
+  assert(
+    privacy.includes('Optional analytics') && privacy.includes('does not send learner names'),
+    'The privacy policy must disclose optional analytics and excluded learner data'
+  );
+}
+
 checkJavaScriptSyntax();
 checkContentData();
 checkElementIds();
@@ -354,5 +384,6 @@ checkYearBasedLessonLabels();
 checkTrustPages();
 checkProductionAuthSafety();
 checkContactFormContract();
+checkAnalyticsPrivacyContract();
 
 console.log('Smoke tests passed.');
