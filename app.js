@@ -1373,6 +1373,7 @@ function activateGuestProfile() {
 async function init() {
   loadState();
   renderAccountControls();
+  let passwordRecoveryActive = false;
 
   const db = getSupabase();
   if (db) {
@@ -1383,6 +1384,7 @@ async function init() {
       if (event === 'PASSWORD_RECOVERY') {
         // Supabase has validated the recovery token and established a session.
         // Show the set-new-password form; updateUser() will now succeed.
+        passwordRecoveryActive = true;
         showPage('resetPassword');
         return;
       }
@@ -1400,7 +1402,7 @@ async function init() {
         renderAfterProfileChange();
         // Navigate home if the user was on the account or welcome page
         const currentActive = Object.entries(pages).find(([, el]) => el?.classList.contains('active'));
-        if (currentActive && ['account', 'welcome'].includes(currentActive[0])) {
+        if (!passwordRecoveryActive && currentActive && ['account', 'welcome'].includes(currentActive[0])) {
           showBestLearningPage();
         }
       }
@@ -1429,7 +1431,9 @@ async function init() {
     activateGuestProfile();
   }
 
-  if (AppState.studentName && AppState.grade) {
+  if (passwordRecoveryActive) {
+    showPage('resetPassword');
+  } else if (AppState.studentName && AppState.grade) {
     renderLessonList();
     renderHome();
     showPage('home');
