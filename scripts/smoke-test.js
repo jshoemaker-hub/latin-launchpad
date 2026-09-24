@@ -282,6 +282,10 @@ function checkProductionAuthSafety() {
     app.includes('A cached browser profile is not proof of authentication.'),
     'Cached email profiles must not be treated as authenticated sessions'
   );
+  assert(
+    app.includes("if (passwordRecoveryActive) {\n    showPage('resetPassword');"),
+    'Password recovery must not be overwritten by normal startup routing'
+  );
   [
     'exportAccountButton',
     'deleteAccountButton',
