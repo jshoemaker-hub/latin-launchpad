@@ -3,7 +3,7 @@
 A simple student-first Latin learning scaffold for grades 3–8.
 
 ## Live site
-- Production: https://latin-launchpad.netlify.app
+- Production: https://latinlaunchpad.com
 - Repository: https://github.com/jshoemaker-hub/latin-launchpad
 
 ## What’s included

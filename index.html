@@ -8,14 +8,14 @@
   <!-- SEO -->
   <meta name="description" content="Latin Launchpad is a free Latin practice site for Years 1–4. Build vocabulary, master grammar, and explore popular Latin phrases with interactive lessons, quizzes, and printable worksheets.">
   <meta name="robots" content="index, follow">
-  <link rel="canonical" href="https://latin-launchpad.netlify.app/">
+  <link rel="canonical" href="https://latinlaunchpad.com/">
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://latin-launchpad.netlify.app/">
+  <meta property="og:url" content="https://latinlaunchpad.com/">
   <meta property="og:title" content="Latin Launchpad — Latin Practice for Years 1–4">
   <meta property="og:description" content="Free Latin lessons, quizzes, and printables for Years 1–4. Vocabulary, grammar, and popular Latin phrases — all in one place.">
-  <meta property="og:image" content="https://latin-launchpad.netlify.app/og-image.png">
+  <meta property="og:image" content="https://latinlaunchpad.com/og-image.png">
   <meta property="og:site_name" content="Latin Launchpad">
   <meta property="og:locale" content="en_US">
 
@@ -23,7 +23,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Latin Launchpad — Latin Practice for Years 1–4">
   <meta name="twitter:description" content="Free Latin lessons, quizzes, and printables for Years 1–4.">
-  <meta name="twitter:image" content="https://latin-launchpad.netlify.app/og-image.png">
+  <meta name="twitter:image" content="https://latinlaunchpad.com/og-image.png">
 
   <!-- Favicon (SVG inline data URI) -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232563eb'/%3E%3Ctext x='32' y='46' font-family='Georgia%2C serif' font-size='38' font-weight='bold' fill='white' text-anchor='middle'%3EL%3C/text%3E%3C/svg%3E">
@@ -242,6 +242,15 @@
               <div class="account-actions">
                 <button id="continueGuestButton" type="button" class="secondary-button">Continue as guest</button>
                 <button id="signOutButton" type="button" class="secondary-button">Sign out</button>
+              </div>
+              <div class="account-data-actions">
+                <h4>Your data</h4>
+                <p>Download a copy of your learning data. Signed-in users can also permanently delete their account and synced records.</p>
+                <div class="account-actions">
+                  <button id="exportAccountButton" type="button" class="secondary-button">Download my data</button>
+                  <button id="deleteAccountButton" type="button" class="danger-button">Delete account</button>
+                </div>
+                <p id="accountDataMessage" class="account-message" aria-live="polite"></p>
               </div>
             </div>
           </div>

@@ -270,6 +270,29 @@ function checkTrustPages() {
   );
 }
 
+function checkProductionAuthSafety() {
+  assert(
+    app.includes("const AUTH_REDIRECT_URL = 'https://latinlaunchpad.com/';"),
+    'Auth callbacks must use the canonical production domain'
+  );
+  assert(!app.includes('latin-launchpad.netlify.app'), 'Auth callbacks must not use the Netlify hostname');
+  assert(!html.includes('latin-launchpad.netlify.app'), 'Public metadata must use the canonical domain');
+  assert(!app.includes('Signed in (offline mode).'), 'Email sign-in must never fall back to a local-only profile');
+  assert(
+    app.includes('A cached browser profile is not proof of authentication.'),
+    'Cached email profiles must not be treated as authenticated sessions'
+  );
+  [
+    'exportAccountButton',
+    'deleteAccountButton',
+    "db.rpc('delete_current_account')",
+    'function exportAccountData()',
+    'function deleteAccount()'
+  ].forEach((needle) => {
+    assert(app.includes(needle) || html.includes(needle), `Missing account privacy control: ${needle}`);
+  });
+}
+
 function checkContactFormContract() {
   assert(
     /<form[^>]*id="contactForm"[^>]*action="\/api\/contact"[^>]*method="POST"[^>]*data-contact-form/.test(html),
@@ -316,6 +339,7 @@ checkVocabularyStudyHooks();
 checkDictionaryHooks();
 checkYearBasedLessonLabels();
 checkTrustPages();
+checkProductionAuthSafety();
 checkContactFormContract();
 
 console.log('Smoke tests passed.');
