@@ -207,9 +207,12 @@ function checkVocabularyStudyHooks() {
     'data-flashcard-duration="300"',
     'data-flashcard-duration="600"',
     'data-flashcard-duration="900"',
+    'data-home-flashcards-grade="3"',
+    'startQuickFlashcards',
+    'StudyState.words = shuffleItems(words)',
     'flashcardStart',
     'function tickFlashcards()',
-    "name || 'Learner'"
+    'AppState.studentName = name;'
   ].forEach((needle) => {
     assert(app.includes(needle) || html.includes(needle), `Expected vocabulary study hook not found: ${needle}`);
   });

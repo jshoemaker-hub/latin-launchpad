@@ -572,6 +572,42 @@ input {
   font-weight: 700;
 }
 
+.home-quick-flashcards {
+  display: grid;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px solid #b8d1c5;
+  border-radius: 8px;
+  background: #f7fcf9;
+}
+
+.home-quick-flashcards strong {
+  font-size: 1rem;
+}
+
+.home-quick-flashcards div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.home-quick-flashcards button {
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid #b8d1c5;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #2f766b;
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.home-quick-flashcards button:hover,
+.home-quick-flashcards button:focus-visible {
+  border-color: #2f766b;
+  background: #ecfdf5;
+}
+
 .account-layout {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) minmax(220px, 0.8fr);

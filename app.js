@@ -996,12 +996,8 @@ function renderAfterProfileChange() {
 }
 
 function showBestLearningPage() {
-  if (!AppState.studentName) {
-    showPage('welcome');
-    return;
-  }
   if (!VALID_GRADES.includes(AppState.grade)) {
-    showPage('grade');
+    showPage('welcome');
     return;
   }
   renderHome();
@@ -1450,7 +1446,7 @@ async function init() {
 
   if (passwordRecoveryActive) {
     showPage('resetPassword');
-  } else if (AppState.studentName && AppState.grade) {
+  } else if (VALID_GRADES.includes(AppState.grade)) {
     renderLessonList();
     renderHome();
     showPage('home');
@@ -1475,7 +1471,7 @@ function renderGradeOptions() {
   if (elements.headerGradeSelect) {
     const hasGrade = VALID_GRADES.includes(AppState.grade);
     elements.headerGradeSelect.value = hasGrade ? String(AppState.grade) : '';
-    elements.headerGradeSelect.disabled = !AppState.studentName;
+    elements.headerGradeSelect.disabled = false;
     if (hasGrade) localStorage.setItem(GRADE_STORAGE_KEY, String(AppState.grade));
   }
 }
@@ -1498,7 +1494,7 @@ function renderLessonList() {
     elements.lessonListTitle.textContent = 'Choose your year';
     elements.lessonListSubtitle.textContent = 'Pick a curriculum year before starting a lesson.';
     elements.lessonCards.innerHTML = '';
-    showPage(AppState.studentName ? 'grade' : 'signup');
+    showPage('grade');
     return;
   }
   const lessons = getLessonsForSelection(AppState.grade);
@@ -4120,7 +4116,7 @@ function renderHome() {
 }
 
 function showHomeOrWelcome() {
-  if (!AppState.studentName || !VALID_GRADES.includes(AppState.grade)) {
+  if (!VALID_GRADES.includes(AppState.grade)) {
     showPage('welcome');
     return;
   }
@@ -4169,10 +4165,10 @@ function getStudyPhraseCards(selectedGrades) {
 
 function ensureStudyWords() {
   const words = getStudyWords();
-  const currentKeys = StudyState.words.map((word) => normalizeVocabularyHeadword(word.latin)).join('|');
-  const nextKeys = words.map((word) => normalizeVocabularyHeadword(word.latin)).join('|');
+  const currentKeys = StudyState.words.map((word) => normalizeVocabularyHeadword(word.latin)).sort().join('|');
+  const nextKeys = words.map((word) => normalizeVocabularyHeadword(word.latin)).sort().join('|');
   if (currentKeys !== nextKeys) {
-    StudyState.words = words;
+    StudyState.words = shuffleItems(words);
     StudyState.index = 0;
     StudyState.showingAnswer = false;
     StudyState.remainingMs = StudyState.durationSeconds * 1000;
@@ -4199,10 +4195,12 @@ function renderStudyPage() {
 
 function renderVocabularyList() {
   const query = (elements.vocabularySearch?.value || '').trim().toLowerCase();
-  const words = StudyState.words.filter((word) => {
-    const searchable = `${word.latin} ${word.principalParts || ''} ${word.english} ${word.note || ''}`.toLowerCase();
-    return !query || searchable.includes(query);
-  });
+  const words = StudyState.words
+    .filter((word) => {
+      const searchable = `${word.latin} ${word.principalParts || ''} ${word.english} ${word.note || ''}`.toLowerCase();
+      return !query || searchable.includes(query);
+    })
+    .sort((a, b) => a.latin.localeCompare(b.latin));
   elements.vocabularyCount.textContent = `${words.length} ${words.length === 1 ? 'word' : 'words'}`;
   elements.vocabularyList.innerHTML = words.length > 0
     ? words.map((word) => `
@@ -4396,7 +4394,7 @@ function shuffleFlashcards() {
 
 function showStudyOrOnboarding() {
   if (!VALID_GRADES.includes(AppState.grade)) {
-    showPage(AppState.studentName ? 'grade' : 'signup');
+    showPage('grade');
     return;
   }
   renderStudyPage();
@@ -4404,10 +4402,6 @@ function showStudyOrOnboarding() {
 }
 
 function showDashboardOrOnboarding() {
-  if (!AppState.studentName) {
-    showPage('signup');
-    return;
-  }
   if (!VALID_GRADES.includes(AppState.grade)) {
     showPage('grade');
     return;
@@ -4417,10 +4411,6 @@ function showDashboardOrOnboarding() {
 }
 
 function showLessonListOrOnboarding() {
-  if (!AppState.studentName) {
-    showPage('signup');
-    return;
-  }
   if (!VALID_GRADES.includes(AppState.grade)) {
     showPage('grade');
     return;
@@ -4430,10 +4420,6 @@ function showLessonListOrOnboarding() {
 }
 
 function showAssessmentsOrOnboarding() {
-  if (!AppState.studentName) {
-    showPage('signup');
-    return;
-  }
   if (!VALID_GRADES.includes(AppState.grade)) {
     showPage('grade');
     return;
@@ -4770,6 +4756,29 @@ function resetAssessment() {
   renderAssessments();
 }
 
+function startQuickFlashcards(grade) {
+  const normalizedGrade = normalizeCurriculumGrade(grade);
+  if (!normalizedGrade) return;
+
+  stopFlashcardTimer();
+  AppState.grade = normalizedGrade;
+  localStorage.setItem(GRADE_STORAGE_KEY, String(normalizedGrade));
+  saveState();
+  renderGradeOptions();
+
+  StudyState.mode = 'flashcards';
+  StudyState.durationSeconds = 600;
+  StudyState.words = [];
+  ensureStudyWords();
+  shuffleFlashcards();
+  resetFlashcardClock();
+  StudyState.running = true;
+  StudyState.lastTick = performance.now();
+  StudyState.timerId = window.setInterval(tickFlashcards, 100);
+  renderStudyPage();
+  showPage('study');
+}
+
 function selectAssessmentOption(value) {
   if (AssessmentState.answerChecked || !elements.assessmentRunner) return;
   AssessmentState.selectedOption = value;
@@ -4860,6 +4869,10 @@ function setupEvents() {
     const target = event.target instanceof Element ? event.target.closest('[data-home-lesson-id]') : null;
     if (target) openLesson(target.dataset.homeLessonId);
   });
+  pages.home.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target.closest('[data-home-flashcards-grade]') : null;
+    if (target) startQuickFlashcards(Number(target.dataset.homeFlashcardsGrade));
+  });
   elements.accountButton.addEventListener('click', () => {
     renderAccountControls();
     showForgotPasswordForm(false);
@@ -4928,7 +4941,7 @@ function setupEvents() {
   });
   elements.signupNextButton.addEventListener('click', () => {
     const name = elements.studentNameInput.value.trim();
-    AppState.studentName = name || 'Learner';
+    AppState.studentName = name;
     saveState();
     renderAccountControls();
     showPage('grade');
