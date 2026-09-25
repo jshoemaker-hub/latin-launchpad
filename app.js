@@ -4869,10 +4869,12 @@ function setupEvents() {
     const target = event.target instanceof Element ? event.target.closest('[data-home-lesson-id]') : null;
     if (target) openLesson(target.dataset.homeLessonId);
   });
-  pages.home.addEventListener('click', (event) => {
-    const target = event.target instanceof Element ? event.target.closest('[data-home-flashcards-grade]') : null;
+  [pages.welcome, pages.home].forEach((page) => page.addEventListener('click', (event) => {
+    const target = event.target instanceof Element
+      ? event.target.closest('[data-home-flashcards-grade]')
+      : null;
     if (target) startQuickFlashcards(Number(target.dataset.homeFlashcardsGrade));
-  });
+  }));
   elements.accountButton.addEventListener('click', () => {
     renderAccountControls();
     showForgotPasswordForm(false);

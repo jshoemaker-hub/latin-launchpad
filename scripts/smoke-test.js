@@ -199,6 +199,10 @@ function checkGrammarStoryResources() {
 }
 
 function checkVocabularyStudyHooks() {
+  const welcomePageMarkup = html.slice(
+    html.indexOf('<section id="welcomePage"'),
+    html.indexOf('<dialog id="storyReader"')
+  );
   [
     'studyPage',
     'headerGradeSelect',
@@ -216,6 +220,14 @@ function checkVocabularyStudyHooks() {
   ].forEach((needle) => {
     assert(app.includes(needle) || html.includes(needle), `Expected vocabulary study hook not found: ${needle}`);
   });
+  assert(
+    welcomePageMarkup.includes('data-home-flashcards-grade="3"'),
+    'The first-screen welcome page must offer a direct flashcard launcher'
+  );
+  assert(
+    app.includes('[pages.welcome, pages.home].forEach'),
+    'Quick flashcard launchers must work on both welcome and returning-user home pages'
+  );
 }
 
 function checkDictionaryHooks() {

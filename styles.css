@@ -351,58 +351,47 @@ input {
   line-height: 1.65;
 }
 
-.login-preview-panel {
+.welcome-flashcard-panel {
   display: grid;
   align-content: center;
-  gap: 14px;
-  padding: 24px;
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  background:
-    linear-gradient(160deg, #ffffff 0%, #f8fbff 58%, #fff7ed 100%);
+  padding: 28px;
+  border: 1px solid #b8d1c5;
+  border-radius: 8px;
+  background: #f7fcf9;
   box-shadow: 0 24px 60px rgba(23, 32, 51, 0.08);
 }
 
-.preview-row {
-  display: grid;
-  grid-template-columns: 48px 1fr;
-  gap: 14px;
-  align-items: center;
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  background: #ffffffd9;
+.welcome-flashcard-panel h3 {
+  margin: 0;
+  font-size: 1.8rem;
 }
 
-.preview-row > span {
+.welcome-flashcard-panel p {
+  margin: 8px 0 20px;
+  color: var(--muted);
+}
+
+.welcome-flashcard-levels {
   display: grid;
-  place-items: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: #ecfdf5;
-  color: var(--teal);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.welcome-flashcard-levels button {
+  min-height: 54px;
+  border: 1px solid #8bb8a5;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #246358;
+  cursor: pointer;
   font-weight: 900;
 }
 
-.preview-row:nth-child(2) > span {
-  background: #eef2ff;
-  color: var(--primary);
-}
-
-.preview-row:nth-child(3) > span {
-  background: #fff7ed;
-  color: var(--accent);
-}
-
-.preview-row strong,
-.preview-row p {
-  margin: 0;
-}
-
-.preview-row p {
-  margin-top: 4px;
-  color: var(--muted);
+.welcome-flashcard-levels button:hover,
+.welcome-flashcard-levels button:focus-visible {
+  border-color: #0f766e;
+  background: #ecfdf5;
+  box-shadow: 0 8px 18px rgba(15, 118, 110, 0.12);
 }
 
 .home-layout {
@@ -3523,7 +3512,7 @@ input {
 
   .home-hero-panel,
   .home-panel,
-  .login-preview-panel,
+  .welcome-flashcard-panel,
   .card {
     padding: 20px;
   }
