@@ -14,7 +14,7 @@ Students need a playful, clear path that fits their grade level, gives immediate
 
 ## MVP success criteria
 A student can:
-1. sign up
+1. start as a guest without providing a name, or sign in for syncing
 2. choose their grade level
 3. launch a vocabulary lesson
 4. play one interactive game
@@ -29,7 +29,8 @@ A successful first release feels:
 ## Core MVP features
 
 ### 1. Student onboarding
-- simple sign-up flow (name, email/password or username)
+- immediate guest access with an optional display name
+- optional email/password account for synced progress
 - grade level selection: 3, 4, 5, 6, 7, 8
 - welcoming landing page with quick explanation
 
@@ -63,7 +64,7 @@ A successful first release feels:
 
 ## Product flow
 1. Landing page
-2. Student sign-up / login
+2. Guest start or optional sign-up / login
 3. Grade selection
 4. Lesson selection
 5. Game-based practice
@@ -83,7 +84,7 @@ _As a 5th grader, I want to pick my grade level and play a Latin vocabulary game
 - `/dashboard` — progress summary
 
 ## Data model (simple MVP)
-- Student: id, name, grade, email, password hash, points, streak
+- Student: id, optional name, grade, optional email, password hash, points, streak
 - Lesson: id, grade, title, words[]
 - Word: latin, english, image, example
 - Attempt: studentId, lessonId, score, completedAt

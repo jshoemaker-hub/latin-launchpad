@@ -7,7 +7,7 @@ A simple student-first Latin learning scaffold for grades 3–8.
 - Repository: https://github.com/jshoemaker-hub/latin-launchpad
 
 ## What’s included
-- `index.html` — landing page, student signup, grade selection, lesson list, and dashboard
+- `index.html` — landing page, optional account access, year selection, lesson list, study tools, and dashboard
 - `styles.css` — playful interface styles
 - `app.js` — interactive lesson logic with pronunciation, review queues, guest progress, email profiles, and badges in localStorage
 - `grammar-lessons.js` — reference-backed grammar quiz packs for grades 3–8
@@ -17,11 +17,11 @@ A simple student-first Latin learning scaffold for grades 3–8.
 
 ## How to use
 1. Open `index.html` in your browser.
-2. Continue as a guest or use Email login to create a local profile.
-3. Enter a student name.
-4. Pick a grade.
-5. Choose a lesson, preview any story or grammar notes, meet the words, play its Seek & Find picture mission, then practice with a meaning quiz, picture match, or grammar.
-6. View progress and account badges on the dashboard.
+2. Select **Start learning** to use guest mode without entering a name, or use **Email login** for a synced account.
+3. Pick a curriculum year.
+4. Choose a lesson, or launch a randomized 10-minute flashcard session for any year from Home.
+5. Preview story or grammar notes, meet the words, and practice with the available games and quizzes.
+6. View locally saved progress and badges on the dashboard.
 
 ## Checks
 Run the no-dependency smoke test before committing lesson-loop changes:
