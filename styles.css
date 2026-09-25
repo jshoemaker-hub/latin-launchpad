@@ -597,6 +597,14 @@ input {
   background: #ecfdf5;
 }
 
+.home-hero-flashcards {
+  grid-column: 1 / -1;
+}
+
+.home-hero-flashcards div {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .account-layout {
   display: grid;
   grid-template-columns: minmax(220px, 1fr) minmax(220px, 0.8fr);
@@ -3515,6 +3523,10 @@ input {
   .welcome-flashcard-panel,
   .card {
     padding: 20px;
+  }
+
+  .home-hero-flashcards div {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .lesson-practice-panel {

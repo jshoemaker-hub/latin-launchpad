@@ -203,6 +203,10 @@ function checkVocabularyStudyHooks() {
     html.indexOf('<section id="welcomePage"'),
     html.indexOf('<dialog id="storyReader"')
   );
+  const homeHeroMarkup = html.slice(
+    html.indexOf('<section class="home-hero-panel">'),
+    html.indexOf('<div class="home-grid">')
+  );
   [
     'studyPage',
     'headerGradeSelect',
@@ -223,6 +227,10 @@ function checkVocabularyStudyHooks() {
   assert(
     welcomePageMarkup.includes('data-home-flashcards-grade="3"'),
     'The first-screen welcome page must offer a direct flashcard launcher'
+  );
+  assert(
+    homeHeroMarkup.includes('data-home-flashcards-grade="3"'),
+    'The returning-user home hero must keep the flashcard launcher above the fold'
   );
   assert(
     app.includes('[pages.welcome, pages.home].forEach'),
