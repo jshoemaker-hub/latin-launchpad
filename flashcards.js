@@ -343,6 +343,7 @@ function selectMode(m, type) {
   state.sessionType = type;
   updateModeHighlight();
   const d = getData(); d.mode = state.mode; d.sessionType = type; save(d);
+  syncDeckHash();
 }
 
 function selectGrade(g) {
@@ -352,6 +353,61 @@ function selectGrade(g) {
   );
   localStorage.setItem(GRADE_STORE, String(state.grade));
   const d = getData(); d.grade = state.grade; save(d);
+  syncDeckHash();
+}
+
+let suppressDeckHash = false;
+
+function deckYear() {
+  return CURRICULUM_LEVELS.find((item) => item.grade === state.grade)?.year || 1;
+}
+
+function syncDeckHash() {
+  if (suppressDeckHash || !window.LatinLaunchpadAssign) return;
+  const path = window.LatinLaunchpadAssign.buildPath({
+    kind: 'deck',
+    year: deckYear(),
+    minutes: state.mode,
+    sessionType: state.sessionType
+  });
+  if (!path) return;
+  const next = `#${path}`;
+  if (window.location.hash === next) return;
+  history.replaceState(null, '', `${window.location.pathname}${window.location.search}${next}`);
+}
+
+function applyDeckHash() {
+  const route = window.LatinLaunchpadAssign?.parsePath(window.location.hash);
+  if (!route || route.kind !== 'deck') return;
+  const level = CURRICULUM_LEVELS.find((item) => item.year === route.year);
+  if (!level) return;
+  suppressDeckHash = true;
+  selectGrade(level.grade);
+  selectMode(route.minutes, route.sessionType);
+  suppressDeckHash = false;
+}
+
+function announceDeck(message) {
+  const status = document.getElementById('deckCopyStatus');
+  if (status) status.textContent = message;
+}
+
+async function copyDeckText(text) {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+  } catch (error) { /* fallback below */ }
+  const area = document.createElement('textarea');
+  area.value = text;
+  area.setAttribute('readonly', '');
+  area.style.position = 'absolute';
+  area.style.left = '-9999px';
+  document.body.appendChild(area);
+  area.select();
+  document.execCommand('copy');
+  area.remove();
 }
 
 // ═══════════════════════════════════════
@@ -602,6 +658,21 @@ function endSession() {
      </div>`
   ).join('');
 
+  const completion = window.LatinLaunchpadAssign?.encodeCompletion({
+    kind: 'deck',
+    id: `y${deckYear()}`,
+    mode: state.sessionType,
+    score: state.correct,
+    total,
+    missed: state.results.filter((result) => !result.got).map((result) => result.word.latin)
+  }) || '';
+  const completionCard = document.getElementById('deckCompletionCode');
+  const completionValue = document.getElementById('deckCompletionValue');
+  if (completionCard && completionValue) {
+    completionCard.hidden = !completion;
+    completionValue.textContent = completion;
+  }
+
   show('screenSummary');
 }
 
@@ -711,6 +782,14 @@ function bindFlashcardUi() {
     else if (action === 'mark-audio') markAudioCard(trigger.dataset.correct === 'true', 'self');
     else if (action === 'go-home') goHome();
     else if (action === 'print-report') window.print();
+    else if (action === 'copy-assignment') {
+      syncDeckHash();
+      const url = `${window.location.origin}${window.location.pathname}${window.location.search}${window.location.hash}`;
+      copyDeckText(url).then(() => announceDeck('Assignment link copied.'));
+    } else if (action === 'copy-completion') {
+      const code = document.getElementById('deckCompletionValue')?.textContent || '';
+      if (code) copyDeckText(code).then(() => announceDeck('Completion code copied.'));
+    }
   });
   document.body.addEventListener('keydown', (event) => {
     if (event.key !== 'Enter' && event.key !== ' ') return;
@@ -733,7 +812,14 @@ function bindFlashcardUi() {
     }
   });
   setupRecognition();
+  applyDeckHash();
   renderHome();
+  syncDeckHash();
+  window.addEventListener('hashchange', () => {
+    applyDeckHash();
+    renderHome();
+    syncDeckHash();
+  });
 }
 
 bindFlashcardUi();

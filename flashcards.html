@@ -274,6 +274,7 @@
     .items-center    { align-items: center; }
     .justify-between { justify-content: space-between; }
     .summary-scroll { max-height: 280px; overflow-y: auto; }
+    .completion-code-value { overflow-wrap: anywhere; font-family: ui-monospace, Menlo, Consolas, monospace; background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 10px; }
 
     /* No-speech banner */
     .no-speech-banner {
@@ -399,8 +400,11 @@
 
   <div class="action-row">
     <button class="btn btn-report" data-action="show-report">📋 Report</button>
+    <button type="button" class="btn btn-secondary" data-action="copy-assignment">Copy assignment link</button>
     <button class="btn btn-primary" id="startBtn" data-action="start-session">Start →</button>
   </div>
+  <p id="deckCopyStatus" class="text-sm text-center" aria-live="polite"></p>
+  <p class="text-sm text-center"><a href="index.html#/check">Check a completion code</a></p>
 </div>
 
 
@@ -539,6 +543,13 @@
     <div class="summary-scroll summary-list" id="summaryList"></div>
   </div>
 
+  <section id="deckCompletionCode" class="card" hidden>
+    <h2>Completion code</h2>
+    <p class="text-sm mt-2">Hand this code to your teacher. It shows the score and missed Latin words. It does not include a name, and it is not a locked certificate.</p>
+    <p class="completion-code-value mt-2"><code id="deckCompletionValue"></code></p>
+    <button type="button" class="btn btn-secondary mt-2" data-action="copy-completion">Copy code</button>
+  </section>
+
   <div class="action-row">
     <button class="btn btn-secondary" data-action="go-home">Home</button>
     <button class="btn btn-report" data-action="show-report">📋 Report</button>
@@ -632,6 +643,7 @@
   <a href="/">Latin Launchpad</a>
   <button type="button" class="analytics-preferences-button">Analytics choices</button>
 </footer>
+<script defer src="assignment-links.js"></script>
 <script defer src="word-banks.js"></script>
 <script defer src="latin-phrases.js"></script>
 <script defer src="flashcards.js"></script>

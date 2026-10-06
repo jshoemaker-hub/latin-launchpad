@@ -4930,3 +4930,37 @@ body.print-preview-open .app-shell {
 .analytics-consent[hidden] {
   display: none !important;
 }
+
+.completion-code,
+.completion-code-result,
+.assignment-note {
+  margin-top: 16px;
+  padding: 12px 14px;
+  border: 1px solid #d7d1c6;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.completion-code-value,
+.completion-code-result code {
+  overflow-wrap: anywhere;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.completion-code-result ul {
+  margin: 8px 0 0;
+  padding-left: 1.2rem;
+}
+
+#completionCodeInput {
+  width: 100%;
+  margin: 8px 0 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.nle-category-assignment {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
