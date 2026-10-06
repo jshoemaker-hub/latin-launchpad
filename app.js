@@ -69,6 +69,18 @@ function getLessonsForSelection(grade) {
 }
 
 const LESSON_CHUNK_SIZE = 10;
+
+function getVocabLessonNumber(grade, indexWithinGrade) {
+  const level = getCurriculumLevelByGrade(grade);
+  const grades = level ? level.lessonGrades : [Number(grade)];
+  let offset = 0;
+  for (const earlier of grades) {
+    if (Number(earlier) >= Number(grade)) break;
+    offset += Math.ceil((GRADE_WORDS[earlier] || []).length / LESSON_CHUNK_SIZE);
+  }
+  return offset + Number(indexWithinGrade) + 1;
+}
+
 const VOCAB_LESSONS = Object.entries(GRADE_WORDS).flatMap(([grade, words]) => {
   return Array.from({ length: Math.ceil(words.length / LESSON_CHUNK_SIZE) }, (_, index) => {
     const start = index * LESSON_CHUNK_SIZE;
@@ -90,7 +102,7 @@ const VOCAB_LESSONS = Object.entries(GRADE_WORDS).flatMap(([grade, words]) => {
       classroomPhrases: typeof getClassroomPhrasesForLesson === 'function'
         ? getClassroomPhrasesForLesson(Number(grade), index)
         : [],
-      title: `${getLessonLevelName(Number(grade))}: Lesson ${index + 1}`,
+      title: `${getLessonLevelName(Number(grade))}: Lesson ${getVocabLessonNumber(grade, index)}`,
       description: phrases.length > 0
         ? `Practice Latin vocabulary words ${start + 1}-${start + lessonWords.length}, then connect them to popular Latin phrases.`
         : `Practice Latin vocabulary words ${start + 1}-${start + lessonWords.length}.`,
@@ -360,7 +372,8 @@ const AssessmentState = {
   quizGrade: null,
   quizQuestionCount: 10,
   testQuestionCount: 50,
-  testGrade: VALID_GRADES[0],
+  testGrade: null,
+  testLevelPinned: false,
   selectedChapterIds: new Set(),
   questions: [],
   responses: [],
@@ -885,6 +898,7 @@ function showPage(page, options = {}) {
   if (page !== 'nle') stopNleTimer();
   else if (NleState.view === 'exam' && NleState.remainingMs > 0) startNleTimer();
   pages[page].classList.add('active');
+  if (page === 'contact') window.LatinLaunchpadContact?.prepareVisibleContactForms();
   updateNavState(page);
   document.getElementById('headerNav')?.classList.remove('is-open');
   document.getElementById('headerMenuButton')?.setAttribute('aria-expanded', 'false');
@@ -1567,6 +1581,8 @@ function selectGrade(grade) {
   const normalizedGrade = normalizeCurriculumGrade(grade);
   if (!normalizedGrade) return;
   AppState.grade = normalizedGrade;
+  AssessmentState.testLevelPinned = false;
+  AssessmentState.testGrade = normalizedGrade;
   localStorage.setItem(GRADE_STORAGE_KEY, String(normalizedGrade));
   saveState();
   renderGradeOptions();
@@ -1753,13 +1769,80 @@ function getWordVisual(word) {
 }
 
 function getSyllableCue(value) {
-  const text = String(value || '').trim();
-  if (!/^[A-Za-z]+$/.test(text) || text.length < 4) return '';
-  const groups = text.match(/[^aeiouyAEIOUY]*[aeiouyAEIOUY]+(?:[^aeiouyAEIOUY](?![^aeiouyAEIOUY]*[aeiouyAEIOUY]))?/g);
-  if (!groups || groups.length < 2) return '';
-  return groups
-    .map((group) => group.toLowerCase())
-    .join('-');
+  const text = String(value || '').trim().toLowerCase();
+  if (!/^[a-z]+$/.test(text) || text.length < 4) return '';
+
+  const vowels = new Set(['a', 'e', 'i', 'o', 'u', 'y']);
+  const diphthongs = new Set(['ae', 'au', 'oe', 'ei', 'eu', 'ui']);
+  const mutes = new Set(['b', 'c', 'd', 'g', 'p', 't']);
+  const liquids = new Set(['l', 'r']);
+  const digraphs = new Set(['qu', 'ch', 'ph', 'th', 'rh']);
+
+  const nuclei = [];
+  let index = text[0] === 'i' && vowels.has(text[1]) ? 1 : 0;
+  while (index < text.length) {
+    if (text.slice(index, index + 2) === 'qu') {
+      index += 2;
+      continue;
+    }
+    if (!vowels.has(text[index])) {
+      index += 1;
+      continue;
+    }
+    const pair = text.slice(index, index + 2);
+    if (diphthongs.has(pair)) {
+      nuclei.push([index, index + 2]);
+      index += 2;
+    } else {
+      nuclei.push([index, index + 1]);
+      index += 1;
+    }
+  }
+  if (nuclei.length < 2) return '';
+
+  function consonantUnits(cluster) {
+    const units = [];
+    for (let cursor = 0; cursor < cluster.length; cursor += 1) {
+      const pair = cluster.slice(cursor, cursor + 2);
+      if (digraphs.has(pair)) {
+        units.push(pair);
+        cursor += 1;
+      } else {
+        units.push(cluster[cursor]);
+      }
+    }
+    return units;
+  }
+
+  const syllables = [];
+  let cursor = 0;
+  for (let nucleusIndex = 0; nucleusIndex < nuclei.length; nucleusIndex += 1) {
+    if (nucleusIndex === nuclei.length - 1) {
+      syllables.push(text.slice(cursor));
+      break;
+    }
+    const cluster = text.slice(nuclei[nucleusIndex][1], nuclei[nucleusIndex + 1][0]);
+    const units = consonantUnits(cluster);
+    let stay = 0;
+    let rest = units;
+    while (rest[0] === 'x') {
+      stay += 1;
+      rest = rest.slice(1);
+    }
+    if (rest.length > 1) {
+      const previous = rest[rest.length - 2];
+      const last = rest[rest.length - 1];
+      const muteLiquid = previous.length === 1 && last.length === 1 && mutes.has(previous) && liquids.has(last);
+      stay += rest.length - (muteLiquid ? 2 : 1);
+    }
+    const stayLength = units.slice(0, stay).join('').length;
+    const splitAt = nuclei[nucleusIndex][1] + stayLength;
+    syllables.push(text.slice(cursor, splitAt));
+    cursor = splitAt;
+  }
+
+  if (syllables.some((syllable) => !syllable || !/[aeiouy]/.test(syllable))) return '';
+  return syllables.join('-');
 }
 
 function renderSyllableCue(value) {
@@ -1780,10 +1863,14 @@ function isReviewAttempt() {
   return AppState.lessonAttemptMode === 'missed-review' || AppState.lessonAttemptMode === 'weak-review';
 }
 
+function hasRealPicture(value) {
+  return /\p{Extended_Pictographic}/u.test(String(value || ''));
+}
+
 function supportsPicturePractice(lesson) {
   return !isReviewAttempt()
     && lesson?.kind === 'vocabulary'
-    && getLessonVocabularyWords(lesson).length >= 2;
+    && getLessonPictureQuestions(lesson).length >= 2;
 }
 
 function supportsArrangePractice(lesson) {
@@ -1803,7 +1890,7 @@ function getArrangeQuestions(lesson) {
 }
 
 function getLessonPictureQuestions(lesson) {
-  return lesson.words;
+  return (lesson?.words || []).filter((word) => !word.isPhrase && hasRealPicture(word.emoji));
 }
 
 function getActiveQuestions(lesson) {
@@ -3946,12 +4033,24 @@ function meaningsForHeadword(latin, extraWords) {
   return meanings;
 }
 
+function questionAnswer(question) {
+  const choices = Array.isArray(question?.choices) ? question.choices.filter(Boolean) : [];
+  if (question?.isPhrase || choices.length === 0 || choices.includes(question.english)) {
+    return question?.english;
+  }
+  return choices[0];
+}
+
 function createChoices(question, words) {
-  const target = question.english;
+  const target = questionAnswer(question);
   const blocked = meaningsForHeadword(question.latin, words);
   const isDistractor = (text) => Boolean(text) && text !== target && !blocked.has(text);
-  if (Array.isArray(question.choices) && question.choices.length > 0) {
-    return Array.from(new Set([target, ...question.choices].filter((text) => text === target || isDistractor(text))))
+  const authored = Array.isArray(question.choices) ? question.choices.filter(Boolean) : [];
+  if (authored.length > 0 && !question.isPhrase && !authored.includes(question.english)) {
+    return Array.from(new Set(authored)).sort(() => Math.random() - 0.5);
+  }
+  if (authored.length > 0) {
+    return Array.from(new Set([target, ...authored].filter((text) => text === target || isDistractor(text))))
       .sort(() => Math.random() - 0.5);
   }
 
@@ -4039,12 +4138,12 @@ function checkAnswer() {
   }
   const correct = productionMode
     ? isProductionAnswerCorrect(question)
-    : AppState.selectedOption === question.english;
+    : AppState.selectedOption === questionAnswer(question);
   const questionCard = elements.questionArea.querySelector('[data-question-card]');
   questionCard?.classList.add(correct ? 'is-correct' : 'is-wrong');
   const optionButtons = elements.questionArea.querySelectorAll('.option-button');
   optionButtons.forEach((button) => {
-    if (button.dataset.optionValue === question.english) button.classList.add('correct');
+    if (button.dataset.optionValue === questionAnswer(question)) button.classList.add('correct');
     if (button.dataset.optionValue === AppState.selectedOption && !correct) button.classList.add('wrong');
     button.disabled = true;
   });
@@ -4321,16 +4420,25 @@ function getNextLesson() {
   return lessons.find((lesson) => !AppState.progress.lessons[lesson.id]) || lessons[0] || null;
 }
 
+function getHomeGreeting(state = AppState) {
+  const progress = state?.progress || {};
+  const returning = Boolean(state?.studentName)
+    || Number(progress.points) > 0
+    || Object.keys(progress.lessons || {}).length > 0
+    || Object.keys(progress.wordsMastered || {}).length > 0;
+  if (!returning) return 'Welcome. Let\'s begin your first Latin lesson.';
+  return `Welcome back, ${state.studentName || 'Learner'}.`;
+}
+
 function renderHome() {
   if (!elements.homeGreeting) return;
-  const name = AppState.studentName || 'Learner';
   const gradeLabel = VALID_GRADES.includes(AppState.grade) ? getCurriculumLevelTitle(AppState.grade) : 'Latin practice';
   const lessons = getCurrentGradeLessons();
   const completedCount = lessons.filter((lesson) => AppState.progress.lessons[lesson.id]).length;
   const nextLesson = getNextLesson();
 
   elements.homeGradePill.textContent = gradeLabel;
-  elements.homeGreeting.textContent = `Welcome back, ${name}.`;
+  elements.homeGreeting.textContent = getHomeGreeting();
   elements.homeSummary.textContent = lessons.length > 0
     ? `${completedCount}/${lessons.length} chapters complete. Keep lessons, quizzes, and tests in one place.`
     : 'Choose a year to unlock your Latin learning path.';
@@ -4705,14 +4813,14 @@ function ensureAssessmentDefaults() {
   if (!VALID_GRADES.includes(AppState.grade)) {
     AssessmentState.quizGrade = null;
     AssessmentState.selectedChapterIds = new Set();
-    if (!VALID_GRADES.includes(AssessmentState.testGrade)) {
+    if (!AssessmentState.testLevelPinned || !VALID_GRADES.includes(AssessmentState.testGrade)) {
       AssessmentState.testGrade = VALID_GRADES[0];
     }
     return;
   }
 
   const activeGrade = AppState.grade;
-  if (!VALID_GRADES.includes(AssessmentState.testGrade)) {
+  if (!AssessmentState.testLevelPinned || !VALID_GRADES.includes(AssessmentState.testGrade)) {
     AssessmentState.testGrade = activeGrade;
   }
 
@@ -5037,6 +5145,8 @@ function startQuickFlashcards(grade) {
 
   stopFlashcardTimer();
   AppState.grade = normalizedGrade;
+  AssessmentState.testLevelPinned = false;
+  AssessmentState.testGrade = normalizedGrade;
   localStorage.setItem(GRADE_STORAGE_KEY, String(normalizedGrade));
   saveState();
   renderGradeOptions();
@@ -5071,9 +5181,10 @@ function checkAssessmentAnswer() {
     return;
   }
 
-  const correct = AssessmentState.selectedOption === question.english;
+  const answer = questionAnswer(question);
+  const correct = AssessmentState.selectedOption === answer;
   elements.assessmentRunner.querySelectorAll('[data-assessment-option]').forEach((button) => {
-    if (button.textContent === question.english) button.classList.add('correct');
+    if (button.textContent === answer) button.classList.add('correct');
     if (button.textContent === AssessmentState.selectedOption && !correct) button.classList.add('wrong');
     button.disabled = true;
   });
@@ -5088,10 +5199,8 @@ function checkAssessmentAnswer() {
 
   if (result) {
     result.textContent = question.explanation
-      ? `${correct ? 'Correct.' : 'Correct answer: ' + question.english + '.'} ${question.explanation}`
-      : correct
-        ? `${question.latin} means ${question.english}.`
-        : `${question.latin} means ${question.english}.`;
+      ? `${correct ? 'Correct.' : 'Correct answer: ' + answer + '.'} ${question.explanation}`
+      : `${question.latin} means ${question.english}.`;
   }
 
   const nextButton = elements.assessmentRunner?.querySelector('[data-assessment-action="next"]');
@@ -5930,6 +6039,7 @@ function setupEvents() {
       const grade = Number(gradeButton.dataset.testGrade);
       if (VALID_GRADES.includes(grade)) {
         AssessmentState.testGrade = grade;
+        AssessmentState.testLevelPinned = true;
         AssessmentState.message = '';
         resetAssessment();
       }

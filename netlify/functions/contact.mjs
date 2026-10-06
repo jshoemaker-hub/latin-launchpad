@@ -15,16 +15,36 @@ function json(status, body) {
   });
 }
 
-function isSameOrigin(headers) {
-  const origin = headers.get('origin');
-  const host = headers.get('x-forwarded-host') || headers.get('host');
-  if (!origin || !host) return false;
-
+function hostOf(value) {
+  const raw = String(value || '').split(',')[0].trim();
+  if (!raw || raw.toLowerCase() === 'null') return '';
   try {
-    return new URL(origin).host === host;
+    return new URL(raw.includes('://') ? raw : `https://${raw}`).host.toLowerCase();
   } catch {
-    return false;
+    return '';
   }
+}
+
+function isSameOrigin(request) {
+  const headers = request.headers;
+  const allowed = new Set(
+    [headers.get('x-forwarded-host'), headers.get('host'), request.url]
+      .map(hostOf)
+      .filter(Boolean)
+  );
+  if (allowed.size === 0) return false;
+
+  const originHost = hostOf(headers.get('origin'));
+  if (originHost) return allowed.has(originHost);
+
+  // Browsers set Sec-Fetch-Site and scripts cannot spoof it. A same-origin
+  // GET often omits Origin, which made every token fetch fail closed.
+  const site = String(headers.get('sec-fetch-site') || '').toLowerCase();
+  if (site === 'same-origin') return true;
+  if (site === 'cross-site' || site === 'same-site') return false;
+
+  const refererHost = hostOf(headers.get('referer'));
+  return Boolean(refererHost && allowed.has(refererHost));
 }
 
 function tokenSecret() {
@@ -99,7 +119,7 @@ async function readBody(request) {
 
 export default async function handler(request) {
   if (request.method === 'GET') {
-    if (!isSameOrigin(request.headers)) {
+    if (!isSameOrigin(request)) {
       return json(403, { error: 'This request could not be verified.' });
     }
     const token = issueContactToken();
@@ -111,7 +131,7 @@ export default async function handler(request) {
     return json(405, { error: 'Method not allowed.' });
   }
 
-  if (!isSameOrigin(request.headers)) {
+  if (!isSameOrigin(request)) {
     return json(403, { error: 'This request could not be verified.' });
   }
 

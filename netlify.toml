@@ -1,6 +1,6 @@
 [build]
   publish = "dist"
-  command = "mkdir -p dist && cp _headers index.html flashcards.html flashcards.js about.html privacy.html terms.html contact.html parents-teachers.html school-privacy.html 404.html styles.css app.js analytics.js contact-form.js word-banks.js reference-vocabulary.js latin-phrases.js latin-stories.js latin-culture.js classroom-latin.js learning-objectives.js grammar-lessons.js nle-questions.js nle-questions-more.js nle-questions-upper.js nle-questions-exams.js nle-questions-advanced.js nle-prep.js supabase.js og-image.jpg favicon.ico favicon.svg robots.txt sitemap.xml dist/ && cp -R assets dist/assets"
+  command = "rm -rf dist && mkdir -p dist/assets && cp _headers index.html flashcards.html flashcards.js about.html privacy.html terms.html contact.html parents-teachers.html school-privacy.html 404.html styles.css app.js analytics.js contact-form.js word-banks.js reference-vocabulary.js latin-phrases.js latin-stories.js latin-culture.js classroom-latin.js learning-objectives.js grammar-lessons.js nle-questions.js nle-questions-more.js nle-questions-upper.js nle-questions-exams.js nle-questions-advanced.js nle-prep.js supabase.js og-image.jpg favicon.ico favicon.svg robots.txt sitemap.xml dist/ && cp -R assets/. dist/assets/"
 
 [build.processing.html]
   pretty_urls = true
