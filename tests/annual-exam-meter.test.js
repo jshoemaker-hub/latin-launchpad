@@ -9,12 +9,12 @@ function loadNle() {
   const context = {};
   vm.createContext(context);
   [
-    'nle-questions.js',
-    'nle-questions-more.js',
-    'nle-questions-upper.js',
-    'nle-questions-exams.js',
-    'nle-questions-advanced.js',
-    'nle-prep.js'
+    'annual-exam-questions.js',
+    'annual-exam-questions-more.js',
+    'annual-exam-questions-upper.js',
+    'annual-exam-questions-exams.js',
+    'annual-exam-questions-advanced.js',
+    'annual-exam.js'
   ].forEach((fileName) => {
     const filePath = path.resolve(__dirname, '..', fileName);
     vm.runInContext(fs.readFileSync(filePath, 'utf8'), context, { filename: filePath });
@@ -49,7 +49,7 @@ test('original hexameter passages scan and match the printed text', () => {
   assert.deepEqual(control.feet, ['LSS', 'LSS', 'LSS', 'LL', 'LSS', 'LL']);
 
   Object.entries(markedPassages).forEach(([passageId, lines]) => {
-    const passage = nle.NLE_PASSAGES.find((item) => item.id === passageId);
+    const passage = nle.ANNUAL_EXAM_PASSAGES.find((item) => item.id === passageId);
     assert.equal(passage.latin, lines.map(stripMacrons).join('\n'));
     lines.forEach((line) => {
       const scanned = parseHexameter(analyze(line));

@@ -16,13 +16,13 @@ const storiesPath = path.join(root, 'latin-stories.js');
 const culturePath = path.join(root, 'latin-culture.js');
 const classroomPath = path.join(root, 'classroom-latin.js');
 const grammarPath = path.join(root, 'grammar-lessons.js');
-const nleQuestionPaths = [
-  path.join(root, 'nle-questions.js'),
-  path.join(root, 'nle-questions-more.js'),
-  path.join(root, 'nle-questions-upper.js'),
-  path.join(root, 'nle-questions-exams.js'),
-  path.join(root, 'nle-questions-advanced.js'),
-  path.join(root, 'nle-prep.js')
+const annualExamQuestionPaths = [
+  path.join(root, 'annual-exam-questions.js'),
+  path.join(root, 'annual-exam-questions-more.js'),
+  path.join(root, 'annual-exam-questions-upper.js'),
+  path.join(root, 'annual-exam-questions-exams.js'),
+  path.join(root, 'annual-exam-questions-advanced.js'),
+  path.join(root, 'annual-exam.js')
 ];
 const trustPageFiles = [
   'about.html',
@@ -44,7 +44,7 @@ function assert(condition, message) {
 }
 
 function checkJavaScriptSyntax() {
-  [appPath, analyticsPath, contactFormPath, path.join(root, 'assignment-links.js'), wordBanksPath, referenceIndexPath, phrasesPath, storiesPath, culturePath, classroomPath, grammarPath, path.join(root, 'flashcards.js'), ...nleQuestionPaths].forEach((filePath) => {
+  [appPath, analyticsPath, contactFormPath, path.join(root, 'assignment-links.js'), wordBanksPath, referenceIndexPath, phrasesPath, storiesPath, culturePath, classroomPath, grammarPath, path.join(root, 'flashcards.js'), ...annualExamQuestionPaths].forEach((filePath) => {
     new vm.Script(fs.readFileSync(filePath, 'utf8'), { filename: filePath });
   });
 }
@@ -413,24 +413,25 @@ function checkAnalyticsPrivacyContract() {
   );
 }
 
-function checkNlePrepHooks() {
+function checkAnnualExamHooks() {
   [
-    'nlePage',
-    'nleButton',
-    'nleStage',
-    'homePracticeNle',
-    'not affiliated',
-    'nle-questions.js',
-    'nle-prep.js'
+    'annualExamPage',
+    'annualExamButton',
+    'annualExamStage',
+    'homePracticeAnnualExam',
+    'Annual Exam Study',
+    'annual-exam-questions.js',
+    'annual-exam.js'
   ].forEach((needle) => {
-    assert(html.includes(needle), `Expected NLE prep hook not found: ${needle}`);
+    assert(html.includes(needle), `Expected Annual Exam Study hook not found: ${needle}`);
   });
   const netlifyConfig = fs.readFileSync(path.join(root, 'netlify.toml'), 'utf8');
-  ['nle-questions.js', 'nle-questions-more.js', 'nle-questions-upper.js', 'nle-questions-exams.js', 'nle-questions-advanced.js', 'nle-prep.js'].forEach((fileName) => {
+  ['annual-exam-questions.js', 'annual-exam-questions-more.js', 'annual-exam-questions-upper.js', 'annual-exam-questions-exams.js', 'annual-exam-questions-advanced.js', 'annual-exam.js'].forEach((fileName) => {
     assert(netlifyConfig.includes(fileName), `Netlify build must copy ${fileName}`);
   });
-  assert(app.includes('function showNlePrep()'), 'The app must open the NLE prep page');
-  assert(app.includes('normalizeNleProgress'), 'NLE progress must be saved with other progress');
+  assert(app.includes('function showAnnualExam()'), 'The app must open the Annual Exam Study page');
+  assert(app.includes('normalizeAnnualExamProgress'), 'Annual Exam Study progress must be saved with other progress');
+  assert(app.includes('migrateAnnualExamProgress'), 'Saved exam progress must migrate from the previous storage key');
 }
 
 checkJavaScriptSyntax();
@@ -446,6 +447,6 @@ checkTrustPages();
 checkProductionAuthSafety();
 checkContactFormContract();
 checkAnalyticsPrivacyContract();
-checkNlePrepHooks();
+checkAnnualExamHooks();
 
 console.log('Smoke tests passed.');
