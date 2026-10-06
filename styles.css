@@ -2190,6 +2190,14 @@ input {
 .flashcard-rating.active { border-color: var(--primary); background: #f3faf7; color: var(--primary); }
 .flashcard-rate-note { margin: 0; color: var(--muted); }
 .review-queue-summary { margin: 0 0 10px; color: var(--text); font-weight: 800; }
+.parent-report { display: grid; gap: 12px; margin: 18px 0; padding: 16px; border: 1px solid var(--border); border-radius: 16px; background: transparent; }
+.parent-report p { margin: 4px 0 0; color: var(--muted); }
+.parent-report-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.parent-report-actions .secondary-button { min-height: 44px; }
+.weekly-report { display: grid; gap: 14px; }
+.weekly-report h2 { margin: 0; font-size: 1.15rem; }
+.weekly-report ul { margin: 6px 0 0; padding-left: 1.2rem; }
+.weekly-report li { margin: 3px 0; }
 .ending-stem { font-family: Georgia, serif; letter-spacing: 0.03em; }
 .flashcard-navigation { justify-content: center; margin-top: 14px; }
 

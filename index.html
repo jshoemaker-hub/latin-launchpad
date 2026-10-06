@@ -563,6 +563,22 @@
             </div>
             <div id="badgeGrid" class="badge-grid"></div>
           </div>
+          <section class="parent-report" aria-labelledby="parentReportTitle">
+            <div class="weak-review-header">
+              <div>
+                <span class="section-kicker">For parents</span>
+                <h3 id="parentReportTitle">Weekly report and backup</h3>
+                <p>Print this week's lessons, scores, words, and recorded time. Export a progress file to move to another device. The file can include the nickname. Completion codes still do not.</p>
+              </div>
+            </div>
+            <div class="parent-report-actions">
+              <button id="printWeeklyReport" type="button" class="secondary-button">Print weekly report</button>
+              <button id="exportProgress" type="button" class="secondary-button">Export progress</button>
+              <button id="importProgress" type="button" class="secondary-button">Import progress</button>
+              <input id="importProgressFile" type="file" accept="application/json,.json" hidden />
+            </div>
+            <p id="progressBackupStatus" role="status"></p>
+          </section>
           <div class="progress-card">
             <h3>Lesson progress</h3>
             <div id="progressList" class="progress-list"></div>
