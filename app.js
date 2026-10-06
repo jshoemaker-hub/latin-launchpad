@@ -2982,76 +2982,118 @@ function printCurrentPreview() {
   window.print();
 }
 
+function getPrintableLessonNumber(lesson) {
+  const match = String(getLessonDisplayTitle(lesson)).match(/\bLesson\s+(\d+)\b/i);
+  return match ? match[1] : '';
+}
+
+function estimateWrappedClueLines(clues, charsPerLine) {
+  return clues.reduce((total, placement) => {
+    const length = String(placement.term?.clue || '').length;
+    return total + Math.max(1, Math.ceil(length / charsPerLine));
+  }, 0);
+}
+
+function getCrosswordPrintStyle(crossword) {
+  const lines = Math.max(
+    estimateWrappedClueLines(crossword.across, 34),
+    estimateWrappedClueLines(crossword.down, 34),
+    1
+  );
+  let size = 15;
+  if (lines >= 5) size = 13.5;
+  if (lines >= 7) size = 12;
+  if (lines >= 9) size = 11;
+  if (lines >= 12) size = 9.5;
+  return `--clue-size:${size}pt`;
+}
+
+function getWordFindPrintStyle(termCount) {
+  let size = 18;
+  if (termCount >= 5) size = 16;
+  if (termCount >= 8) size = 14.5;
+  const columns = termCount <= 3 ? 1 : 2;
+  return `--word-size:${size}pt;--word-cols:${columns}`;
+}
+
+function getRecapFontSize(termCount, phraseCount, maxNoteLength) {
+  let size = 16;
+  const weight = termCount + phraseCount * 1.6 + (maxNoteLength > 48 ? 2 : 0) + (maxNoteLength > 80 ? 1.5 : 0);
+  if (weight >= 7) size = 14;
+  if (weight >= 10) size = 12.5;
+  if (weight >= 13) size = 11;
+  if (termCount <= 4 && phraseCount === 0 && maxNoteLength < 24) size = 17;
+  return size;
+}
+
+function renderRecapTable(columnClass, headers, rows) {
+  const head = headers.map((header) => `<div>${escapeHtml(header)}</div>`).join('');
+  const body = rows.map((row) => (
+    `<div class="recap-row">${row.map((cell) => `<div>${cell}</div>`).join('')}</div>`
+  )).join('');
+  return `<div class="recap-table ${columnClass}"><div class="recap-row recap-head">${head}</div>${body}</div>`;
+}
+
 function renderLessonSummaryPrint(lesson) {
-  const focusItems = Array.isArray(lesson.focus)
-    ? lesson.focus.map((item) => `<li>${escapeHtml(item)}</li>`).join('')
-    : '';
+  const focusItems = Array.isArray(lesson.focus) ? lesson.focus.filter(Boolean) : [];
   const phrases = Array.isArray(lesson.phrases) ? lesson.phrases : [];
-  const phraseRows = phrases.map((phrase) => {
+  const vocabulary = getLessonVocabularyWords(lesson);
+  const termRows = vocabulary.map((word) => {
+    const note = truncateText(word.explanation || word.hint || word.prompt || '', 96);
+    const cells = [
+      `<strong>${escapeHtml(word.latin)}</strong>`,
+      escapeHtml(word.previewAnswer || word.english)
+    ];
+    return { cells, note };
+  });
+  const hasNotes = termRows.some((row) => row.note);
+  const phraseTableRows = phrases.map((phrase) => {
     const linkedWords = Array.isArray(phrase.matchedWords)
       ? phrase.matchedWords.map((word) => `${word.latin} (${word.english})`).join(', ')
       : '';
-    return `
-      <tr>
-        <td>${escapeHtml(phrase.latin)}</td>
-        <td>${escapeHtml(phrase.meaning)}</td>
-        <td>${escapeHtml(linkedWords || 'today\'s word bank')}</td>
-      </tr>
-    `;
-  }).join('');
+    return [
+      `<strong>${escapeHtml(phrase.latin)}</strong>`,
+      escapeHtml(phrase.meaning),
+      escapeHtml(linkedWords || 'today\'s word bank')
+    ];
+  });
   const sourceNote = lesson.sourceNote ? `<p>${escapeHtml(lesson.sourceNote)}</p>` : '';
   const storyNote = lesson.story
-    ? `<p><strong>Story:</strong> ${escapeHtml(lesson.story.title)} - ${escapeHtml(lesson.story.summary)}</p>`
+    ? `<p><strong>Story:</strong> ${escapeHtml(lesson.story.title)} — ${escapeHtml(lesson.story.summary)}</p>`
     : '';
-  const rows = getLessonVocabularyWords(lesson).map((word) => {
-    const note = word.explanation || word.hint || word.prompt || '';
-    return `
-      <tr>
-        <td>${escapeHtml(word.latin)}</td>
-        <td>${escapeHtml(word.previewAnswer || word.english)}</td>
-        <td>${escapeHtml(truncateText(note, 96))}</td>
-      </tr>
-    `;
-  }).join('');
+  const maxNoteLength = termRows.reduce((max, row) => Math.max(max, row.note.length), 0);
+  const recapSize = getRecapFontSize(termRows.length, phrases.length, maxNoteLength);
+  const termTableRows = termRows.map((row) => (hasNotes ? [...row.cells, escapeHtml(row.note)] : row.cells));
+  const focusLine = focusItems.length
+    ? `<section class="print-section print-focus"><h2>Focus</h2><p>${focusItems.map((item) => escapeHtml(item)).join(' · ')}</p></section>`
+    : '';
 
   return `
-    <article class="print-sheet summary-sheet">
+    <article class="print-sheet summary-sheet" style="--recap-size:${recapSize}pt">
       ${renderPrintHeader(lesson, 'Lesson Summary')}
-      <section class="print-section">
-        <h2>Big idea</h2>
-        <p>${escapeHtml(lesson.description)}</p>
-        ${sourceNote}
-        ${storyNote}
-      </section>
-      ${focusItems ? `<section class="print-section"><h2>Focus</h2><ul class="print-focus-list">${focusItems}</ul></section>` : ''}
-      ${phraseRows ? `
-        <section class="print-section">
-          <h2>Popular Latin phrases</h2>
-          <table class="summary-table">
-            <thead>
-              <tr>
-                <th>Phrase</th>
-                <th>Meaning</th>
-                <th>Linked words</th>
-              </tr>
-            </thead>
-            <tbody>${phraseRows}</tbody>
-          </table>
+      <div class="print-body">
+        <section class="print-section print-intro">
+          <h2>Big idea</h2>
+          <p>${escapeHtml(lesson.description)}</p>
+          ${sourceNote}
+          ${storyNote}
         </section>
-      ` : ''}
-      <section class="print-section">
-        <h2>Key terms</h2>
-        <table class="summary-table">
-          <thead>
-            <tr>
-              <th>Latin</th>
-              <th>Meaning</th>
-              <th>Note</th>
-            </tr>
-          </thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </section>
+        ${focusLine}
+        ${phraseTableRows.length ? `
+          <section class="print-section">
+            <h2>Popular Latin phrases</h2>
+            ${renderRecapTable('cols-3 recap-compact', ['Phrase', 'Meaning', 'Linked words'], phraseTableRows)}
+          </section>
+        ` : ''}
+        <section class="print-section print-terms">
+          <h2>Key terms</h2>
+          ${renderRecapTable(
+            hasNotes ? 'cols-3 terms-table' : 'cols-2 terms-table',
+            hasNotes ? ['Latin', 'Meaning', 'Note'] : ['Latin', 'Meaning'],
+            termTableRows
+          )}
+        </section>
+      </div>
     </article>
   `;
 }
@@ -3059,10 +3101,10 @@ function renderLessonSummaryPrint(lesson) {
 function renderCrosswordPrint(lesson) {
   const { crossword } = getLessonPuzzles(lesson);
   return `
-    <article class="print-sheet puzzle-sheet">
+    <article class="print-sheet puzzle-sheet crossword-sheet" style="${getCrosswordPrintStyle(crossword)}">
       ${renderPrintHeader(lesson, 'Crossword')}
-      <div class="puzzle-layout crossword-layout">
-        <div>${renderCrosswordGrid(crossword, false)}</div>
+      <div class="print-body puzzle-layout">
+        <div class="puzzle-stage">${renderCrosswordGrid(crossword, false)}</div>
         <div class="clue-panel">
           ${renderCrosswordClues('Across', crossword.across)}
           ${renderCrosswordClues('Down', crossword.down)}
@@ -3078,10 +3120,10 @@ function renderWordFindPrint(lesson) {
     .map((term) => `<li>${escapeHtml(term.display)}</li>`)
     .join('');
   return `
-    <article class="print-sheet puzzle-sheet">
+    <article class="print-sheet puzzle-sheet word-find-sheet" style="${getWordFindPrintStyle(terms.length)}">
       ${renderPrintHeader(lesson, 'Word Find')}
-      <div class="puzzle-layout word-find-layout">
-        <div>${renderWordFindGrid(wordFind)}</div>
+      <div class="print-body puzzle-layout">
+        <div class="puzzle-stage">${renderWordFindGrid(wordFind)}</div>
         <section class="word-bank">
           <h2>Find these Latin terms</h2>
           <ul>${words}</ul>
@@ -3092,32 +3134,39 @@ function renderWordFindPrint(lesson) {
 }
 
 function renderPrintHeader(lesson, sheetTitle) {
+  const lessonNumber = getPrintableLessonNumber(lesson);
+  const lessonValue = lessonNumber
+    ? `<span class="write-line-value">${escapeHtml(lessonNumber)}</span>`
+    : '';
+  const kindLabel = lesson.kind === 'grammar' ? 'Grammar' : 'Vocabulary';
   return `
     <header class="print-header">
-      <div>
-        <p class="print-kicker">${escapeHtml(getLessonLevelName(lesson.grade))} ${lesson.kind === 'grammar' ? 'Grammar' : 'Vocabulary'}</p>
-        <h1>${escapeHtml(sheetTitle)}: ${escapeHtml(getLessonDisplayTitle(lesson))}</h1>
+      <div class="print-title-block">
+        <p class="print-kicker">${escapeHtml(getLessonLevelName(lesson.grade))} · ${kindLabel}</p>
+        <h1>${escapeHtml(sheetTitle)}</h1>
+        <p class="print-subtitle">${escapeHtml(getLessonDisplayTitle(lesson))}</p>
       </div>
       <div class="print-name-lines">
-        <span>Name: ____________________</span>
-        <span>Date: ____________</span>
+        <div class="write-field"><span class="write-label">Name</span><span class="write-line"></span></div>
+        <div class="write-field"><span class="write-label">Date</span><span class="write-line"></span></div>
+        <div class="write-field"><span class="write-label">Lesson #</span><span class="write-line">${lessonValue}</span></div>
       </div>
     </header>
   `;
 }
 
 function renderCrosswordGrid(crossword, showAnswers) {
-  const rows = crossword.grid.map((row, rowIndex) => {
-    const cells = row.map((letter, colIndex) => {
-      if (!letter) return '<td class="crossword-block"></td>';
-      const number = crossword.cellNumbers.get(`${rowIndex},${colIndex}`);
-      const numberHtml = number ? `<span class="cell-number">${number}</span>` : '';
-      const answerHtml = showAnswers ? `<span class="cell-answer">${escapeHtml(letter)}</span>` : '';
-      return `<td class="crossword-cell">${numberHtml}${answerHtml}</td>`;
-    }).join('');
-    return `<tr>${cells}</tr>`;
-  }).join('');
-  return `<table class="crossword-grid" aria-label="Crossword grid"><tbody>${rows}</tbody></table>`;
+  const size = crossword.grid.length;
+  const cells = crossword.grid.map((row, rowIndex) => row.map((letter, colIndex) => {
+    if (!letter) {
+      return '<div class="crossword-block" aria-hidden="true"><svg viewBox="0 0 10 10"><rect width="10" height="10" fill="#000"/></svg></div>';
+    }
+    const number = crossword.cellNumbers.get(`${rowIndex},${colIndex}`);
+    const numberHtml = number ? `<span class="cell-number">${number}</span>` : '';
+    const answerHtml = showAnswers ? `<span class="cell-answer">${escapeHtml(letter)}</span>` : '';
+    return `<div class="crossword-cell">${numberHtml}${answerHtml}</div>`;
+  }).join('')).join('');
+  return `<div class="crossword-grid" style="--grid-size:${size}" role="grid" aria-label="Crossword grid">${cells}</div>`;
 }
 
 function renderCrosswordClues(title, clues) {
@@ -3133,11 +3182,11 @@ function renderCrosswordClues(title, clues) {
 }
 
 function renderWordFindGrid(wordFind) {
-  const rows = wordFind.grid.map((row) => {
-    const cells = row.map((letter) => `<td>${escapeHtml(letter)}</td>`).join('');
-    return `<tr>${cells}</tr>`;
-  }).join('');
-  return `<table class="word-find-grid" aria-label="Word find grid"><tbody>${rows}</tbody></table>`;
+  const size = wordFind.grid.length;
+  const cells = wordFind.grid.flat().map((letter) => (
+    `<div class="word-find-cell">${escapeHtml(letter)}</div>`
+  )).join('');
+  return `<div class="word-find-grid" style="--grid-size:${size}" role="grid" aria-label="Word find grid">${cells}</div>`;
 }
 
 function truncateText(value, maxLength) {
