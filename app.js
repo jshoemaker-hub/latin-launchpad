@@ -344,6 +344,10 @@ const BADGE_DEFINITIONS = [
   }
 ];
 
+let suppressAssignmentHash = false;
+let assignmentNavigationPending = false;
+let assignmentFocus = null;
+
 const AppState = {
   account: createGuestAccount(),
   studentName: '',
@@ -382,6 +386,7 @@ const AssessmentState = {
   answerChecked: false,
   correctCount: 0,
   completed: false,
+  missedHeadwords: [],
   message: ''
 };
 
@@ -391,6 +396,8 @@ const StudyState = {
   index: 0,
   showingAnswer: false,
   running: false,
+  shuffled: true,
+  seenKeys: null,
   durationSeconds: 300,
   remainingMs: 300000,
   timerId: null,
@@ -411,7 +418,8 @@ const pages = {
   dashboard: document.getElementById('dashboardPage'),
   nle: document.getElementById('nlePage'),
   resetPassword: document.getElementById('resetPasswordPage'),
-  contact: document.getElementById('contactPage')
+  contact: document.getElementById('contactPage'),
+  codeCheck: document.getElementById('codeCheckPage')
 };
 
 const elements = {
@@ -904,6 +912,8 @@ function showPage(page, options = {}) {
   document.getElementById('headerMenuButton')?.setAttribute('aria-expanded', 'false');
   window.LatinLaunchpadAnalytics?.trackPageView(page);
   if (!options.preserveScroll) window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (page !== 'nle') assignmentFocus = null;
+  if (!options.skipHash) syncAssignmentHash();
 }
 
 function updateNavState(page) {
@@ -1550,13 +1560,15 @@ async function init() {
   } else if (VALID_GRADES.includes(AppState.grade)) {
     renderLessonList();
     renderHome();
-    showPage('home');
+    showPage('home', { skipHash: true });
   } else {
-    showPage('welcome');
+    showPage('welcome', { skipHash: true });
   }
   renderGradeOptions();
   renderDashboard();
   renderAssessments();
+  applyAssignmentHash();
+  if (!assignmentNavigationPending) syncAssignmentHash();
 }
 
 function renderGradeOptions() {
@@ -1993,6 +2005,7 @@ function selectPracticeMode(mode) {
   if (mode === 'arrange' && !supportsArrangePractice(lesson)) mode = 'meaning';
   AppState.practiceMode = mode;
   renderWordIntroduction(lesson);
+  syncAssignmentHash();
 }
 
 function getCompletionActions(missedCount) {
@@ -4237,6 +4250,14 @@ function renderLessonCompletion(lesson, score, earnedAchievement = null) {
         </div>
       ` : ''}
       ${renderMissedWordReview(missed)}
+      ${renderCompletionCode({
+        kind: 'lesson',
+        id: lesson.id,
+        mode: AppState.practiceMode,
+        score,
+        total,
+        missed: missed.map((word) => word.latin)
+      })}
       ${getCompletionActions(missed.length)}
     </section>
   `;
@@ -4524,6 +4545,8 @@ function ensureStudyWords() {
   const nextKeys = words.map((word) => normalizeVocabularyHeadword(word.latin)).sort().join('|');
   if (currentKeys !== nextKeys) {
     StudyState.words = shuffleItems(words);
+    StudyState.shuffled = true;
+    StudyState.seenKeys = new Set();
     StudyState.index = 0;
     StudyState.showingAnswer = false;
     StudyState.remainingMs = StudyState.durationSeconds * 1000;
@@ -4636,6 +4659,7 @@ function selectStudyMode(mode) {
   StudyState.mode = mode;
   if (mode !== 'flashcards') stopFlashcardTimer();
   renderStudyPage();
+  syncAssignmentHash();
 }
 
 function renderFlashcard() {
@@ -4644,6 +4668,7 @@ function renderFlashcard() {
     elements.flashcardStage.innerHTML = '<p class="study-empty">Choose a year to load flashcards.</p>';
     return;
   }
+  noteFlashcardSeen();
   const totalMs = StudyState.durationSeconds * 1000;
   const elapsedPercent = Math.max(0, Math.min(100, ((totalMs - StudyState.remainingMs) / totalMs) * 100));
   elements.flashcardStage.innerHTML = `
@@ -4657,6 +4682,7 @@ function renderFlashcard() {
       ${StudyState.showingAnswer ? '' : renderSpeakButton(word.latin, 'Listen', 0.74)}
     </div>
     <div class="flashcard-time">${formatFlashcardTime(StudyState.remainingMs)}</div>
+    ${renderFlashcardCompletion()}
   `;
   elements.flashcardStart.textContent = StudyState.running
     ? 'Pause timer'
@@ -4671,6 +4697,7 @@ function resetFlashcardClock() {
   StudyState.remainingMs = StudyState.durationSeconds * 1000;
   StudyState.lastTick = performance.now();
   StudyState.showingAnswer = false;
+  StudyState.seenKeys = new Set();
 }
 
 function moveFlashcard(direction) {
@@ -4761,6 +4788,7 @@ function setFlashcardDuration(seconds) {
     : FLASHCARD_SESSION_DURATIONS[0];
   resetFlashcardClock();
   renderFlashcard();
+  syncAssignmentHash();
 }
 
 function shuffleFlashcards() {
@@ -4770,7 +4798,9 @@ function shuffleFlashcards() {
   }
   StudyState.index = 0;
   StudyState.showingAnswer = false;
+  StudyState.shuffled = true;
   renderFlashcard();
+  syncAssignmentHash();
 }
 
 function showStudyOrOnboarding() {
@@ -5074,6 +5104,14 @@ function renderAssessmentResult() {
         <button type="button" class="secondary-button" data-assessment-action="reset">Build another</button>
         <button type="button" class="primary-button" data-assessment-action="start">Try again</button>
       </div>
+      ${renderCompletionCode({
+        kind: AssessmentState.mode === 'quiz' ? 'quiz' : 'test',
+        id: `y${yearForGrade(AssessmentState.mode === 'quiz' ? AppState.grade : AssessmentState.testGrade) || 1}-${AssessmentState.mode === 'quiz' ? AssessmentState.quizQuestionCount : AssessmentState.testQuestionCount}`,
+        mode: AssessmentState.mode,
+        score: AssessmentState.correctCount,
+        total,
+        missed: AssessmentState.missedHeadwords
+      })}
     </section>
   `;
 }
@@ -5121,6 +5159,7 @@ function startAssessment() {
   AssessmentState.answerChecked = false;
   AssessmentState.correctCount = 0;
   AssessmentState.completed = false;
+  AssessmentState.missedHeadwords = [];
   AssessmentState.message = questions.length < requestedCount
     ? `Using all ${questions.length} available questions from this selection.`
     : '';
@@ -5135,8 +5174,10 @@ function resetAssessment() {
   AssessmentState.answerChecked = false;
   AssessmentState.correctCount = 0;
   AssessmentState.completed = false;
+  AssessmentState.missedHeadwords = [];
   AssessmentState.message = '';
   renderAssessments();
+  syncAssignmentHash();
 }
 
 function startQuickFlashcards(grade) {
@@ -5195,6 +5236,7 @@ function checkAssessmentAnswer() {
     type: question.assessmentType
   };
   AssessmentState.correctCount = AssessmentState.responses.filter((response) => response?.correct).length;
+  if (!correct) AssessmentState.missedHeadwords.push(question.latin);
   AssessmentState.answerChecked = true;
 
   if (result) {
@@ -5290,6 +5332,7 @@ function nleLevelProgress(levelId) {
 }
 
 function showNlePrep() {
+  assignmentFocus = null;
   NleState.view = 'levels';
   NleState.message = '';
   NleState.confirmSubmit = false;
@@ -5356,10 +5399,13 @@ function renderNleLevel() {
     const stats = progress.categoryStats[category.id];
     const statText = stats ? `${stats.correct}/${stats.attempts} correct in practice` : `${count} questions`;
     return `
-      <button type="button" class="nle-category-card" data-nle-action="start-practice" data-nle-category="${escapeHtml(category.id)}">
-        <strong>${escapeHtml(category.label)}</strong>
-        <span>${escapeHtml(statText)}</span>
-      </button>
+      <div class="nle-category-assignment">
+        <button type="button" class="nle-category-card" data-nle-action="start-practice" data-nle-category="${escapeHtml(category.id)}">
+          <strong>${escapeHtml(category.label)}</strong>
+          <span>${escapeHtml(statText)}</span>
+        </button>
+        <button type="button" class="text-button" data-copy-assignment="practice" data-assignment-category="${escapeHtml(category.id)}">Copy practice link</button>
+      </div>
     `;
   }).join('');
   const examLabel = sample?.complete
@@ -5377,8 +5423,10 @@ function renderNleLevel() {
     </div>
     <div class="nle-actions">
       ${examLabel ? `<button type="button" class="primary-button" data-nle-action="start-exam">${escapeHtml(examLabel)}</button>` : ''}
+      ${examLabel ? '<button type="button" class="secondary-button" data-copy-assignment="exam">Copy exam link</button>' : ''}
       <a class="secondary-button nle-text-link" href="${NLE_LINKS.syllabus}" target="_blank" rel="noopener noreferrer">Official syllabus</a>
     </div>
+    ${renderNleAssignmentNote(level)}
     ${recent ? `<ul class="nle-recent">${recent}</ul>` : ''}
     ${categories ? `<h3 class="nle-subhead">Practice by category</h3><div class="nle-category-grid">${categories}</div>
     <div class="nle-count-row">
@@ -5487,6 +5535,14 @@ function renderNleResults() {
         ${result.missed.length ? '<button type="button" class="secondary-button" data-nle-action="review-missed">Practice missed</button>' : ''}
         <button type="button" class="primary-button" data-nle-action="back-level">Back to level</button>
       </div>
+      ${renderCompletionCode({
+        kind: 'nle',
+        id: level.id,
+        mode: result.mode === 'exam' ? 'exam' : (NleState.category || 'practice'),
+        score: result.correct,
+        total: result.total,
+        missed: result.missed.map((item) => item.id)
+      })}
     </section>
   `;
 }
@@ -5590,22 +5646,28 @@ function handleNleClick(event) {
   if (!actionButton || !elements.nleStage?.contains(actionButton)) return;
   const action = actionButton.dataset.nleAction;
   if (action === 'open-level') {
+    assignmentFocus = null;
     NleState.levelId = actionButton.dataset.nleLevel;
     NleState.view = 'level';
     NleState.message = '';
     renderNle();
+    syncAssignmentHash();
     return;
   }
   if (action === 'set-count') {
     NleState.practiceCount = Number(actionButton.dataset.nleCount) || 10;
+    if (assignmentFocus?.category) assignmentFocus = { ...assignmentFocus, count: NleState.practiceCount };
     renderNle();
+    syncAssignmentHash();
     return;
   }
   if (action === 'start-practice') {
+    assignmentFocus = null;
     startNlePractice(actionButton.dataset.nleCategory);
     return;
   }
   if (action === 'start-exam') {
+    assignmentFocus = null;
     startNleExam();
     return;
   }
@@ -5688,6 +5750,7 @@ function handleNleClick(event) {
 }
 
 function leaveNleView() {
+  assignmentFocus = null;
   if (NleState.view === 'levels') {
     showHomeOrWelcome();
     return;
@@ -5703,9 +5766,24 @@ function leaveNleView() {
   if (NleState.view === 'level') NleState.view = 'levels';
   else NleState.view = 'level';
   renderNle();
+  syncAssignmentHash();
 }
 
 function setupEvents() {
+  document.addEventListener('click', (event) => {
+    const target = event.target instanceof Element ? event.target : null;
+    const copyLink = target?.closest('[data-copy-assignment]');
+    if (copyLink) {
+      copyAssignmentLink(copyLink);
+      return;
+    }
+    const copyCode = target?.closest('[data-copy-completion]');
+    if (copyCode) {
+      copyText(copyCode.dataset.copyCompletion || '').then(() => announceAssignment('Completion code copied.'));
+      return;
+    }
+  });
+  document.getElementById('checkCompletionCodeButton')?.addEventListener('click', renderCompletionCheck);
   elements.startButton.addEventListener('click', showLessonListOrOnboarding);
   elements.welcomeAccountButton.addEventListener('click', () => {
     ensureSupabase().catch(() => {});
@@ -6143,6 +6221,312 @@ function setupEvents() {
     }
   });
 }
+
+function yearForGrade(grade) {
+  return getCurriculumLevelByGrade(grade)?.year || null;
+}
+
+function gradeForYear(year) {
+  const level = CURRICULUM_LEVELS.find((item) => item.year === Number(year));
+  return level ? level.grade : null;
+}
+
+function lessonMatchesYear(lessonId, year) {
+  const lesson = LESSONS.find((item) => item.id === lessonId);
+  return Boolean(lesson) && yearForGrade(lesson.grade) === Number(year);
+}
+
+function activePageName() {
+  return Object.entries(pages).find(([, section]) => section?.classList.contains('active'))?.[0] || '';
+}
+
+function isAuthHash() {
+  const hash = window.location.hash || '';
+  return hash.includes('access_token') || hash.includes('type=recovery') || hash.includes('error_description');
+}
+
+function currentAssignmentRoute() {
+  const page = activePageName();
+  const year = yearForGrade(AppState.grade);
+  if (page === 'codeCheck') return { kind: 'check' };
+  if (assignmentFocus && page === 'nle') return assignmentFocus;
+  if ((page === 'home' || page === 'lessonList') && year) return { kind: 'year', year };
+  if (page === 'lesson' && year) {
+    const lesson = getSelectedLesson();
+    if (lesson && lessonMatchesYear(lesson.id, year)) {
+      return { kind: 'lesson', year, lessonId: lesson.id, mode: AppState.practiceMode };
+    }
+  }
+  if (page === 'assessments' && year) {
+    if (AssessmentState.mode === 'test') {
+      return {
+        kind: 'test',
+        year: yearForGrade(AssessmentState.testGrade) || year,
+        count: AssessmentState.testQuestionCount
+      };
+    }
+    return {
+      kind: 'quiz',
+      year,
+      count: AssessmentState.quizQuestionCount,
+      lessonIds: [...AssessmentState.selectedChapterIds].filter((id) => lessonMatchesYear(id, year)).sort()
+    };
+  }
+  if (page === 'nle') {
+    if (!NleState.levelId || NleState.view === 'levels') return { kind: 'nle' };
+    if (NleState.view === 'exam' || (NleState.view === 'results' && NleState.mode === 'exam')) {
+      return { kind: 'nle', levelId: NleState.levelId, exam: true };
+    }
+    if ((NleState.view === 'practice' || (NleState.view === 'results' && NleState.mode === 'practice')) && NleState.category) {
+      return { kind: 'nle', levelId: NleState.levelId, category: NleState.category, count: NleState.practiceCount };
+    }
+    return { kind: 'nle', levelId: NleState.levelId };
+  }
+  if (page === 'study' && StudyState.mode === 'flashcards' && year) {
+    return {
+      kind: 'cards',
+      year,
+      seconds: StudyState.durationSeconds,
+      shuffle: StudyState.shuffled ? 1 : 0
+    };
+  }
+  return null;
+}
+
+function syncAssignmentHash() {
+  if (suppressAssignmentHash || isAuthHash() || !window.LatinLaunchpadAssign) return;
+  const route = currentAssignmentRoute();
+  const path = route ? window.LatinLaunchpadAssign.buildPath(route) : '';
+  const next = path ? `#${path}` : '';
+  if (!next) {
+    if ((window.location.hash || '').startsWith('#/')) {
+      history.replaceState(null, '', window.location.pathname + window.location.search);
+    }
+    return;
+  }
+  if (window.location.hash === next) return;
+  history.replaceState(null, '', `${window.location.pathname}${window.location.search}${next}`);
+}
+
+function applyAssignmentHash() {
+  if (isAuthHash() || !window.LatinLaunchpadAssign) return;
+  const route = window.LatinLaunchpadAssign.parsePath(window.location.hash);
+  if (!route) return;
+  suppressAssignmentHash = true;
+  try {
+    assignmentFocus = null;
+    if (route.kind === 'check') {
+      showPage('codeCheck', { skipHash: true });
+      return;
+    }
+    if (route.kind === 'deck') {
+      assignmentNavigationPending = true;
+      window.location.assign(`flashcards.html#/deck/${route.year}/${route.minutes}/${route.sessionType}`);
+      return;
+    }
+    const grade = gradeForYear(route.year);
+    if (route.kind === 'year' && grade) {
+      selectGrade(grade);
+      return;
+    }
+    if (route.kind === 'lesson' && grade && lessonMatchesYear(route.lessonId, route.year)) {
+      selectGrade(grade);
+      openLesson(route.lessonId);
+      selectPracticeMode(route.mode);
+      return;
+    }
+    if (route.kind === 'quiz' && grade) {
+      selectGrade(grade);
+      AssessmentState.mode = 'quiz';
+      AssessmentState.quizQuestionCount = route.count;
+      AssessmentState.quizGrade = grade;
+      const validIds = new Set(getQuizChapters().map((lesson) => lesson.id));
+      const selected = Array.isArray(route.lessonIds)
+        ? route.lessonIds.filter((id) => validIds.has(id))
+        : [...validIds];
+      AssessmentState.selectedChapterIds = new Set(selected);
+      AssessmentState.message = Array.isArray(route.lessonIds) && selected.length === 0
+        ? 'That assignment has no matching chapters.'
+        : '';
+      renderAssessments();
+      showPage('assessments', { skipHash: true });
+      return;
+    }
+    if (route.kind === 'test' && grade) {
+      selectGrade(grade);
+      AssessmentState.mode = 'test';
+      AssessmentState.testQuestionCount = route.count;
+      AssessmentState.testGrade = grade;
+      AssessmentState.testLevelPinned = true;
+      renderAssessments();
+      showPage('assessments', { skipHash: true });
+      return;
+    }
+    if (route.kind === 'nle') {
+      showPage('nle', { skipHash: true });
+      if (!route.levelId) {
+        NleState.view = 'levels';
+        renderNle();
+        return;
+      }
+      NleState.levelId = route.levelId;
+      NleState.view = 'level';
+      if (route.exam) {
+        assignmentFocus = { kind: 'nle', levelId: route.levelId, exam: true };
+      } else if (route.category) {
+        NleState.practiceCount = route.count;
+        NleState.category = route.category;
+        assignmentFocus = { kind: 'nle', levelId: route.levelId, category: route.category, count: route.count };
+      }
+      renderNle();
+      return;
+    }
+    if (route.kind === 'cards' && grade) {
+      selectGrade(grade);
+      stopFlashcardTimer();
+      StudyState.mode = 'flashcards';
+      StudyState.durationSeconds = route.seconds;
+      StudyState.words = [];
+      StudyState.seenKeys = new Set();
+      ensureStudyWords();
+      StudyState.shuffled = route.shuffle === 1;
+      if (!StudyState.shuffled) {
+        StudyState.words = [...StudyState.words].sort((a, b) => a.latin.localeCompare(b.latin, 'en'));
+        StudyState.index = 0;
+      }
+      resetFlashcardClock();
+      renderStudyPage();
+      showPage('study', { skipHash: true });
+    }
+  } finally {
+    suppressAssignmentHash = false;
+  }
+}
+
+function renderCompletionCode(payload) {
+  if (!window.LatinLaunchpadAssign) return '';
+  const code = window.LatinLaunchpadAssign.encodeCompletion(payload);
+  if (!code) return '';
+  return `
+    <section class="completion-code" aria-label="Completion code">
+      <h4>Completion code</h4>
+      <p>Hand this code to your teacher. It shows the score and missed Latin words. It does not include a name, and it is not a locked certificate.</p>
+      <p class="completion-code-value"><code>${escapeHtml(code)}</code></p>
+      <button type="button" class="secondary-button" data-copy-completion="${escapeHtml(code)}">Copy code</button>
+    </section>
+  `;
+}
+
+function renderFlashcardCompletion() {
+  if (StudyState.remainingMs > 0 || StudyState.running) return '';
+  const year = yearForGrade(AppState.grade);
+  if (!year || !StudyState.words.length) return '';
+  return renderCompletionCode({
+    kind: 'cards',
+    id: `y${year}`,
+    mode: 'timer',
+    score: StudyState.seenKeys?.size || 0,
+    total: StudyState.words.length,
+    missed: []
+  });
+}
+
+function noteFlashcardSeen() {
+  const word = StudyState.words[StudyState.index];
+  if (!word) return;
+  if (!StudyState.seenKeys) StudyState.seenKeys = new Set();
+  const label = window.LatinLaunchpadAssign?.normalizeMissedLabel(word.latin);
+  if (label) StudyState.seenKeys.add(label);
+}
+
+function renderNleAssignmentNote(level) {
+  if (!assignmentFocus || assignmentFocus.levelId !== level.id) return '';
+  const text = assignmentFocus.exam
+    ? 'Assigned: practice exam. The timer starts when you press Start.'
+    : `Assigned practice: ${assignmentFocus.category}, ${assignmentFocus.count} questions. Press that category when you are ready.`;
+  return `<p class="assignment-note">${escapeHtml(text)}</p>`;
+}
+
+function announceAssignment(message) {
+  const status = document.getElementById('assignmentStatus');
+  if (status) status.textContent = message;
+}
+
+async function copyText(text) {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+  } catch (error) {
+    /* The textarea fallback covers browsers that block clipboard permission. */
+  }
+  const area = document.createElement('textarea');
+  area.value = text;
+  area.setAttribute('readonly', '');
+  area.style.position = 'absolute';
+  area.style.left = '-9999px';
+  document.body.appendChild(area);
+  area.select();
+  document.execCommand('copy');
+  area.remove();
+}
+
+function copyRouteOverride(button) {
+  const which = button?.dataset.copyAssignment || '';
+  if (which === 'exam' && NleState.levelId) return { kind: 'nle', levelId: NleState.levelId, exam: true };
+  if (which === 'practice' && NleState.levelId && button.dataset.assignmentCategory) {
+    return {
+      kind: 'nle',
+      levelId: NleState.levelId,
+      category: button.dataset.assignmentCategory,
+      count: NleState.practiceCount
+    };
+  }
+  return null;
+}
+
+async function copyAssignmentLink(button) {
+  const override = copyRouteOverride(button);
+  if (override) assignmentFocus = override;
+  syncAssignmentHash();
+  const route = override || currentAssignmentRoute();
+  const path = window.LatinLaunchpadAssign?.buildPath(route);
+  if (!path) {
+    announceAssignment('Open a year, lesson, quiz, exam, or flashcard session first.');
+    return;
+  }
+  const url = `${window.location.origin}${window.location.pathname}${window.location.search}#${path}`;
+  await copyText(url);
+  announceAssignment('Assignment link copied.');
+}
+
+function renderCompletionCheck() {
+  const input = document.getElementById('completionCodeInput');
+  const output = document.getElementById('completionCodeResult');
+  if (!input || !output || !window.LatinLaunchpadAssign) return;
+  const decoded = window.LatinLaunchpadAssign.decodeCompletion(input.value);
+  if (!decoded.ok) {
+    output.innerHTML = `<p>${escapeHtml(decoded.error)}</p>`;
+    return;
+  }
+  const payload = decoded.payload;
+  const missed = payload.missed.length
+    ? payload.missed.map((word) => `<li>${escapeHtml(word)}</li>`).join('')
+    : '<li>None</li>';
+  output.innerHTML = `
+    <h3>${escapeHtml(payload.label)}</h3>
+    <p><strong>${escapeHtml(payload.scoreLabel)}:</strong> ${payload.score}/${payload.total}</p>
+    <h4>Missed Latin words or question ids</h4>
+    <ul>${missed}</ul>
+    <p>This reading does not include a name. It is not a locked certificate.</p>
+  `;
+}
+
+window.addEventListener('hashchange', () => {
+  applyAssignmentHash();
+  if (!assignmentNavigationPending) syncAssignmentHash();
+});
 
 window.addEventListener('DOMContentLoaded', () => {
   init();

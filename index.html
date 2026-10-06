@@ -133,6 +133,7 @@
               <div class="home-actions">
                 <button id="homeContinueButton" type="button" class="primary-button">Continue</button>
                 <button id="homeQuizButton" type="button" class="secondary-button">Build quiz</button>
+                <button type="button" class="secondary-button" data-copy-assignment>Copy assignment link</button>
               </div>
             </div>
             <div class="home-stats" aria-label="Progress summary">
@@ -358,6 +359,7 @@
               <h2 id="lessonListTitle">Lessons</h2>
               <p id="lessonListSubtitle">Choose a lesson to practice Latin.</p>
             </div>
+            <button type="button" class="secondary-button" data-copy-assignment>Copy assignment link</button>
             <button id="changeGradeButton" class="secondary-button">Change year</button>
           </div>
           <div id="objectivesCard" class="objectives-card"></div>
@@ -372,6 +374,7 @@
               <h2>Tests &amp; Quizzes</h2>
               <p>Build chapter quizzes or cumulative level tests from vocabulary, grammar, and phrases.</p>
             </div>
+            <button type="button" class="secondary-button" data-copy-assignment>Copy assignment link</button>
             <button id="assessmentsBackButton" class="secondary-button">Home</button>
           </div>
           <div class="assessment-layout">
@@ -414,6 +417,7 @@
                 <button type="button" data-flashcard-duration="900">15 min</button>
               </div>
               <div class="flashcard-actions">
+                <button type="button" class="secondary-button" data-copy-assignment>Copy assignment link</button>
                 <button id="flashcardShuffle" type="button" class="secondary-button">Shuffle</button>
                 <button id="flashcardStart" type="button" class="primary-button">Start timer</button>
               </div>
@@ -466,6 +470,7 @@
               <h2 id="lessonTitle"></h2>
               <p id="lessonDescription"></p>
             </div>
+            <button type="button" class="secondary-button" data-copy-assignment>Copy assignment link</button>
             <button id="backToLessons" class="secondary-button">Back</button>
           </div>
 
@@ -570,10 +575,27 @@
               <h2>National Latin Exam prep</h2>
               <p>Choose a level, review what that exam covers, practice by category, or take a timed exam in the NLE's multiple-choice format.</p>
             </div>
+            <button type="button" class="secondary-button" data-copy-assignment>Copy assignment link</button>
             <button id="nleBackButton" type="button" class="secondary-button">Home</button>
           </div>
           <p class="nle-disclaimer">Unofficial practice. Latin Launchpad is not affiliated with, endorsed by, or sponsored by the National Latin Exam, the American Classical League, or the National Junior Classical League. These questions are original. They are not past NLE questions. For the official syllabus, past exams, and registration, visit <a href="https://www.nle.org/" target="_blank" rel="noopener noreferrer">nle.org</a>.</p>
           <div id="nleStage"></div>
+        </div>
+      </section>
+
+      <section id="codeCheckPage" class="page">
+        <div class="card">
+          <div class="page-header">
+            <div>
+              <span class="section-kicker">For teachers</span>
+              <h2>Check a completion code</h2>
+              <p>Students hand in a code at the end of an activity. The code shows the score and missed Latin words or question ids. It does not include a name. It is a reading of the score on the student's device, not a locked certificate.</p>
+            </div>
+          </div>
+          <label class="field-label" for="completionCodeInput">Completion code</label>
+          <textarea id="completionCodeInput" rows="4" spellcheck="false" autocomplete="off"></textarea>
+          <button id="checkCompletionCodeButton" type="button" class="primary-button">Check code</button>
+          <div id="completionCodeResult" class="completion-code-result" aria-live="polite"></div>
         </div>
       </section>
 
@@ -634,11 +656,13 @@
         <a href="terms.html">Terms</a>
         <a href="contact.html">Contact</a>
         <a href="flashcards.html">Flashcards</a>
+        <a href="#/check">Check a completion code</a>
         <button type="button" class="analytics-preferences-button">Analytics choices</button>
       </nav>
     </footer>
   </div>
   <div id="printArea" class="print-area" role="dialog" aria-label="Printable preview" aria-hidden="true"></div>
+  <p id="assignmentStatus" class="sr-only" aria-live="polite"></p>
   <script defer src="contact-form.js"></script>
   <script defer src="word-banks.js"></script>
   <script defer src="reference-vocabulary.js"></script>
@@ -655,6 +679,7 @@
   <script defer src="nle-questions-advanced.js"></script>
   <script defer src="nle-prep.js"></script>
   <script defer src="analytics.js"></script>
+  <script defer src="assignment-links.js"></script>
   <script defer src="app.js"></script>
 </body>
 </html>
