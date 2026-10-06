@@ -266,6 +266,15 @@ const BADGE_DEFINITIONS = [
     mark: 'Z',
     description: 'Solve an online crossword or word find without revealing it.',
     criteria: () => false
+  },
+  {
+    id: 'nle-practice',
+    name: 'Exam Ready',
+    mark: 'N',
+    description: 'Finish an unofficial NLE practice exam.',
+    criteria: (state) => Object.values(state.progress.nle?.levels || {}).some((level) => (
+      Array.isArray(level.exams) && level.exams.some((exam) => exam.mode === 'exam')
+    ))
   }
 ];
 
@@ -333,6 +342,7 @@ const pages = {
   dictionary: document.getElementById('dictionaryPage'),
   lesson: document.getElementById('lessonPage'),
   dashboard: document.getElementById('dashboardPage'),
+  nle: document.getElementById('nlePage'),
   resetPassword: document.getElementById('resetPasswordPage'),
   contact: document.getElementById('contactPage')
 };
@@ -430,6 +440,12 @@ const elements = {
   studyButton: document.getElementById('studyButton'),
   dictionaryButton: document.getElementById('dictionaryButton'),
   assessmentsButton: document.getElementById('assessmentsButton'),
+  nleButton: document.getElementById('nleButton'),
+  nleBackButton: document.getElementById('nleBackButton'),
+  nleStage: document.getElementById('nleStage'),
+  homePracticeNle: document.getElementById('homePracticeNle'),
+  dashboardNleButton: document.getElementById('dashboardNleButton'),
+  nleDashboardSummary: document.getElementById('nleDashboardSummary'),
   assessmentsBackButton: document.getElementById('assessmentsBackButton'),
   assessmentBuilder: document.getElementById('assessmentBuilder'),
   assessmentRunner: document.getElementById('assessmentRunner'),
@@ -550,7 +566,8 @@ function normalizeProgress(progress) {
     points: Number.isFinite(safeProgress.points) ? safeProgress.points : 0,
     lessons: normalizeLessonProgress(safeProgress.lessons),
     wordsMastered: isPlainObject(safeProgress.wordsMastered) ? safeProgress.wordsMastered : {},
-    wordStats: normalizeWordStats(safeProgress.wordStats)
+    wordStats: normalizeWordStats(safeProgress.wordStats),
+    nle: typeof normalizeNleProgress === 'function' ? normalizeNleProgress(safeProgress.nle) : { levels: {} }
   };
 }
 
@@ -811,6 +828,8 @@ function showPage(page) {
   }
   Object.values(pages).forEach((section) => section.classList.remove('active'));
   if (page !== 'study') stopFlashcardTimer();
+  if (page !== 'nle') stopNleTimer();
+  else if (NleState.view === 'exam' && NleState.remainingMs > 0) startNleTimer();
   pages[page].classList.add('active');
   updateNavState(page);
   window.LatinLaunchpadAnalytics?.trackPageView(page);
@@ -828,6 +847,7 @@ function updateNavState(page) {
     study: 'studyButton',
     dictionary: 'dictionaryButton',
     assessments: 'assessmentsButton',
+    nle: 'nleButton',
     dashboard: 'dashboardButton',
     account: 'accountButton',
     resetPassword: 'accountButton',
@@ -839,6 +859,7 @@ function updateNavState(page) {
     elements.studyButton,
     elements.dictionaryButton,
     elements.assessmentsButton,
+    elements.nleButton,
     elements.dashboardButton,
     elements.accountButton,
     elements.contactButton
@@ -1383,6 +1404,11 @@ function activateGuestProfile() {
   renderAfterProfileChange();
 }
 
+function preserveLocalNleProgress(nextState, localSnapshot) {
+  if (!nextState?.progress || !localSnapshot?.progress?.nle) return;
+  if (!nextState.progress.nle) nextState.progress.nle = localSnapshot.progress.nle;
+}
+
 async function init() {
   loadState();
   renderAccountControls();
@@ -1408,6 +1434,7 @@ async function init() {
         const remote = await supabaseLoadProfile(email);
         const existingLocal = getStoredProfile(account.profileId);
         const nextState = remote || existingLocal || createStateSnapshot(AppState, account);
+        preserveLocalNleProgress(nextState, existingLocal);
         applyStoredState(nextState, account);
         AppState.account = account;
         evaluateBadges();
@@ -1430,6 +1457,7 @@ async function init() {
       const remote = await supabaseLoadProfile(email);
       const existingLocal = getStoredProfile(account.profileId);
       const nextState = remote || existingLocal || createStateSnapshot(AppState, account);
+      preserveLocalNleProgress(nextState, existingLocal);
       applyStoredState(nextState, account);
       AppState.account = account;
       evaluateBadges();
@@ -4021,6 +4049,7 @@ function renderDashboard() {
   const visibleLessons = VALID_GRADES.includes(AppState.grade)
     ? getLessonsForSelection(AppState.grade)
     : LESSONS;
+  renderNleDashboard();
   elements.progressList.innerHTML = visibleLessons.map((lesson) => {
     const lessonProgress = AppState.progress.lessons[lesson.id];
     const status = lessonProgress
@@ -4844,6 +4873,484 @@ function nextAssessmentQuestion() {
   renderAssessments();
 }
 
+const NleState = {
+  view: 'levels',
+  levelId: null,
+  category: '',
+  mode: '',
+  questions: [],
+  answers: {},
+  index: 0,
+  checked: false,
+  practiceCount: 10,
+  remainingMs: 0,
+  lastTick: 0,
+  timerId: null,
+  startedAt: 0,
+  result: null,
+  message: '',
+  confirmSubmit: false
+};
+
+function stopNleTimer() {
+  if (NleState.timerId) {
+    window.clearInterval(NleState.timerId);
+    NleState.timerId = null;
+  }
+}
+
+function startNleTimer() {
+  stopNleTimer();
+  NleState.lastTick = performance.now();
+  NleState.timerId = window.setInterval(tickNleExam, 250);
+}
+
+function formatNleClock(milliseconds) {
+  const totalSeconds = Math.max(0, Math.ceil(milliseconds / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+function tickNleExam() {
+  if (NleState.view !== 'exam') return;
+  const now = performance.now();
+  NleState.remainingMs = Math.max(0, NleState.remainingMs - (now - NleState.lastTick));
+  NleState.lastTick = now;
+  const clock = elements.nleStage?.querySelector('[data-nle-clock]');
+  if (clock) clock.textContent = formatNleClock(NleState.remainingMs);
+  if (NleState.remainingMs <= 0) finishNleSession('exam');
+}
+
+function suggestedNleLevelId() {
+  if (typeof getSuggestedNleLevelId !== 'function') return null;
+  const level = getCurriculumLevelByGrade(AppState.grade);
+  return level ? getSuggestedNleLevelId(level.year) : null;
+}
+
+function nleLevelProgress(levelId) {
+  const progress = typeof normalizeNleProgress === 'function'
+    ? normalizeNleProgress(AppState.progress.nle)
+    : { levels: {} };
+  return progress.levels[levelId] || { categoryStats: {}, exams: [] };
+}
+
+function showNlePrep() {
+  NleState.view = 'levels';
+  NleState.message = '';
+  NleState.confirmSubmit = false;
+  renderNle();
+  showPage('nle');
+}
+
+function renderNle() {
+  if (!elements.nleStage || typeof NLE_LEVELS === 'undefined') return;
+  if (elements.nleBackButton) {
+    elements.nleBackButton.textContent = NleState.view === 'levels' ? 'Home' : 'Back';
+  }
+  if (NleState.view === 'level') renderNleLevel();
+  else if (NleState.view === 'practice' || NleState.view === 'exam') renderNleQuestion();
+  else if (NleState.view === 'results') renderNleResults();
+  else renderNleLevels();
+}
+
+function renderNleLevels() {
+  const suggested = suggestedNleLevelId();
+  const cards = NLE_LEVELS.map((level) => {
+    const progress = nleLevelProgress(level.id);
+    const latestExam = [...progress.exams].reverse().find((exam) => exam.mode === 'exam');
+    const questionCount = NLE_QUESTIONS.filter((question) => question.level === level.id).length;
+    const status = latestExam
+      ? `Latest exam ${latestExam.correct}/${latestExam.total}`
+      : (questionCount ? `${questionCount} original questions` : 'Syllabus guide');
+    return `
+      <button type="button" class="nle-level-card${suggested === level.id ? ' suggested' : ''}" data-nle-action="open-level" data-nle-level="${escapeHtml(level.id)}">
+        <span>${escapeHtml(level.legacyName)}</span>
+        <strong>${escapeHtml(level.name)}</strong>
+        <small>${escapeHtml(level.yearNote)}</small>
+        <small>${escapeHtml(status)}</small>
+      </button>
+    `;
+  }).join('');
+  elements.nleStage.innerHTML = `
+    <p class="nle-links">
+      <a href="${NLE_LINKS.about}" target="_blank" rel="noopener noreferrer">What the NLE is</a>
+      <a href="${NLE_LINKS.syllabus}" target="_blank" rel="noopener noreferrer">Official syllabus</a>
+      <a href="${NLE_LINKS.exams}" target="_blank" rel="noopener noreferrer">Past exams on nle.org</a>
+    </p>
+    <div class="nle-level-grid">${cards}</div>
+  `;
+}
+
+function renderNleLevel() {
+  const level = getNleLevel(NleState.levelId);
+  if (!level) {
+    renderNleLevels();
+    return;
+  }
+  const progress = nleLevelProgress(level.id);
+  const sample = buildNleExam(level.id, createNleRng(1));
+  const syllabus = level.syllabus.map((group) => `
+    <section>
+      <h3>${escapeHtml(group.heading)}</h3>
+      <ul>${group.items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
+    </section>
+  `).join('');
+  const categories = NLE_CATEGORIES.map((category) => {
+    const count = NLE_QUESTIONS.filter((question) => question.level === level.id && question.category === category.id).length;
+    if (!count) return '';
+    const stats = progress.categoryStats[category.id];
+    const statText = stats ? `${stats.correct}/${stats.attempts} correct in practice` : `${count} questions`;
+    return `
+      <button type="button" class="nle-category-card" data-nle-action="start-practice" data-nle-category="${escapeHtml(category.id)}">
+        <strong>${escapeHtml(category.label)}</strong>
+        <span>${escapeHtml(statText)}</span>
+      </button>
+    `;
+  }).join('');
+  const examLabel = sample?.complete
+    ? `Start ${level.questionCount}-question exam`
+    : (sample?.questions.length ? `Start shorter practice (${sample.questions.length} questions)` : '');
+  const recent = progress.exams.slice(-3).reverse().map((exam) => (
+    `<li>${escapeHtml(exam.mode === 'exam' ? 'Exam' : 'Practice')} · ${exam.correct}/${exam.total}</li>`
+  )).join('');
+  elements.nleStage.innerHTML = `
+    <div class="nle-level-heading">
+      <span class="section-kicker">${escapeHtml(level.legacyName)}</span>
+      <h3>${escapeHtml(level.name)}</h3>
+      <p>${escapeHtml(level.yearNote)} ${escapeHtml(level.audience)}</p>
+      <p>${escapeHtml(level.formatNote)}</p>
+    </div>
+    <div class="nle-actions">
+      ${examLabel ? `<button type="button" class="primary-button" data-nle-action="start-exam">${escapeHtml(examLabel)}</button>` : ''}
+      <a class="secondary-button nle-text-link" href="${NLE_LINKS.syllabus}" target="_blank" rel="noopener noreferrer">Official syllabus</a>
+    </div>
+    ${recent ? `<ul class="nle-recent">${recent}</ul>` : ''}
+    ${categories ? `<h3 class="nle-subhead">Practice by category</h3><div class="nle-category-grid">${categories}</div>
+    <div class="nle-count-row">
+      <span>Practice length</span>
+      ${[5, 10, 15].map((count) => `
+        <button type="button" class="segmented-button${NleState.practiceCount === count ? ' active' : ''}" data-nle-action="set-count" data-nle-count="${count}">${count}</button>
+      `).join('')}
+    </div>` : '<p>Question practice for this level is still to come. Use the syllabus, then try official past exams on nle.org.</p>'}
+    <div class="nle-syllabus">${syllabus}</div>
+  `;
+}
+
+function passageMarkup(passage) {
+  if (!passage) return '';
+  const glossary = Array.isArray(passage.glossary) && passage.glossary.length
+    ? `<ul class="nle-glossary">${passage.glossary.map(([latin, english]) => `<li><strong>${escapeHtml(latin)}</strong> ${escapeHtml(english)}</li>`).join('')}</ul>`
+    : '';
+  return `
+    <section class="nle-passage-card">
+      <h3>${escapeHtml(passage.title)}</h3>
+      <p class="nle-passage">${escapeHtml(passage.latin)}</p>
+      ${glossary}
+    </section>
+  `;
+}
+
+function renderNleQuestion() {
+  const question = NleState.questions[NleState.index];
+  const level = getNleLevel(NleState.levelId);
+  if (!question || !level) return;
+  const passage = question.passageId ? getNlePassage(question.passageId) : null;
+  const showPassage = NleState.index === 0 || NleState.questions[NleState.index - 1]?.passageId !== question.passageId;
+  const category = getNleCategory(question.category);
+  const selected = NleState.answers[question.id] || '';
+  const isExam = NleState.view === 'exam';
+  const clock = isExam ? `<strong data-nle-clock role="timer">${formatNleClock(NleState.remainingMs)}</strong>` : '';
+  const navigator = isExam ? `
+    <div class="nle-nav" aria-label="Questions">
+      ${NleState.questions.map((item, index) => `
+        <button type="button" class="nle-nav-button${index === NleState.index ? ' current' : ''}${NleState.answers[item.id] ? ' answered' : ''}" data-nle-action="goto" data-nle-index="${index}">${index + 1}</button>
+      `).join('')}
+    </div>
+  ` : '';
+  const choices = question.choices.map((choice) => {
+    const classes = ['option-button'];
+    if (selected === choice) classes.push('selected');
+    if (!isExam && NleState.checked && choice === question.answer) classes.push('correct');
+    if (!isExam && NleState.checked && selected === choice && choice !== question.answer) classes.push('wrong');
+    return `<button type="button" class="${classes.join(' ')}" data-nle-action="choose" data-nle-choice="${escapeHtml(choice)}" ${!isExam && NleState.checked ? 'disabled' : ''}>${escapeHtml(choice)}</button>`;
+  }).join('');
+  const feedback = !isExam && NleState.checked
+    ? `<p class="nle-feedback">${escapeHtml(selected === question.answer ? 'Correct.' : 'Not yet.')} ${escapeHtml(question.explanation)}</p>`
+    : '';
+  const primary = isExam
+    ? `<button type="button" class="primary-button" data-nle-action="submit">${NleState.confirmSubmit ? 'Submit now' : 'Submit exam'}</button>`
+    : `<button type="button" class="primary-button" data-nle-action="${NleState.checked ? 'next' : 'check'}">${NleState.checked ? (NleState.index < NleState.questions.length - 1 ? 'Next' : 'Finish') : 'Check answer'}</button>`;
+  const examNext = isExam && NleState.index < NleState.questions.length - 1
+    ? `<button type="button" class="secondary-button" data-nle-action="goto" data-nle-index="${NleState.index + 1}">Next</button>`
+    : '';
+  elements.nleStage.innerHTML = `
+    <div class="nle-question-top">
+      <span>${escapeHtml(isExam ? (NLE_SECTION_LABELS[question.section] || category?.label || 'Question') : (category?.label || 'Practice'))}</span>
+      <strong>${NleState.index + 1}/${NleState.questions.length}</strong>
+      ${clock}
+    </div>
+    ${navigator}
+    ${showPassage ? passageMarkup(passage) : ''}
+    ${question.context ? `<p class="question-context">${escapeHtml(question.context)}</p>` : ''}
+    <h3 class="nle-prompt">${escapeHtml(question.prompt)}</h3>
+    <div class="options-grid nle-options">${choices}</div>
+    ${feedback}
+    <p class="assessment-message">${escapeHtml(NleState.message)}</p>
+    <div class="nle-actions">
+      ${isExam && NleState.index > 0 ? '<button type="button" class="secondary-button" data-nle-action="prev">Previous</button>' : ''}
+      ${examNext}
+      ${primary}
+    </div>
+  `;
+}
+
+function renderNleResults() {
+  const result = NleState.result;
+  const level = getNleLevel(NleState.levelId);
+  if (!result || !level) return;
+  const categoryRows = Object.entries(result.categories).map(([categoryId, stats]) => {
+    const category = getNleCategory(categoryId);
+    return `<div><span>${escapeHtml(category?.label || categoryId)}</span><strong>${stats.correct}/${stats.total}</strong></div>`;
+  }).join('');
+  const missed = result.missed.map((item) => `
+    <article class="nle-miss">
+      ${item.context ? `<p class="question-context">${escapeHtml(item.context)}</p>` : ''}
+      <h3>${escapeHtml(item.prompt)}</h3>
+      <p>Your answer: ${escapeHtml(item.selected || 'left blank')}</p>
+      <p>Answer: ${escapeHtml(item.answer)}</p>
+      <p>${escapeHtml(item.explanation)}</p>
+    </article>
+  `).join('');
+  elements.nleStage.innerHTML = `
+    <section class="nle-results">
+      <span class="section-kicker">${result.mode === 'exam' ? 'Practice exam' : 'Practice'}</span>
+      <h3>${result.correct}/${result.total}</h3>
+      <p>${result.percent}% correct · ${escapeHtml(level.name)}</p>
+      <div class="assessment-breakdown">${categoryRows}</div>
+      ${result.missed.length ? `<h3 class="nle-subhead">Review missed items</h3>${missed}` : '<p>Every answer was correct.</p>'}
+      <div class="nle-actions">
+        ${result.missed.length ? '<button type="button" class="secondary-button" data-nle-action="review-missed">Practice missed</button>' : ''}
+        <button type="button" class="primary-button" data-nle-action="back-level">Back to level</button>
+      </div>
+    </section>
+  `;
+}
+
+function renderNleDashboard() {
+  if (!elements.nleDashboardSummary || typeof NLE_LEVELS === 'undefined') return;
+  const progress = normalizeNleProgress(AppState.progress.nle);
+  const rows = Object.entries(progress.levels).flatMap(([levelId, entry]) => {
+    const level = getNleLevel(levelId);
+    const latest = [...entry.exams].reverse().find((exam) => exam.mode === 'exam') || entry.exams[entry.exams.length - 1];
+    if (!level || !latest) return [];
+    return [`<p><strong>${escapeHtml(level.name)}</strong> · ${latest.correct}/${latest.total}</p>`];
+  });
+  elements.nleDashboardSummary.innerHTML = rows.length
+    ? rows.join('')
+    : '<p>No NLE practice yet.</p>';
+}
+
+function beginNleQuestions(questions, mode) {
+  const level = getNleLevel(NleState.levelId);
+  if (!level || !questions.length) {
+    NleState.message = 'No original questions are ready for that choice yet.';
+    NleState.view = 'level';
+    renderNle();
+    return;
+  }
+  stopNleTimer();
+  NleState.mode = mode;
+  NleState.view = mode === 'exam' ? 'exam' : 'practice';
+  NleState.questions = questions;
+  NleState.answers = {};
+  NleState.index = 0;
+  NleState.checked = false;
+  NleState.result = null;
+  NleState.confirmSubmit = false;
+  NleState.startedAt = Date.now();
+  NleState.remainingMs = level.timeLimitSeconds * 1000;
+  NleState.message = mode === 'exam' && questions.length < level.questionCount
+    ? `This set has ${questions.length} questions. A full ${level.name} exam has ${level.questionCount}.`
+    : '';
+  renderNle();
+  showPage('nle');
+  if (mode === 'exam') startNleTimer();
+}
+
+function startNlePractice(category) {
+  NleState.category = category;
+  const questions = buildNlePracticeSet(NleState.levelId, category, NleState.practiceCount, Math.random);
+  beginNleQuestions(questions, 'practice');
+}
+
+function startNleExam() {
+  NleState.category = '';
+  const exam = buildNleExam(NleState.levelId, Math.random);
+  beginNleQuestions(exam?.questions || [], 'exam');
+}
+
+function finishNleSession(mode) {
+  if (NleState.view === 'results') return;
+  stopNleTimer();
+  const level = getNleLevel(NleState.levelId);
+  if (!level) return;
+  const score = scoreNleExam(NleState.questions, NleState.answers);
+  const secondsUsed = mode === 'exam'
+    ? Math.max(0, Math.round((level.timeLimitSeconds * 1000 - NleState.remainingMs) / 1000))
+    : Math.max(0, Math.round((Date.now() - NleState.startedAt) / 1000));
+  const record = normalizeNleExamRecord({
+    id: `nle-${mode}-${Date.now()}`,
+    completedAt: new Date().toISOString(),
+    mode,
+    levelId: level.id,
+    category: mode === 'practice' ? NleState.category : '',
+    correct: score.correct,
+    total: score.total,
+    percent: score.percent,
+    secondsUsed,
+    categories: score.categories,
+    missed: score.missed
+  });
+  const progress = normalizeNleProgress(AppState.progress.nle);
+  if (!progress.levels[level.id]) progress.levels[level.id] = { categoryStats: {}, exams: [] };
+  if (mode === 'practice' && NleState.category && score.categories[NleState.category]) {
+    const stats = progress.levels[level.id].categoryStats[NleState.category] || { attempts: 0, correct: 0, sessions: 0 };
+    stats.attempts += score.categories[NleState.category].total;
+    stats.correct += score.categories[NleState.category].correct;
+    stats.sessions += 1;
+    progress.levels[level.id].categoryStats[NleState.category] = stats;
+  }
+  if (record) progress.levels[level.id].exams.push(record);
+  AppState.progress.nle = progress;
+  NleState.result = record;
+  NleState.view = 'results';
+  NleState.confirmSubmit = false;
+  saveState();
+  renderNle();
+}
+
+function handleNleClick(event) {
+  const target = event.target instanceof Element ? event.target : null;
+  const actionButton = target?.closest('[data-nle-action]');
+  if (!actionButton || !elements.nleStage?.contains(actionButton)) return;
+  const action = actionButton.dataset.nleAction;
+  if (action === 'open-level') {
+    NleState.levelId = actionButton.dataset.nleLevel;
+    NleState.view = 'level';
+    NleState.message = '';
+    renderNle();
+    return;
+  }
+  if (action === 'set-count') {
+    NleState.practiceCount = Number(actionButton.dataset.nleCount) || 10;
+    renderNle();
+    return;
+  }
+  if (action === 'start-practice') {
+    startNlePractice(actionButton.dataset.nleCategory);
+    return;
+  }
+  if (action === 'start-exam') {
+    startNleExam();
+    return;
+  }
+  if (action === 'choose' && !(NleState.view === 'practice' && NleState.checked)) {
+    const question = NleState.questions[NleState.index];
+    if (!question) return;
+    NleState.answers[question.id] = actionButton.dataset.nleChoice || '';
+    NleState.confirmSubmit = false;
+    renderNleQuestion();
+    return;
+  }
+  if (action === 'check') {
+    const question = NleState.questions[NleState.index];
+    if (!question) return;
+    if (!NleState.answers[question.id]) {
+      NleState.message = 'Choose an answer first.';
+      renderNleQuestion();
+      return;
+    }
+    NleState.checked = true;
+    NleState.message = '';
+    renderNleQuestion();
+    return;
+  }
+  if (action === 'next') {
+    if (NleState.index < NleState.questions.length - 1) {
+      NleState.index += 1;
+      NleState.checked = false;
+      NleState.message = '';
+      renderNleQuestion();
+      return;
+    }
+    finishNleSession('practice');
+    return;
+  }
+  if (action === 'prev') {
+    NleState.index = Math.max(0, NleState.index - 1);
+    NleState.confirmSubmit = false;
+    renderNleQuestion();
+    return;
+  }
+  if (action === 'goto') {
+    NleState.index = Number(actionButton.dataset.nleIndex) || 0;
+    NleState.confirmSubmit = false;
+    renderNleQuestion();
+    return;
+  }
+  if (action === 'submit') {
+    const unanswered = NleState.questions.filter((question) => !NleState.answers[question.id]).length;
+    if (unanswered && !NleState.confirmSubmit) {
+      NleState.confirmSubmit = true;
+      NleState.message = `${unanswered} question${unanswered === 1 ? ' is' : 's are'} still blank. Submit again to finish.`;
+      renderNleQuestion();
+      return;
+    }
+    finishNleSession('exam');
+    return;
+  }
+  if (action === 'review-missed' && NleState.result?.missed.length) {
+    NleState.category = 'review';
+    beginNleQuestions(NleState.result.missed.map((item) => ({
+      id: item.id,
+      level: NleState.levelId,
+      category: item.category,
+      section: item.section,
+      prompt: item.prompt,
+      choices: item.choices,
+      answer: item.answer,
+      explanation: item.explanation,
+      passageId: item.passageId,
+      context: item.context
+    })), 'practice');
+    return;
+  }
+  if (action === 'back-level') {
+    NleState.view = 'level';
+    NleState.message = '';
+    renderNle();
+  }
+}
+
+function leaveNleView() {
+  if (NleState.view === 'levels') {
+    showHomeOrWelcome();
+    return;
+  }
+  if (NleState.view === 'exam' && NleState.message !== 'Leave the exam? Choose Back again to exit without saving this attempt.') {
+    NleState.message = 'Leave the exam? Choose Back again to exit without saving this attempt.';
+    renderNleQuestion();
+    return;
+  }
+  stopNleTimer();
+  NleState.confirmSubmit = false;
+  NleState.message = '';
+  if (NleState.view === 'level') NleState.view = 'levels';
+  else NleState.view = 'level';
+  renderNle();
+}
+
 function setupEvents() {
   elements.startButton.addEventListener('click', showLessonListOrOnboarding);
   elements.welcomeAccountButton.addEventListener('click', () => {
@@ -4962,6 +5469,11 @@ function setupEvents() {
   elements.studyButton.addEventListener('click', showStudyOrOnboarding);
   elements.dictionaryButton.addEventListener('click', showDictionary);
   elements.assessmentsButton.addEventListener('click', showAssessmentsOrOnboarding);
+  elements.nleButton.addEventListener('click', showNlePrep);
+  elements.nleBackButton.addEventListener('click', leaveNleView);
+  elements.nleStage.addEventListener('click', handleNleClick);
+  elements.homePracticeNle.addEventListener('click', showNlePrep);
+  elements.dashboardNleButton.addEventListener('click', showNlePrep);
   elements.dashboardButton.addEventListener('click', showDashboardOrOnboarding);
   elements.assessmentsBackButton.addEventListener('click', showHomeOrWelcome);
   elements.backToLessonsFromDashboard.addEventListener('click', () => {

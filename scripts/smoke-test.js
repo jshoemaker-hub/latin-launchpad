@@ -16,6 +16,12 @@ const storiesPath = path.join(root, 'latin-stories.js');
 const culturePath = path.join(root, 'latin-culture.js');
 const classroomPath = path.join(root, 'classroom-latin.js');
 const grammarPath = path.join(root, 'grammar-lessons.js');
+const nleQuestionPaths = [
+  path.join(root, 'nle-questions.js'),
+  path.join(root, 'nle-questions-more.js'),
+  path.join(root, 'nle-questions-upper.js'),
+  path.join(root, 'nle-prep.js')
+];
 const trustPageFiles = [
   'about.html',
   'privacy.html',
@@ -36,7 +42,7 @@ function assert(condition, message) {
 }
 
 function checkJavaScriptSyntax() {
-  [appPath, analyticsPath, contactFormPath, wordBanksPath, referenceIndexPath, phrasesPath, storiesPath, culturePath, classroomPath, grammarPath].forEach((filePath) => {
+  [appPath, analyticsPath, contactFormPath, wordBanksPath, referenceIndexPath, phrasesPath, storiesPath, culturePath, classroomPath, grammarPath, ...nleQuestionPaths].forEach((filePath) => {
     new vm.Script(fs.readFileSync(filePath, 'utf8'), { filename: filePath });
   });
 }
@@ -404,6 +410,26 @@ function checkAnalyticsPrivacyContract() {
   );
 }
 
+function checkNlePrepHooks() {
+  [
+    'nlePage',
+    'nleButton',
+    'nleStage',
+    'homePracticeNle',
+    'not affiliated',
+    'nle-questions.js',
+    'nle-prep.js'
+  ].forEach((needle) => {
+    assert(html.includes(needle), `Expected NLE prep hook not found: ${needle}`);
+  });
+  const netlifyConfig = fs.readFileSync(path.join(root, 'netlify.toml'), 'utf8');
+  ['nle-questions.js', 'nle-questions-more.js', 'nle-questions-upper.js', 'nle-prep.js'].forEach((fileName) => {
+    assert(netlifyConfig.includes(fileName), `Netlify build must copy ${fileName}`);
+  });
+  assert(app.includes('function showNlePrep()'), 'The app must open the NLE prep page');
+  assert(app.includes('normalizeNleProgress'), 'NLE progress must be saved with other progress');
+}
+
 checkJavaScriptSyntax();
 checkContentData();
 checkElementIds();
@@ -417,5 +443,6 @@ checkTrustPages();
 checkProductionAuthSafety();
 checkContactFormContract();
 checkAnalyticsPrivacyContract();
+checkNlePrepHooks();
 
 console.log('Smoke tests passed.');
