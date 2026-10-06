@@ -15,7 +15,7 @@
   <meta property="og:url" content="https://latinlaunchpad.com/">
   <meta property="og:title" content="Latin Launchpad — Latin Practice for Years 1–4">
   <meta property="og:description" content="Free Latin lessons, quizzes, and printables for Years 1–4. Vocabulary, grammar, and popular Latin phrases — all in one place.">
-  <meta property="og:image" content="https://latinlaunchpad.com/og-image.png">
+  <meta property="og:image" content="https://latinlaunchpad.com/og-image.jpg">
   <meta property="og:site_name" content="Latin Launchpad">
   <meta property="og:locale" content="en_US">
 
@@ -23,15 +23,43 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Latin Launchpad — Latin Practice for Years 1–4">
   <meta name="twitter:description" content="Free Latin lessons, quizzes, and printables for Years 1–4.">
-  <meta name="twitter:image" content="https://latinlaunchpad.com/og-image.png">
-
-  <!-- Favicon (SVG inline data URI) -->
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232563eb'/%3E%3Ctext x='32' y='46' font-family='Georgia%2C serif' font-size='38' font-weight='bold' fill='white' text-anchor='middle'%3EL%3C/text%3E%3C/svg%3E">
-  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232563eb'/%3E%3Ctext x='32' y='46' font-family='Georgia%2C serif' font-size='38' font-weight='bold' fill='white' text-anchor='middle'%3EL%3C/text%3E%3C/svg%3E">
+  <meta name="twitter:image" content="https://latinlaunchpad.com/og-image.jpg">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/favicon.svg">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "name": "Latin Launchpad",
+        "url": "https://latinlaunchpad.com/",
+        "description": "Free Latin practice for Years 1–4 (grades 3–8), with vocabulary, grammar, phrases, stories, and quizzes."
+      },
+      {
+        "@type": "EducationalOrganization",
+        "name": "Latin Launchpad",
+        "url": "https://latinlaunchpad.com/",
+        "description": "Independent Latin practice for students in grades 3–8."
+      }
+    ]
+  }
+  </script>
 
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <aside id="analyticsConsentBanner" class="analytics-consent" aria-labelledby="analyticsConsentTitle">
+    <div>
+      <strong id="analyticsConsentTitle">Optional analytics</strong>
+      <p>An adult may allow anonymous usage analytics to help improve Latin Launchpad. Advertising features are off. <a href="privacy.html#analytics">Learn more about analytics</a>.</p>
+    </div>
+    <div class="analytics-consent-actions">
+      <button type="button" class="secondary-button" data-analytics-choice="denied">No thanks</button>
+      <button type="button" class="primary-button" data-analytics-choice="granted">Allow analytics</button>
+    </div>
+  </aside>
   <div class="app-shell">
     <header class="app-header">
       <div>
@@ -49,15 +77,18 @@
             <option value="6">Year 4</option>
           </select>
         </label>
-        <button type="button" id="homeButton" class="pill-button">Home</button>
-        <button type="button" id="lessonsButton" class="pill-button">Lessons</button>
-        <button type="button" id="studyButton" class="pill-button">Study</button>
-        <button type="button" id="dictionaryButton" class="pill-button">Dictionary</button>
-        <button type="button" id="assessmentsButton" class="pill-button">Tests &amp; Quizzes</button>
-        <button type="button" id="nleButton" class="pill-button">NLE Prep</button>
-        <button type="button" id="dashboardButton" class="pill-button">Dashboard</button>
-        <button type="button" id="accountButton" class="pill-button">Account</button>
-        <button type="button" id="contactButton" class="pill-button">Contact</button>
+        <button type="button" id="headerMenuButton" class="pill-button header-menu-button" aria-expanded="false" aria-controls="headerNav">Menu</button>
+        <nav id="headerNav" class="header-nav" aria-label="Primary">
+          <button type="button" id="homeButton" class="pill-button">Home</button>
+          <button type="button" id="lessonsButton" class="pill-button">Lessons</button>
+          <button type="button" id="studyButton" class="pill-button">Study</button>
+          <button type="button" id="dictionaryButton" class="pill-button">Dictionary</button>
+          <button type="button" id="assessmentsButton" class="pill-button">Tests &amp; Quizzes</button>
+          <button type="button" id="nleButton" class="pill-button">NLE Prep</button>
+          <button type="button" id="dashboardButton" class="pill-button">Dashboard</button>
+          <button type="button" id="accountButton" class="pill-button">Account</button>
+          <button type="button" id="contactButton" class="pill-button">Contact</button>
+        </nav>
       </div>
     </header>
 
@@ -83,6 +114,7 @@
               <button type="button" data-home-flashcards-grade="5">Year 3</button>
               <button type="button" data-home-flashcards-grade="6">Year 4</button>
             </div>
+            <p class="welcome-flashcard-more"><a href="flashcards.html">More flashcard sessions</a></p>
           </section>
         </div>
       </section>
@@ -125,6 +157,7 @@
                 <button type="button" data-home-flashcards-grade="5">Year 3</button>
                 <button type="button" data-home-flashcards-grade="6">Year 4</button>
               </div>
+              <p class="welcome-flashcard-more"><a href="flashcards.html">More flashcard sessions</a></p>
             </div>
           </section>
 
@@ -556,7 +589,7 @@
 
           <form id="contactForm" class="contact-form" action="/api/contact" method="POST" data-contact-form data-status-target="contactFormMessage">
             <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" hidden />
-            <input type="hidden" name="submittedAt" value="" />
+            <input type="hidden" name="formToken" value="" />
             <p class="collection-notice">If you are under 13, ask a parent, guardian, or teacher to contact us. Do not include sensitive student information. See our <a href="privacy.html">Privacy Policy</a>.</p>
             <div class="contact-form-grid">
               <label>
@@ -583,13 +616,16 @@
           </form>
 
           <div class="contact-alt">
-            <p>You can also reach us by email at <a href="mailto:jshoemakercb@yahoo.com">jshoemakercb@yahoo.com</a>.</p>
+            <p>Send the form and we will reply by email. Do not include passwords or other sensitive student information.</p>
           </div>
         </div>
       </section>
     </main>
     <footer class="site-footer" aria-label="Site information">
-      <p><strong>Latin Launchpad</strong><span>Independent Latin practice for Years 1–4.</span></p>
+      <div>
+        <p><strong>Latin Launchpad</strong><span>Independent Latin practice for Years 1–4.</span></p>
+        <p class="site-summary">Latin Launchpad is free Latin practice for grades 3–8, organized as Years 1–4. Students review vocabulary, noun and verb endings, short grammar checks, common Latin phrases, illustrated stories, and quizzes they can repeat at their own pace.</p>
+      </div>
       <nav aria-label="Trust and support">
         <a href="about.html">About</a>
         <a href="parents-teachers.html">For Parents / Teachers</a>
@@ -597,25 +633,26 @@
         <a href="privacy.html">Privacy</a>
         <a href="terms.html">Terms</a>
         <a href="contact.html">Contact</a>
+        <a href="flashcards.html">Flashcards</a>
+        <button type="button" class="analytics-preferences-button">Analytics choices</button>
       </nav>
     </footer>
   </div>
   <div id="printArea" class="print-area" role="dialog" aria-label="Printable preview" aria-hidden="true"></div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="contact-form.js"></script>
-  <script src="word-banks.js"></script>
-  <script src="reference-vocabulary.js"></script>
-  <script src="latin-phrases.js"></script>
-  <script src="latin-stories.js"></script>
-  <script src="latin-culture.js"></script>
-  <script src="classroom-latin.js"></script>
-  <script src="learning-objectives.js"></script>
-  <script src="grammar-lessons.js"></script>
-  <script src="nle-questions.js"></script>
-  <script src="nle-questions-more.js"></script>
-  <script src="nle-questions-upper.js"></script>
-  <script src="nle-prep.js"></script>
-  <script src="analytics.js"></script>
-  <script src="app.js"></script>
+  <script defer src="contact-form.js"></script>
+  <script defer src="word-banks.js"></script>
+  <script defer src="reference-vocabulary.js"></script>
+  <script defer src="latin-phrases.js"></script>
+  <script defer src="latin-stories.js"></script>
+  <script defer src="latin-culture.js"></script>
+  <script defer src="classroom-latin.js"></script>
+  <script defer src="learning-objectives.js"></script>
+  <script defer src="grammar-lessons.js"></script>
+  <script defer src="nle-questions.js"></script>
+  <script defer src="nle-questions-more.js"></script>
+  <script defer src="nle-questions-upper.js"></script>
+  <script defer src="nle-prep.js"></script>
+  <script defer src="analytics.js"></script>
+  <script defer src="app.js"></script>
 </body>
 </html>

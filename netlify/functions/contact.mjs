@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 
 const CONTACT_EMAIL = process.env.CONTACT_TO_EMAIL || 'jshoemakercb@yahoo.com';
 const FIELD_LIMITS = {
@@ -25,6 +25,37 @@ function isSameOrigin(headers) {
   } catch {
     return false;
   }
+}
+
+function tokenSecret() {
+  return process.env.CONTACT_TOKEN_SECRET || process.env.RESEND_API_KEY || '';
+}
+
+function issueContactToken(issuedAt = Date.now()) {
+  const secret = tokenSecret();
+  if (!secret) return '';
+  const mac = createHmac('sha256', secret).update(String(issuedAt)).digest('base64url');
+  return `${issuedAt}.${mac}`;
+}
+
+function contactTokenStatus(token) {
+  const secret = tokenSecret();
+  if (!secret) return 'unavailable';
+  if (typeof token !== 'string' || !token.includes('.')) return 'invalid';
+  const separator = token.indexOf('.');
+  const issuedAt = Number(token.slice(0, separator));
+  const mac = token.slice(separator + 1);
+  if (!Number.isFinite(issuedAt) || !mac) return 'invalid';
+  const expected = createHmac('sha256', secret).update(String(issuedAt)).digest('base64url');
+  const actualBuffer = Buffer.from(mac);
+  const expectedBuffer = Buffer.from(expected);
+  if (actualBuffer.length !== expectedBuffer.length || !timingSafeEqual(actualBuffer, expectedBuffer)) {
+    return 'invalid';
+  }
+  const age = Date.now() - issuedAt;
+  if (age < 800) return 'early';
+  if (age > 2 * 60 * 60 * 1000) return 'expired';
+  return 'ok';
 }
 
 function readFields(body) {
@@ -67,6 +98,15 @@ async function readBody(request) {
 }
 
 export default async function handler(request) {
+  if (request.method === 'GET') {
+    if (!isSameOrigin(request.headers)) {
+      return json(403, { error: 'This request could not be verified.' });
+    }
+    const token = issueContactToken();
+    if (!token) return json(503, { error: 'Contact email is temporarily unavailable.' });
+    return json(200, { token });
+  }
+
   if (request.method !== 'POST') {
     return json(405, { error: 'Method not allowed.' });
   }
@@ -82,14 +122,24 @@ export default async function handler(request) {
     return json(400, { error: 'Invalid request.' });
   }
 
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return json(400, { error: 'Invalid request.' });
+  }
+
   // Silently accept obvious bot submissions so the trap is not disclosed.
   if (String(body.website || '').trim()) {
     return json(200, { ok: true });
   }
 
-  const submittedAt = Number(body.submittedAt);
-  if (!Number.isFinite(submittedAt) || Date.now() - submittedAt < 800) {
+  const tokenStatus = contactTokenStatus(body.formToken);
+  if (tokenStatus === 'unavailable') {
+    return json(503, { error: 'Contact email is temporarily unavailable.' });
+  }
+  if (tokenStatus === 'early') {
     return json(400, { error: 'Please wait a moment and try again.' });
+  }
+  if (tokenStatus !== 'ok') {
+    return json(400, { error: 'Please refresh the page and try again.' });
   }
 
   const fields = readFields(body);

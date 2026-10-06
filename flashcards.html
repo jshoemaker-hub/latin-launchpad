@@ -3,7 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Latin Flashcards</title>
+  <title>Latin Flashcards | Latin Launchpad</title>
+  <meta name="description" content="Timed Latin flashcard sessions for Years 1–4. Review vocabulary on screen or aloud in 5, 10, or 15 minute sessions.">
+  <link rel="canonical" href="https://latinlaunchpad.com/flashcards.html">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://latinlaunchpad.com/flashcards.html">
+  <meta property="og:title" content="Latin Flashcards | Latin Launchpad">
+  <meta property="og:description" content="Timed Latin flashcard sessions for Years 1–4. Review vocabulary on screen or aloud.">
+  <meta property="og:image" content="https://latinlaunchpad.com/og-image.jpg">
+  <meta property="og:site_name" content="Latin Launchpad">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Latin Flashcards | Latin Launchpad">
+  <meta name="twitter:description" content="Timed Latin flashcard sessions for Years 1–4.">
+  <meta name="twitter:image" content="https://latinlaunchpad.com/og-image.jpg">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -13,8 +27,9 @@
       color: #1a1a1a;
       min-height: 100vh;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       padding: 16px;
     }
 
@@ -45,7 +60,7 @@
     .btn-secondary:hover { background: #d1d5db; }
     .btn-success   { background: #16a34a; color: white; }
     .btn-danger    { background: #dc2626; color: white; }
-    .btn-report    { background: #0891b2; color: white; }
+    .btn-report    { background: #0f766e; color: white; }
     .btn-audio     { background: #7c3aed; color: white; }
     .btn-audio:hover { background: #6d28d9; }
     .btn-sm { padding: 9px 14px; font-size: 0.88rem; border-radius: 9px; }
@@ -59,8 +74,17 @@
     .name-input:focus { border-color: #4f46e5; }
     .name-edit-btn {
       background: none; border: none; cursor: pointer;
-      color: #6b7280; font-size: 0.85rem; padding: 4px 8px; text-decoration: underline;
+      color: #374151; font-size: 0.85rem; min-height: 24px; padding: 6px 8px; text-decoration: underline;
     }
+    .btn-sm { min-height: 36px; }
+    main { width: 100%; max-width: 480px; }
+    .back-link { color: #1d4ed8; font-weight: 700; }
+    .flashcards-footer { width: 100%; max-width: 480px; margin-top: 18px; color: #4b5563; font-size: 0.9rem; }
+    .flashcards-footer a, .flashcards-footer button { color: #1d4ed8; min-height: 24px; }
+    .analytics-consent { width: 100%; max-width: 480px; margin-bottom: 12px; padding: 12px; background: #fff; border: 1px solid #cbd7ee; border-radius: 12px; }
+    .analytics-consent p { margin-top: 4px; }
+    .analytics-consent-actions { display: flex; gap: 8px; margin-top: 8px; }
+    .analytics-preferences-button { background: none; border: 0; color: #1d4ed8; font: inherit; text-decoration: underline; cursor: pointer; min-height: 24px; padding: 4px 0; }
 
     /* Mode grid — now 3 cards */
     .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
@@ -78,23 +102,24 @@
     .mode-btn.audio-card .mode-text { text-align: left; }
     .mode-icon  { font-size: 2rem; display: block; margin-bottom: 6px; }
     .mode-label { font-weight: 700; font-size: 1rem; }
-    .mode-sub   { font-size: 0.8rem; color: #6b7280; margin-top: 2px; }
+    .mode-sub   { font-size: 0.8rem; color: #374151; margin-top: 2px; }
 
     /* Year */
-    .grade-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .grade-row { display: flex; gap: 8px; flex-wrap: wrap; min-height: 58px; }
+    button.grade-chip { font: inherit; }
     .grade-chip {
       background: #f3f4f6; border: 2px solid transparent;
       border-radius: 8px; padding: 8px 14px; font-weight: 600; cursor: pointer; transition: all .15s;
     }
     .grade-chip.selected { border-color: #4f46e5; background: #eef2ff; color: #4f46e5; }
-    .grade-chip small { display: block; margin-top: 2px; color: #6b7280; font-size: 0.72rem; font-weight: 500; }
+    .grade-chip small { display: block; margin-top: 2px; color: #374151; font-size: 0.72rem; font-weight: 500; }
 
     /* Week dots */
-    .week-row { display: flex; gap: 8px; justify-content: center; }
+    .week-row { display: flex; gap: 8px; justify-content: center; min-height: 36px; }
     .day-dot {
       width: 36px; height: 36px; border-radius: 50%; background: #e5e7eb;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.65rem; font-weight: 700; color: #6b7280; transition: background .3s;
+      font-size: 0.65rem; font-weight: 700; color: #374151; transition: background .3s;
     }
     .day-dot.done  { background: #16a34a; color: white; }
     .day-dot.today { outline: 3px solid #4f46e5; outline-offset: 2px; }
@@ -272,6 +297,17 @@
   </style>
 </head>
 <body>
+<aside id="analyticsConsentBanner" class="analytics-consent" aria-labelledby="analyticsConsentTitle">
+  <div>
+    <strong id="analyticsConsentTitle">Optional analytics</strong>
+    <p>An adult may allow anonymous usage analytics to help improve Latin Launchpad. Advertising features are off. <a href="privacy.html#analytics">Learn more about analytics</a>.</p>
+  </div>
+  <div class="analytics-consent-actions">
+    <button type="button" class="secondary-button" data-analytics-choice="denied">No thanks</button>
+    <button type="button" class="primary-button" data-analytics-choice="granted">Allow analytics</button>
+  </div>
+</aside>
+<main>
 
 <!-- ══════════════════════════════════
      HOME
@@ -280,17 +316,18 @@
   <div>
     <h1>🏛️ Latin Flashcards</h1>
     <p class="mt-2">Quick review sessions to keep your vocabulary sharp.</p>
+    <p class="mt-2"><a class="back-link" href="/">Back to Latin Launchpad</a></p>
   </div>
 
   <!-- Name -->
   <div class="card" style="padding:18px 24px">
     <div class="flex items-center justify-between" style="margin-bottom:8px">
       <label style="font-weight:600;font-size:0.9rem">Student name</label>
-      <button class="name-edit-btn" id="nameEditBtn" onclick="toggleNameEdit()" style="display:none">Edit</button>
+      <button class="name-edit-btn" id="nameEditBtn" data-action="toggle-name-edit" style="display:none">Edit</button>
     </div>
     <div id="nameInputRow" class="name-row">
       <input class="name-input" type="text" id="studentName" placeholder="Enter your name…" />
-      <button class="btn btn-primary btn-sm" style="width:auto" onclick="saveName()">Save</button>
+      <button class="btn btn-primary btn-sm" style="width:auto" data-action="save-name">Save</button>
     </div>
     <div id="nameDisplay" style="display:none;font-size:1.1rem;font-weight:600"></div>
   </div>
@@ -309,22 +346,22 @@
   <div>
     <h2 style="margin-bottom:10px">Choose a session</h2>
     <div class="mode-grid">
-      <div class="mode-btn" id="mode5" onclick="selectMode(5,'visual')">
+      <div class="mode-btn" id="mode5" role="button" tabindex="0" data-action="select-mode" data-minutes="5" data-session-type="visual">
         <span class="mode-icon">⚡</span>
         <div class="mode-label">5 min</div>
         <div class="mode-sub">~15 cards · visual</div>
       </div>
-      <div class="mode-btn" id="mode10" onclick="selectMode(10,'visual')">
+      <div class="mode-btn" id="mode10" role="button" tabindex="0" data-action="select-mode" data-minutes="10" data-session-type="visual">
         <span class="mode-icon">🔥</span>
         <div class="mode-label">10 min</div>
         <div class="mode-sub">~30 cards · visual</div>
       </div>
-      <div class="mode-btn" id="mode15" onclick="selectMode(15,'visual')">
+      <div class="mode-btn" id="mode15" role="button" tabindex="0" data-action="select-mode" data-minutes="15" data-session-type="visual">
         <span class="mode-icon">📖</span>
         <div class="mode-label">15 min</div>
         <div class="mode-sub">~45 cards · visual</div>
       </div>
-      <div class="mode-btn audio-card" id="modeAudio" onclick="selectMode(5,'audio')">
+      <div class="mode-btn audio-card" id="modeAudio" role="button" tabindex="0" data-action="select-mode" data-minutes="5" data-session-type="audio">
         <span class="mode-icon" style="margin-bottom:0">🎙️</span>
         <div class="mode-text">
           <div class="mode-label">Audio mode</div>
@@ -360,8 +397,8 @@
   </div>
 
   <div class="action-row">
-    <button class="btn btn-report" onclick="showReport()">📋 Report</button>
-    <button class="btn btn-primary" id="startBtn" onclick="startSession()">Start →</button>
+    <button class="btn btn-report" data-action="show-report">📋 Report</button>
+    <button class="btn btn-primary" id="startBtn" data-action="start-session">Start →</button>
   </div>
 </div>
 
@@ -371,7 +408,7 @@
      ══════════════════════════════════ -->
 <div id="screenCard" class="screen">
   <div class="flex items-center justify-between">
-    <button class="btn btn-secondary btn-sm" style="width:auto;padding:8px 14px" onclick="confirmQuit()">✕ Quit</button>
+    <button class="btn btn-secondary btn-sm" style="width:auto;padding:8px 14px" data-action="confirm-quit">✕ Quit</button>
     <span class="timer-badge" id="timerBadge">⏱ 5:00</span>
     <div class="text-sm" id="cardCounter">1 / 15</div>
   </div>
@@ -386,7 +423,7 @@
     <div class="score-box pct"><div class="label">Score</div><div class="value" id="livePct">—</div></div>
   </div>
 
-  <div class="flashcard-wrap" onclick="flipCard()">
+  <div class="flashcard-wrap" role="button" tabindex="0" data-action="flip-card" aria-label="Flip card">
     <div class="flashcard" id="flashcard">
       <div class="flashcard-face front">
         <div class="card-emoji" id="cardEmoji">🏛️</div>
@@ -403,14 +440,14 @@
 
   <!-- Hear button (visual mode) -->
   <div class="text-center">
-    <button class="hear-btn" style="display:inline-flex" onclick="speakWord()" id="visualHearBtn">
+    <button class="hear-btn" style="display:inline-flex" data-action="speak-word" id="visualHearBtn">
       🔊 Hear Latin word
     </button>
   </div>
 
   <div class="action-row" id="answerRow" style="opacity:0;pointer-events:none;transition:opacity .2s">
-    <button class="btn btn-danger" onclick="markCard(false)">✗ Missed</button>
-    <button class="btn btn-success" onclick="markCard(true)">✓ Got it</button>
+    <button class="btn btn-danger" data-action="mark-card" data-correct="false">✗ Missed</button>
+    <button class="btn btn-success" data-action="mark-card" data-correct="true">✓ Got it</button>
   </div>
 
   <p class="text-sm text-center">Flip the card, then mark how you did.</p>
@@ -422,7 +459,7 @@
      ══════════════════════════════════ -->
 <div id="screenAudio" class="screen">
   <div class="flex items-center justify-between">
-    <button class="btn btn-secondary btn-sm" style="width:auto;padding:8px 14px" onclick="confirmQuit()">✕ Quit</button>
+    <button class="btn btn-secondary btn-sm" style="width:auto;padding:8px 14px" data-action="confirm-quit">✕ Quit</button>
     <span class="timer-badge" id="audioTimerBadge">⏱ 5:00</span>
     <div class="text-sm" id="audioCardCounter">1 / 15</div>
   </div>
@@ -443,7 +480,7 @@
     <div class="audio-emoji" id="audioEmoji">🏛️</div>
     <div class="audio-latin" id="audioLatin">puella</div>
 
-    <button class="hear-btn" onclick="speakAudioWord()" id="hearAgainBtn">
+    <button class="hear-btn" data-action="speak-audio" id="hearAgainBtn">
       🔊 Hear again
     </button>
   </div>
@@ -451,7 +488,7 @@
   <!-- Mic section -->
   <div style="display:flex;flex-direction:column;align-items:center;gap:12px" id="micSection">
     <div class="mic-status" id="micStatus">Tap the mic and say the English meaning</div>
-    <button class="mic-btn" id="micBtn" onclick="toggleMic()">🎤</button>
+    <button class="mic-btn" id="micBtn" data-action="toggle-mic">🎤</button>
     <div class="mic-status" id="micTranscript" style="color:#374151;font-style:italic;min-height:18px"></div>
   </div>
 
@@ -462,12 +499,12 @@
   </div>
 
   <!-- Next button (shown after answer) -->
-  <button class="btn btn-primary" id="audioNextBtn" style="display:none" onclick="audioNextCard()">Next card →</button>
+  <button class="btn btn-primary" id="audioNextBtn" style="display:none" data-action="audio-next">Next card →</button>
 
   <!-- Fallback self-mark (no mic support) -->
   <div id="fallbackRow" class="action-row" style="display:none">
-    <button class="btn btn-danger" onclick="markAudioCard(false, 'self')">✗ Missed</button>
-    <button class="btn btn-success" onclick="markAudioCard(true, 'self')">✓ Got it</button>
+    <button class="btn btn-danger" data-action="mark-audio" data-correct="false">✗ Missed</button>
+    <button class="btn btn-success" data-action="mark-audio" data-correct="true">✓ Got it</button>
   </div>
 </div>
 
@@ -502,9 +539,9 @@
   </div>
 
   <div class="action-row">
-    <button class="btn btn-secondary" onclick="goHome()">Home</button>
-    <button class="btn btn-report" onclick="showReport()">📋 Report</button>
-    <button class="btn btn-primary" onclick="startSession()">Again →</button>
+    <button class="btn btn-secondary" data-action="go-home">Home</button>
+    <button class="btn btn-report" data-action="show-report">📋 Report</button>
+    <button class="btn btn-primary" data-action="start-session">Again →</button>
   </div>
 </div>
 
@@ -514,9 +551,9 @@
      ══════════════════════════════════ -->
 <div id="screenReport" class="screen">
   <div class="no-print flex items-center justify-between">
-    <button class="btn btn-secondary btn-sm" style="width:auto;padding:8px 14px" onclick="goHome()">← Back</button>
+    <button class="btn btn-secondary btn-sm" style="width:auto;padding:8px 14px" data-action="go-home">← Back</button>
     <h2>Weekly Report</h2>
-    <button class="btn btn-primary btn-sm" style="width:auto;padding:8px 14px" onclick="window.print()">🖨️ Print</button>
+    <button class="btn btn-primary btn-sm" style="width:auto;padding:8px 14px" data-action="print-report">🖨️ Print</button>
   </div>
 
   <div class="card" id="reportCard">
@@ -589,697 +626,13 @@
 </div>
 
 
-<script src="word-banks.js"></script>
-<script src="latin-phrases.js"></script>
-<script>
-// ═══════════════════════════════════════
-//  STORAGE
-// ═══════════════════════════════════════
-const STORE = 'latinFlashcards_v2';
-const GRADE_STORE = 'latinLaunchpadGrade';
-const SESSION_LENGTHS = [5, 10, 15];
-const CURRICULUM_LEVELS = [
-  { grade: 3, year: 1, label: 'Year 1', book: 'First Form Latin', lessonGrades: [3] },
-  { grade: 4, year: 2, label: 'Year 2', book: 'Second Form Latin', lessonGrades: [4] },
-  { grade: 5, year: 3, label: 'Year 3', book: 'Third Form Latin', lessonGrades: [5] },
-  { grade: 6, year: 4, label: 'Year 4', book: 'Advanced Latin', lessonGrades: [6, 7, 8] }
-];
-function load() { try { return JSON.parse(localStorage.getItem(STORE)) || {}; } catch { return {}; } }
-function save(d) { localStorage.setItem(STORE, JSON.stringify(d)); }
-function normaliseSessionLength(mode) {
-  const minutes = Number(mode);
-  return SESSION_LENGTHS.includes(minutes) ? minutes : SESSION_LENGTHS[0];
-}
-function normaliseGrade(grade) {
-  const value = Number(grade);
-  const level = CURRICULUM_LEVELS.find(item => item.grade === value || item.lessonGrades.includes(value));
-  return level ? level.grade : 3;
-}
-function getLevel(grade) {
-  return CURRICULUM_LEVELS.find(item => item.grade === normaliseGrade(grade)) || CURRICULUM_LEVELS[0];
-}
-function isYearFourReferenceVocabularyWord(word) {
-  return Array.isArray(word?.sourceImages)
-    && word.sourceImages.some(image => /^IMG_253[1-8]\.jpeg$/.test(image));
-}
-function getVocabularyWordsForLevel(level) {
-  const baseWords = level.lessonGrades.flatMap(g => GRADE_WORDS[g] || []);
-  if (level.year === 4) {
-    return [...baseWords, ...(GRADE_WORDS[5] || []).filter(isYearFourReferenceVocabularyWord)];
-  }
-  return baseWords.filter(word => !isYearFourReferenceVocabularyWord(word));
-}
-function getLevelDeck(grade) {
-  const level = getLevel(grade);
-  const seen = new Set();
-  const words = getVocabularyWordsForLevel(level)
-    .filter(word => {
-      const key = word.latin.toLowerCase().replace(/[^a-z]/g, '');
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    });
-  const minGrade = Math.min(...level.lessonGrades);
-  const maxGrade = Math.max(...level.lessonGrades);
-  const phrases = (typeof LATIN_PHRASES === 'undefined' ? [] : LATIN_PHRASES)
-    .filter(phrase => (phrase.minGrade || 3) <= maxGrade && (phrase.maxGrade || 8) >= minGrade)
-    .map(phrase => ({
-      latin: phrase.latin,
-      english: phrase.meaning,
-      emoji: phrase.icon || 'P',
-      note: phrase.note,
-      isPhrase: true
-    }));
-  return [...words, ...phrases];
-}
-function getData() {
-  const d = load();
-  const sharedGrade = localStorage.getItem(GRADE_STORE);
-  return {
-    name:            d.name            || '',
-    sessions:        d.sessions        || 0,
-    bestPct:         d.bestPct         || null,
-    streak:          d.streak          || 0,
-    lastSessionDate: d.lastSessionDate || null,
-    weekData:        d.weekData        || {},
-    sessionLog:      d.sessionLog      || [],
-    missedWords:     d.missedWords     || {},
-    grade:           normaliseGrade(sharedGrade || d.grade),
-    mode:            normaliseSessionLength(d.mode),
-    sessionType:     d.sessionType     || 'visual',
-  };
-}
+</main>
+<footer class="flashcards-footer">
+  <a href="/">Latin Launchpad</a>
+  <button type="button" class="analytics-preferences-button">Analytics choices</button>
+</footer>
+<script defer src="word-banks.js"></script>
+<script defer src="latin-phrases.js"></script>
+<script defer src="flashcards.js"></script>
+<script defer src="analytics.js"></script>
 
-// ═══════════════════════════════════════
-//  WEEK HELPERS
-// ═══════════════════════════════════════
-function isoWeekKey(date) {
-  const d = new Date(date); d.setHours(0,0,0,0);
-  d.setDate(d.getDate() + 3 - ((d.getDay()+6) % 7));
-  const w1 = new Date(d.getFullYear(), 0, 4);
-  const wn = 1 + Math.round(((d - w1) / 86400000 - 3 + ((w1.getDay()+6)%7)) / 7);
-  return `${d.getFullYear()}-W${String(wn).padStart(2,'0')}`;
-}
-function todayStr() { return new Date().toISOString().slice(0,10); }
-function currentWeekDays(wd) { return wd[isoWeekKey(new Date())] || []; }
-function markTodayDone(wd) {
-  const key = isoWeekKey(new Date());
-  const days = new Set(wd[key] || []);
-  days.add(todayStr());
-  wd[key] = [...days];
-  return wd;
-}
-function buildWeekDotData(wd) {
-  const labels = ['Mo','Tu','We','Th','Fr','Sa','Su'];
-  const today = new Date(); today.setHours(0,0,0,0);
-  const dow = (today.getDay()+6)%7;
-  const start = new Date(today); start.setDate(today.getDate()-dow);
-  const key = isoWeekKey(today);
-  const done = new Set(wd[key]||[]);
-  return labels.map((label,i) => {
-    const d = new Date(start); d.setDate(start.getDate()+i);
-    const s = d.toISOString().slice(0,10);
-    return { label, date: s, done: done.has(s), today: s===todayStr() };
-  });
-}
-function renderWeekDots(id, wd, large) {
-  const dots = buildWeekDotData(wd);
-  document.getElementById(id).innerHTML = dots.map(d =>
-    `<div class="day-dot${d.done?' done':''}${d.today?' today':''}"
-          style="${large?'width:44px;height:44px;font-size:0.75rem':''}">
-       ${d.done?'✓':d.label}
-     </div>`
-  ).join('');
-}
-function weekMsg(wd) {
-  const n = currentWeekDays(wd).length, r = Math.max(0,4-n);
-  if (n>=4) return '🎯 Weekly goal reached!';
-  if (r===1) return 'One more session to hit your goal!';
-  return `${r} more session${r>1?'s':''} to reach your 4-day goal.`;
-}
-function getWeekRange() {
-  const today = new Date(); today.setHours(0,0,0,0);
-  const dow = (today.getDay()+6)%7;
-  const mon = new Date(today); mon.setDate(today.getDate()-dow);
-  const sun = new Date(mon);   sun.setDate(mon.getDate()+6);
-  const fmt = d => d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-  return `${fmt(mon)} – ${fmt(sun)}, ${sun.getFullYear()}`;
-}
-
-// ═══════════════════════════════════════
-//  NAME
-// ═══════════════════════════════════════
-function saveName() {
-  const v = document.getElementById('studentName').value.trim();
-  if (!v) return;
-  const d = getData(); d.name = v; save(d);
-  showNameDisplay(v);
-}
-function showNameDisplay(name) {
-  document.getElementById('nameInputRow').style.display = 'none';
-  document.getElementById('nameDisplay').style.display  = 'block';
-  document.getElementById('nameDisplay').textContent    = name;
-  document.getElementById('nameEditBtn').style.display  = 'inline';
-}
-function toggleNameEdit() {
-  document.getElementById('nameInputRow').style.display = 'flex';
-  document.getElementById('nameDisplay').style.display  = 'none';
-  document.getElementById('nameEditBtn').style.display  = 'none';
-  document.getElementById('studentName').focus();
-}
-
-// ═══════════════════════════════════════
-//  SPEECH SYNTHESIS
-// ═══════════════════════════════════════
-const synth = window.speechSynthesis;
-let latinVoice = null;
-
-function loadVoices() {
-  const voices = synth.getVoices();
-  // Prefer a Latin voice if available, else pick a clear English voice
-  latinVoice = voices.find(v => v.lang === 'la') ||
-               voices.find(v => v.lang.startsWith('en') && v.name.includes('Google')) ||
-               voices.find(v => v.lang.startsWith('en')) ||
-               null;
-}
-if (synth) {
-  loadVoices();
-  synth.onvoiceschanged = loadVoices;
-}
-
-function speak(text, rate = 0.8, onEnd) {
-  if (!synth) { if (onEnd) onEnd(); return; }
-  synth.cancel();
-  const utt = new SpeechSynthesisUtterance(text);
-  if (latinVoice) utt.voice = latinVoice;
-  utt.rate  = rate;
-  utt.pitch = 1;
-  if (onEnd) utt.onend = onEnd;
-  synth.speak(utt);
-}
-
-// ═══════════════════════════════════════
-//  SPEECH RECOGNITION
-// ═══════════════════════════════════════
-const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition || null;
-let recognition  = null;
-let micActive    = false;
-
-function setupRecognition() {
-  if (!SpeechRec) return;
-  recognition = new SpeechRec();
-  recognition.lang = 'en-US';
-  recognition.interimResults = true;
-  recognition.maxAlternatives = 3;
-
-  recognition.onresult = (e) => {
-    const interim = Array.from(e.results).map(r => r[0].transcript).join('');
-    document.getElementById('micTranscript').textContent = '🎤 ' + interim;
-    if (e.results[e.results.length - 1].isFinal) {
-      const finals = Array.from(e.results[e.results.length-1])
-        .map(alt => alt.transcript);
-      stopMic();
-      processAnswer(finals);
-    }
-  };
-  recognition.onerror = (e) => {
-    stopMic();
-    if (e.error === 'no-speech') {
-      document.getElementById('micStatus').textContent = 'No speech detected — try again';
-    } else {
-      document.getElementById('micStatus').textContent = `Error: ${e.error}. Try again.`;
-    }
-  };
-  recognition.onend = () => {
-    if (micActive) stopMic();
-  };
-}
-
-function toggleMic() {
-  if (!recognition) {
-    // Fallback: show self-mark buttons
-    document.getElementById('micSection').style.display = 'none';
-    // reveal the word
-    document.getElementById('audioTag').textContent = '👁️ Answer';
-    document.getElementById('audioEmoji').textContent = state.deck[state.index].emoji || '🏛️';
-    document.getElementById('audioLatin').textContent = state.deck[state.index].english;
-    document.getElementById('fallbackRow').style.display = 'flex';
-    return;
-  }
-  if (micActive) { stopMic(); return; }
-  startMic();
-}
-
-function startMic() {
-  micActive = true;
-  const btn = document.getElementById('micBtn');
-  btn.classList.add('listening');
-  btn.textContent = '⏹';
-  document.getElementById('micStatus').textContent    = 'Listening…';
-  document.getElementById('micTranscript').textContent = '';
-  try { recognition.start(); } catch(e) {}
-}
-
-function stopMic() {
-  micActive = false;
-  const btn = document.getElementById('micBtn');
-  btn.classList.remove('listening');
-  btn.classList.remove('processing');
-  btn.textContent = '🎤';
-  try { recognition.stop(); } catch(e) {}
-}
-
-// ═══════════════════════════════════════
-//  ANSWER MATCHING
-// ═══════════════════════════════════════
-function normalise(s) {
-  return s.toLowerCase().replace(/[^a-z\s]/g, '').trim();
-}
-
-function checkAnswer(spokenAlts, correctEnglish) {
-  const correct = normalise(correctEnglish);
-  // Split by / or , for multiple acceptable answers
-  const alts = correct.split(/[\/,]/).map(s => s.trim()).filter(Boolean);
-
-  for (const spoken of spokenAlts) {
-    const s = normalise(spoken);
-    for (const alt of alts) {
-      const altWords = alt.split(/\s+/).filter(w => w.length > 2);
-      // Exact or near match
-      if (s === alt) return true;
-      if (s.includes(alt) || alt.includes(s)) return true;
-      // Any key word match (words > 3 chars)
-      if (altWords.some(w => w.length > 3 && s.includes(w))) return true;
-    }
-  }
-  return false;
-}
-
-// ═══════════════════════════════════════
-//  APP STATE
-// ═══════════════════════════════════════
-let state = {
-  mode: 5, sessionType: 'visual', grade: 3,
-  deck: [], index: 0, correct: 0, missed: 0,
-  results: [], flipped: false,
-  timerInterval: null, secondsLeft: 0,
-  currentWord: null,
-};
-
-// ═══════════════════════════════════════
-//  HOME
-// ═══════════════════════════════════════
-function renderHome() {
-  const data = getData();
-  state.mode        = data.mode;
-  state.sessionType = data.sessionType;
-  state.grade       = data.grade;
-
-  if (data.name) { document.getElementById('studentName').value = data.name; showNameDisplay(data.name); }
-
-  document.getElementById('gradeRow').innerHTML = CURRICULUM_LEVELS.map(level =>
-    `<div class="grade-chip${level.grade===state.grade?' selected':''}" data-grade="${level.grade}" onclick="selectGrade(${level.grade})">${level.label}<small>${level.book}</small></div>`
-  ).join('');
-
-  updateModeHighlight();
-  renderWeekDots('weekDots', data.weekData);
-  const days = currentWeekDays(data.weekData);
-  document.getElementById('weekGoalLabel').textContent = `${days.length} / 4 days`;
-  document.getElementById('weekMsg').textContent = weekMsg(data.weekData);
-  document.getElementById('homeBest').textContent     = data.bestPct !== null ? data.bestPct+'%' : '—';
-  document.getElementById('homeSessions').textContent = data.sessions;
-  document.getElementById('homeStreak').textContent   = data.streak;
-
-  if (!SpeechRec) document.getElementById('noSpeechBanner').classList.add('show');
-}
-
-function updateModeHighlight() {
-  document.getElementById('mode5').classList.remove('selected-visual','selected-audio');
-  document.getElementById('mode10').classList.remove('selected-visual','selected-audio');
-  document.getElementById('mode15').classList.remove('selected-visual','selected-audio');
-  document.getElementById('modeAudio').classList.remove('selected-visual','selected-audio');
-  if (state.sessionType === 'audio') {
-    document.getElementById('modeAudio').classList.add('selected-audio');
-  } else if (state.mode === 5) {
-    document.getElementById('mode5').classList.add('selected-visual');
-  } else if (state.mode === 10) {
-    document.getElementById('mode10').classList.add('selected-visual');
-  } else {
-    document.getElementById('mode15').classList.add('selected-visual');
-  }
-  const btn = document.getElementById('startBtn');
-  btn.textContent = state.sessionType === 'audio' ? '🎙️ Start audio →' : 'Start →';
-  btn.className = 'btn ' + (state.sessionType === 'audio' ? 'btn-audio' : 'btn-primary');
-}
-
-function selectMode(m, type) {
-  state.mode = normaliseSessionLength(m);
-  state.sessionType = type;
-  updateModeHighlight();
-  const d = getData(); d.mode = state.mode; d.sessionType = type; save(d);
-}
-
-function selectGrade(g) {
-  state.grade = normaliseGrade(g);
-  document.querySelectorAll('.grade-chip').forEach(el =>
-    el.classList.toggle('selected', Number(el.dataset.grade) === state.grade)
-  );
-  localStorage.setItem(GRADE_STORE, String(state.grade));
-  const d = getData(); d.grade = state.grade; save(d);
-}
-
-// ═══════════════════════════════════════
-//  SESSION SETUP
-// ═══════════════════════════════════════
-function shuffle(arr) {
-  const a=[...arr];
-  for (let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
-  return a;
-}
-
-function startSession() {
-  const words = getLevelDeck(state.grade);
-  const count = state.mode * 3;
-  state.deck    = shuffle(words).slice(0, count);
-  state.index   = 0; state.correct = 0; state.missed = 0;
-  state.results = []; state.flipped = false;
-  state.secondsLeft = (state.sessionType === 'audio' ? 10 : state.mode) * 60;
-
-  if (state.sessionType === 'audio') {
-    show('screenAudio');
-    renderAudioCard();
-  } else {
-    show('screenCard');
-    renderCard();
-  }
-  startTimer(state.sessionType === 'audio' ? 'audioTimerBadge' : 'timerBadge');
-}
-
-// ═══════════════════════════════════════
-//  VISUAL CARD
-// ═══════════════════════════════════════
-function renderCard() {
-  const word  = state.deck[state.index];
-  const total = state.deck.length;
-  document.getElementById('cardEmoji').textContent     = word.emoji||'🏛️';
-  document.getElementById('cardEmojiBack').textContent = word.emoji||'🏛️';
-  document.getElementById('cardFront').textContent     = word.latin;
-  document.getElementById('cardBack').textContent      = word.english;
-  document.getElementById('cardCounter').textContent   = `${state.index+1} / ${total}`;
-  document.getElementById('progressFill').style.width  = `${(state.index/total)*100}%`;
-  document.getElementById('flashcard').classList.remove('flipped');
-  state.flipped = false;
-  const row = document.getElementById('answerRow');
-  row.style.opacity = '0'; row.style.pointerEvents = 'none';
-  updateLiveScore('liveCorrect','liveMissed','livePct');
-}
-
-function speakWord() {
-  const word = state.deck[state.index];
-  if (word) speak(word.latin, 0.75);
-}
-
-function flipCard() {
-  if (state.flipped) return;
-  state.flipped = true;
-  document.getElementById('flashcard').classList.add('flipped');
-  const row = document.getElementById('answerRow');
-  row.style.opacity = '1'; row.style.pointerEvents = 'auto';
-}
-
-function markCard(got) {
-  state.results.push({ word: state.deck[state.index], got });
-  if (got) state.correct++; else state.missed++;
-  updateLiveScore('liveCorrect','liveMissed','livePct');
-  state.index++;
-  if (state.index >= state.deck.length) endSession();
-  else renderCard();
-}
-
-// ═══════════════════════════════════════
-//  AUDIO CARD
-// ═══════════════════════════════════════
-function renderAudioCard() {
-  const word  = state.deck[state.index];
-  const total = state.deck.length;
-  state.currentWord = word;
-
-  document.getElementById('audioEmoji').textContent  = word.emoji||'🏛️';
-  document.getElementById('audioLatin').textContent  = word.latin;
-  document.getElementById('audioTag').textContent    = '🔊 Listen & respond';
-  document.getElementById('audioCardCounter').textContent = `${state.index+1} / ${total}`;
-  document.getElementById('audioProgressFill').style.width = `${(state.index/total)*100}%`;
-
-  // Reset UI
-  document.getElementById('audioResult').className  = 'audio-result';
-  document.getElementById('audioNextBtn').style.display  = 'none';
-  document.getElementById('fallbackRow').style.display   = 'none';
-  document.getElementById('micSection').style.display    = 'flex';
-  document.getElementById('micStatus').textContent       = 'Tap the mic and say the English meaning';
-  document.getElementById('micTranscript').textContent   = '';
-
-  const btn = document.getElementById('micBtn');
-  btn.classList.remove('listening','processing');
-  btn.textContent = '🎤';
-
-  updateLiveScore('audioLiveCorrect','audioLiveMissed','audioLivePct');
-
-  // Auto-speak after a brief pause
-  setTimeout(() => speak(word.latin, 0.75), 400);
-}
-
-function speakAudioWord() {
-  speak(state.currentWord.latin, 0.75);
-}
-
-function processAnswer(spokenAlts) {
-  const word = state.currentWord;
-  const got  = checkAnswer(spokenAlts, word.english);
-  const best = spokenAlts[0] || '';
-
-  document.getElementById('micStatus').textContent      = '';
-  document.getElementById('micTranscript').textContent  = '';
-  document.getElementById('micSection').style.display   = 'none';
-
-  markAudioCard(got, best);
-}
-
-function markAudioCard(got, spokenText) {
-  state.results.push({ word: state.currentWord, got });
-  if (got) state.correct++; else state.missed++;
-  updateLiveScore('audioLiveCorrect','audioLiveMissed','audioLivePct');
-
-  const resultEl  = document.getElementById('audioResult');
-  const verdictEl = document.getElementById('resultVerdict');
-  const detailEl  = document.getElementById('resultDetail');
-
-  if (got) {
-    resultEl.className  = 'audio-result show res-correct';
-    verdictEl.className = 'result-verdict v-correct';
-    verdictEl.textContent = '✅ Correct!';
-    detailEl.innerHTML = spokenText !== 'self'
-      ? `You said: <strong>"${spokenText}"</strong><br>Answer: <strong>${state.currentWord.english}</strong>`
-      : `Answer: <strong>${state.currentWord.english}</strong>`;
-  } else {
-    resultEl.className  = 'audio-result show res-wrong';
-    verdictEl.className = 'result-verdict v-wrong';
-    verdictEl.textContent = '❌ Not quite';
-    detailEl.innerHTML = spokenText !== 'self'
-      ? `You said: <strong>"${spokenText}"</strong><br>Correct: <strong>${state.currentWord.english}</strong>`
-      : `Correct answer: <strong>${state.currentWord.english}</strong>`;
-  }
-
-  document.getElementById('audioNextBtn').style.display = 'block';
-}
-
-function audioNextCard() {
-  state.index++;
-  if (state.index >= state.deck.length) endSession();
-  else renderAudioCard();
-}
-
-// ═══════════════════════════════════════
-//  LIVE SCORE
-// ═══════════════════════════════════════
-function updateLiveScore(cId, mId, pId) {
-  document.getElementById(cId).textContent = state.correct;
-  document.getElementById(mId).textContent = state.missed;
-  const t = state.correct + state.missed;
-  document.getElementById(pId).textContent = t > 0 ? Math.round((state.correct/t)*100)+'%' : '—';
-}
-
-// ═══════════════════════════════════════
-//  TIMER
-// ═══════════════════════════════════════
-function startTimer(badgeId) {
-  clearInterval(state.timerInterval);
-  updateTimerDisplay(badgeId);
-  state.timerInterval = setInterval(() => {
-    state.secondsLeft--;
-    updateTimerDisplay(badgeId);
-    if (state.secondsLeft <= 0) endSession();
-  }, 1000);
-}
-function updateTimerDisplay(badgeId) {
-  const id = badgeId || (state.sessionType==='audio' ? 'audioTimerBadge' : 'timerBadge');
-  const m = Math.floor(state.secondsLeft/60), s = state.secondsLeft%60;
-  const el = document.getElementById(id);
-  el.textContent = `⏱ ${m}:${String(s).padStart(2,'0')}`;
-  el.classList.toggle('urgent', state.secondsLeft<=30);
-}
-
-// ═══════════════════════════════════════
-//  END SESSION
-// ═══════════════════════════════════════
-function endSession() {
-  clearInterval(state.timerInterval);
-  synth && synth.cancel();
-  micActive && stopMic();
-
-  const total = state.correct + state.missed;
-  const pct   = total > 0 ? Math.round((state.correct/total)*100) : 0;
-
-  let data = getData();
-  data.sessions++;
-  if (data.bestPct === null || pct > data.bestPct) data.bestPct = pct;
-  data.weekData = markTodayDone(data.weekData);
-
-  const today = todayStr();
-  if (data.lastSessionDate !== today) {
-    const yd = new Date(); yd.setDate(yd.getDate()-1);
-    const yStr = yd.toISOString().slice(0,10);
-    data.streak = (data.lastSessionDate===yStr) ? data.streak+1 : 1;
-    data.lastSessionDate = today;
-  }
-
-  data.sessionLog.push({
-    date: today, mode: state.mode, sessionType: state.sessionType,
-    correct: state.correct, missed: state.missed, pct, cards: total,
-  });
-  if (data.sessionLog.length > 60) data.sessionLog = data.sessionLog.slice(-60);
-
-  state.results.forEach(r => {
-    if (!r.got) {
-      const key = `${r.word.latin}|${r.word.english}`;
-      data.missedWords[key] = (data.missedWords[key]||0) + 1;
-    }
-  });
-  save(data);
-
-  // Summary
-  const days = currentWeekDays(data.weekData);
-  document.getElementById('sumCorrect').textContent = state.correct;
-  document.getElementById('sumMissed').textContent  = state.missed;
-  document.getElementById('sumPct').textContent     = pct + '%';
-
-  const hl=document.getElementById('summaryHeadline'), sub=document.getElementById('summarySubtitle');
-  if (pct>=90){hl.textContent='Outstanding! 🏆';sub.textContent='You\'re crushing it.';}
-  else if(pct>=70){hl.textContent='Great work! 🎉';sub.textContent='Keep that momentum going.';}
-  else if(pct>=50){hl.textContent='Good effort! 💪';sub.textContent='Review the missed words below.';}
-  else{hl.textContent='Keep at it! 📖';sub.textContent='Practice makes progress.';}
-
-  renderWeekDots('sumWeekDots', data.weekData);
-  document.getElementById('sumWeekLabel').textContent = `${days.length} / 4 days`;
-  document.getElementById('sumWeekMsg').textContent   = weekMsg(data.weekData);
-
-  document.getElementById('summaryList').innerHTML = state.results.map(r =>
-    `<div class="summary-item">
-       <span class="si-mark">${r.got?'✅':'❌'}</span>
-       <span class="si-latin">${r.word.latin}</span>
-       <span class="si-english">${r.word.english} ${r.word.emoji||''}</span>
-     </div>`
-  ).join('');
-
-  show('screenSummary');
-}
-
-// ═══════════════════════════════════════
-//  REPORT
-// ═══════════════════════════════════════
-function showReport() {
-  const data     = getData();
-  const weekKey  = isoWeekKey(new Date());
-  const weekDays = data.weekData[weekKey] || [];
-  const weekSet  = new Set(weekDays);
-  const wSess    = data.sessionLog.filter(s => weekSet.has(s.date));
-
-  const totalCards   = wSess.reduce((a,s)=>a+s.cards,0);
-  const totalCorrect = wSess.reduce((a,s)=>a+s.correct,0);
-  const totalMissed  = wSess.reduce((a,s)=>a+s.missed,0);
-  const avgPct  = wSess.length>0 ? Math.round(wSess.reduce((a,s)=>a+s.pct,0)/wSess.length) : null;
-  const bestPct = wSess.length>0 ? Math.max(...wSess.map(s=>s.pct)) : null;
-
-  document.getElementById('reportName').textContent     = data.name || '—';
-  document.getElementById('reportGrade').textContent    = getLevel(data.grade).label;
-  document.getElementById('reportWeek').textContent     = getWeekRange();
-  document.getElementById('reportDayCount').textContent = `${weekDays.length} of 4`;
-  document.getElementById('reportDateRange').textContent= `Week of ${getWeekRange()}`;
-
-  const gb = document.getElementById('goalBanner');
-  if (weekDays.length>=4){ gb.textContent='🎯 Weekly goal met — 4 days practiced!'; gb.className='goal-banner goal-met'; }
-  else { gb.textContent=`📅 ${weekDays.length} of 4 days practiced this week`; gb.className='goal-banner goal-unmet'; }
-
-  renderWeekDots('reportWeekDots', data.weekData, true);
-
-  document.getElementById('rsSessions').textContent  = wSess.length;
-  document.getElementById('rsCards').textContent     = totalCards;
-  document.getElementById('rsAvg').textContent       = avgPct!==null ? avgPct+'%' : '—';
-  document.getElementById('rsBest').textContent      = bestPct!==null ? bestPct+'%' : '—';
-  document.getElementById('rsCorrect').textContent   = totalCorrect;
-  document.getElementById('rsMissedStat').textContent= totalMissed;
-
-  const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-  const tbody = document.getElementById('sessionTableBody');
-  tbody.innerHTML = wSess.length===0
-    ? '<tr><td colspan="4" style="color:#9ca3af;padding:10px 8px">No sessions this week yet.</td></tr>'
-    : wSess.map(s => {
-        const d = new Date(s.date+'T12:00:00');
-        const label = `${dayNames[d.getDay()]} ${d.toLocaleDateString('en-US',{month:'short',day:'numeric'})}`;
-        const chip  = s.pct>=80?'pct-high':s.pct>=60?'pct-mid':'pct-low';
-        const modeLabel = s.sessionType==='audio' ? '🎙️ Audio' : `⚡ ${s.mode} min`;
-        return `<tr><td>${label}</td><td>${modeLabel}</td><td>${s.cards}</td><td><span class="pct-chip ${chip}">${s.pct}%</span></td></tr>`;
-      }).join('');
-
-  const missed = Object.entries(data.missedWords).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  const mList = document.getElementById('missedWordsList');
-  const mNone = document.getElementById('missedNone');
-  if (missed.length===0){ mList.innerHTML=''; mNone.style.display='block'; }
-  else {
-    mNone.style.display='none';
-    mList.innerHTML = missed.map(([key,count]) => {
-      const [latin,english] = key.split('|');
-      return `<div class="missed-item"><span class="mi-latin">${latin}</span><span class="mi-eng">${english}</span><span class="mi-count">missed ${count}×</span></div>`;
-    }).join('');
-  }
-
-  show('screenReport');
-}
-
-// ═══════════════════════════════════════
-//  NAV
-// ═══════════════════════════════════════
-function show(id) {
-  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  window.scrollTo(0,0);
-}
-function goHome() {
-  clearInterval(state.timerInterval);
-  synth && synth.cancel();
-  micActive && stopMic();
-  renderHome();
-  show('screenHome');
-}
-function confirmQuit() {
-  if (confirm('Quit this session? Your progress up to this card will be saved.')) endSession();
-}
-
-// ═══════════════════════════════════════
-//  INIT
-// ═══════════════════════════════════════
-setupRecognition();
-renderHome();
-</script>
-<script src="analytics.js"></script>
-</body>
-</html>
