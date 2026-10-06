@@ -3180,6 +3180,30 @@ function makeSeededRandom(seedText) {
   };
 }
 
+function openPrintPreview(heading, bodyHtml) {
+  if (!elements.printArea) return;
+  elements.printArea.innerHTML = `
+    <div class="print-preview-toolbar">
+      <div>
+        <span class="printables-eyebrow">Printable preview</span>
+        <h2>${escapeHtml(heading)}</h2>
+      </div>
+      <div class="print-preview-actions">
+        <button type="button" class="secondary-button" data-print-action="close">Close</button>
+        <button type="button" class="primary-button" data-print-action="print">Print</button>
+      </div>
+    </div>
+    ${bodyHtml}
+  `;
+  elements.printArea.classList.add('active');
+  elements.printArea.setAttribute('role', 'dialog');
+  elements.printArea.setAttribute('aria-label', 'Printable preview');
+  elements.printArea.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('print-preview-open');
+  elements.printArea.querySelector('[data-print-action="print"]')?.focus();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
 function printLessonResource(type) {
   const lesson = LESSONS.find((item) => item.id === AppState.selectedLesson);
   if (!lesson || !elements.printArea) return;
@@ -3190,27 +3214,7 @@ function printLessonResource(type) {
   };
   const renderPrint = printers[type];
   if (!renderPrint) return;
-
-  elements.printArea.innerHTML = `
-    <div class="print-preview-toolbar">
-      <div>
-        <span class="printables-eyebrow">Printable preview</span>
-        <h2>${escapeHtml(getLessonDisplayTitle(lesson))}</h2>
-      </div>
-      <div class="print-preview-actions">
-        <button type="button" class="secondary-button" data-print-action="close">Close</button>
-        <button type="button" class="primary-button" data-print-action="print">Print</button>
-      </div>
-    </div>
-    ${renderPrint(lesson)}
-  `;
-  elements.printArea.classList.add('active');
-  elements.printArea.setAttribute('role', 'dialog');
-  elements.printArea.setAttribute('aria-label', 'Printable preview');
-  elements.printArea.setAttribute('aria-hidden', 'false');
-  document.body.classList.add('print-preview-open');
-  elements.printArea.querySelector('[data-print-action="print"]')?.focus();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  openPrintPreview(getLessonDisplayTitle(lesson), renderPrint(lesson));
 }
 
 function closePrintPreview() {
@@ -3378,8 +3382,10 @@ function renderWordFindPrint(lesson) {
   `;
 }
 
-function renderPrintHeader(lesson, sheetTitle) {
-  const lessonNumber = getPrintableLessonNumber(lesson);
+function renderPrintHeader(lesson, sheetTitle, lessonLabel) {
+  const lessonNumber = lessonLabel != null && String(lessonLabel) !== ''
+    ? String(lessonLabel)
+    : getPrintableLessonNumber(lesson);
   const lessonValue = lessonNumber
     ? `<span class="write-line-value">${escapeHtml(lessonNumber)}</span>`
     : '';
@@ -4092,6 +4098,73 @@ function createChoices(question, words) {
   }
 
   return choices.sort(() => Math.random() - 0.5);
+}
+
+function printableAnswer(question) {
+  if (typeof question?.answer === 'string' && question.answer) return question.answer;
+  return questionAnswer(question);
+}
+
+function formatPrintableQuestion(question, index) {
+  const choices = Array.isArray(question?.assessmentChoices) && question.assessmentChoices.length
+    ? question.assessmentChoices
+    : (Array.isArray(question?.choices) ? question.choices : []);
+  const answer = printableAnswer(question);
+  const letters = 'ABCDEFGH';
+  const answerIndex = choices.findIndex((choice) => choice === answer);
+  const prompt = question?.prompt
+    ? question.prompt
+    : `What does ${question?.latin || 'this word'} mean?`;
+  const context = typeof question?.context === 'string' && question.context.length <= 280
+    ? question.context
+    : '';
+  return {
+    number: index + 1,
+    prompt,
+    context,
+    choices: choices.map((choice, choiceIndex) => ({
+      letter: letters[choiceIndex] || '?',
+      text: choice
+    })),
+    answerLetter: answerIndex >= 0 ? letters[answerIndex] : '',
+    answerText: answer
+  };
+}
+
+function quizPrintStyle(count) {
+  if (count <= 10) return '12pt';
+  if (count <= 25) return '10.5pt';
+  if (count <= 50) return '9pt';
+  return '8pt';
+}
+
+function renderPrintableAssessment(questions, lesson, sheetTitle, lessonLabel) {
+  const items = questions.map((question, index) => formatPrintableQuestion(question, index));
+  const questionHtml = items.map((item) => `
+    <article class="quiz-question">
+      <h2>${item.number}. ${escapeHtml(item.prompt)}</h2>
+      ${item.context ? `<p class="quiz-context">${escapeHtml(item.context)}</p>` : ''}
+      <ol class="quiz-choices">
+        ${item.choices.map((choice) => `<li><span>${escapeHtml(choice.letter)}.</span> ${escapeHtml(choice.text)}</li>`).join('')}
+      </ol>
+    </article>
+  `).join('');
+  const keyHtml = items.map((item) => `
+    <li><span>${item.number}. ${escapeHtml(item.answerLetter || '—')}</span> ${escapeHtml(item.answerText || '')}</li>
+  `).join('');
+  return `
+    <article class="print-sheet quiz-sheet" style="--quiz-size:${quizPrintStyle(items.length)}">
+      ${renderPrintHeader(lesson, sheetTitle, lessonLabel)}
+      <div class="print-body quiz-questions">${questionHtml}</div>
+    </article>
+    <article class="print-sheet quiz-sheet quiz-answer-key" style="--quiz-size:${quizPrintStyle(items.length)}">
+      ${renderPrintHeader(lesson, `${sheetTitle} answer key`, lessonLabel)}
+      <div class="print-body">
+        <p class="quiz-key-note">Answer key. Keep this page separate from the student sheet.</p>
+        <ol class="quiz-key-list">${keyHtml}</ol>
+      </div>
+    </article>
+  `;
 }
 
 function selectOption(value) {
@@ -4970,9 +5043,12 @@ function renderAssessments() {
       : renderTestBuilder(testBank)}
     </div>
     <p class="assessment-message" aria-live="polite">${escapeHtml(AssessmentState.message)}</p>
-    <button type="button" class="primary-button assessment-start-button" data-assessment-action="start">
-      Start ${AssessmentState.mode === 'quiz' ? 'quiz' : 'test'}
-    </button>
+    <div class="assessment-runner-actions">
+      <button type="button" class="secondary-button" data-assessment-action="print">Print</button>
+      <button type="button" class="primary-button assessment-start-button" data-assessment-action="start">
+        Start ${AssessmentState.mode === 'quiz' ? 'quiz' : 'test'}
+      </button>
+    </div>
   `;
   renderAssessmentRunner();
 }
@@ -5133,6 +5209,55 @@ function renderAssessmentBreakdown() {
       </div>
     `).join('');
   return rows ? `<div class="assessment-breakdown">${rows}</div>` : '';
+}
+
+function printAssessment() {
+  ensureAssessmentDefaults();
+  const isQuiz = AssessmentState.mode === 'quiz';
+  const requestedCount = isQuiz ? AssessmentState.quizQuestionCount : AssessmentState.testQuestionCount;
+  const lessons = isQuiz ? getSelectedQuizLessons() : getTestLessons();
+  const bank = getAssessmentBank(lessons);
+  if (!bank.length) {
+    AssessmentState.message = isQuiz
+      ? 'Select at least one chapter with questions.'
+      : 'No questions are available for this level.';
+    renderAssessments();
+    return;
+  }
+  const questions = getBalancedQuestionSet(bank, requestedCount).map((question) => ({
+    ...question,
+    assessmentChoices: createChoices(question, bank)
+  }));
+  const grade = isQuiz ? AppState.grade : AssessmentState.testGrade;
+  const sheetTitle = isQuiz ? 'Quiz' : 'Test';
+  const lessonNumbers = lessons.map((lesson) => getPrintableLessonNumber(lesson)).filter(Boolean);
+  const lessonLabel = lessonNumbers.length ? lessonNumbers.join(', ') : sheetTitle;
+  const lesson = {
+    grade,
+    kind: 'vocabulary',
+    title: `${getCurriculumLevelTitle(grade)} ${sheetTitle}`
+  };
+  openPrintPreview(`${getCurriculumLevelTitle(grade)} ${sheetTitle}`, renderPrintableAssessment(questions, lesson, sheetTitle, lessonLabel));
+}
+
+function printNleExam() {
+  const level = getNleLevel(NleState.levelId);
+  if (!level) return;
+  const current = (NleState.view === 'exam' || NleState.view === 'practice') && NleState.questions.length
+    ? NleState.questions
+    : (buildNleExam(level.id, Math.random)?.questions || []);
+  if (!current.length) {
+    NleState.message = 'No original questions are ready to print for that exam yet.';
+    renderNle();
+    return;
+  }
+  const year = CURRICULUM_LEVELS.find((item) => item.year === level.primaryYear);
+  const lesson = {
+    grade: year ? year.grade : 6,
+    kind: 'vocabulary',
+    title: level.name
+  };
+  openPrintPreview(level.name, renderPrintableAssessment(current, lesson, 'Practice exam', level.name));
 }
 
 function startAssessment() {
@@ -5423,6 +5548,7 @@ function renderNleLevel() {
     </div>
     <div class="nle-actions">
       ${examLabel ? `<button type="button" class="primary-button" data-nle-action="start-exam">${escapeHtml(examLabel)}</button>` : ''}
+      ${examLabel ? '<button type="button" class="secondary-button" data-nle-action="print-exam">Print exam</button>' : ''}
       ${examLabel ? '<button type="button" class="secondary-button" data-copy-assignment="exam">Copy exam link</button>' : ''}
       <a class="secondary-button nle-text-link" href="${NLE_LINKS.syllabus}" target="_blank" rel="noopener noreferrer">Official syllabus</a>
     </div>
@@ -5500,6 +5626,7 @@ function renderNleQuestion() {
     ${feedback}
     <p class="assessment-message">${escapeHtml(NleState.message)}</p>
     <div class="nle-actions">
+      <button type="button" class="secondary-button" data-nle-action="print-exam">Print</button>
       ${isExam && NleState.index > 0 ? '<button type="button" class="secondary-button" data-nle-action="prev">Previous</button>' : ''}
       ${examNext}
       ${primary}
@@ -5669,6 +5796,10 @@ function handleNleClick(event) {
   if (action === 'start-exam') {
     assignmentFocus = null;
     startNleExam();
+    return;
+  }
+  if (action === 'print-exam') {
+    printNleExam();
     return;
   }
   if (action === 'choose' && !(NleState.view === 'practice' && NleState.checked)) {
@@ -6150,6 +6281,7 @@ function setupEvents() {
       resetAssessment();
     }
     if (actionButton.dataset.assessmentAction === 'start') startAssessment();
+    if (actionButton.dataset.assessmentAction === 'print') printAssessment();
   });
   elements.assessmentRunner?.addEventListener('click', (event) => {
     const target = event.target instanceof Element ? event.target : null;
