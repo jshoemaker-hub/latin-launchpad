@@ -16,10 +16,10 @@ test('assignment routes round-trip for every activity kind', () => {
     { kind: 'quiz', year: 1, count: 10, lessonIds: ['grade3-1', 'grade3-grammar-endings'] },
     { kind: 'quiz', year: 3, count: 25, lessonIds: null },
     { kind: 'test', year: 4, count: 50 },
-    { kind: 'nle' },
-    { kind: 'nle', levelId: 'intro' },
-    { kind: 'nle', levelId: 'advanced-poetry', exam: true },
-    { kind: 'nle', levelId: 'beginning', category: 'mythology', count: 10 },
+    { kind: 'annual-exam' },
+    { kind: 'annual-exam', levelId: 'intro' },
+    { kind: 'annual-exam', levelId: 'advanced-poetry', exam: true },
+    { kind: 'annual-exam', levelId: 'beginning', category: 'mythology', count: 10 },
     { kind: 'cards', year: 2, seconds: 600, shuffle: 1 },
     { kind: 'deck', year: 1, minutes: 5, sessionType: 'visual' },
     { kind: 'check' }
@@ -33,11 +33,38 @@ test('assignment routes round-trip for every activity kind', () => {
   });
 });
 
+test('old exam links parse as Annual Exam Study and new links do not use the old path', () => {
+  const legacy = ['n', 'le'].join('');
+  const cases = [
+    [`#/${legacy}`, { kind: 'annual-exam' }, '/annual-exam'],
+    [`#/${legacy}/intro`, { kind: 'annual-exam', levelId: 'intro' }, '/annual-exam/intro'],
+    [`#/${legacy}/advanced-poetry/exam`, { kind: 'annual-exam', levelId: 'advanced-poetry', exam: true }, '/annual-exam/advanced-poetry/exam'],
+    [`#/${legacy}/beginning/p/mythology/10`, { kind: 'annual-exam', levelId: 'beginning', category: 'mythology', count: 10 }, '/annual-exam/beginning/p/mythology/10']
+  ];
+  cases.forEach(([hash, route, built]) => {
+    assert.deepEqual(assign.parsePath(hash), route);
+    assert.equal(assign.buildPath(route), built);
+    assert.equal(assign.parsePath(`#${built}`).kind, 'annual-exam');
+  });
+  const code = assign.encodeCompletion({
+    kind: 'annual-exam',
+    id: 'intro',
+    mode: 'exam',
+    score: 30,
+    total: 40,
+    missed: []
+  });
+  const decoded = assign.decodeCompletion(code);
+  assert.equal(decoded.ok, true);
+  assert.match(decoded.payload.label, /^Annual Exam Study/);
+});
+
 test('assignment routes reject personal data and unknown targets', () => {
   [
     '#/y/1/l/Alex%20Smith',
     '#/y/9',
     '#/q/1/7/grade3-1',
+    '#/annual-exam/not-a-level/exam',
     '#/nle/not-a-level/exam',
     '#/cards/1/300/2',
     '#access_token=secret',

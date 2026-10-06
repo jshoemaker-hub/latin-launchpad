@@ -10,6 +10,7 @@ A simple student-first Latin learning scaffold for grades 3–8.
 - `index.html` — landing page, optional account access, year selection, lesson list, study tools, and dashboard
 - `styles.css` — playful interface styles
 - `app.js` — interactive lesson logic with pronunciation, review queues, guest progress, email profiles, and badges in localStorage
+- `annual-exam.js` — Annual Exam Study levels (Introduction, Beginning, Intermediate, Advanced Prose, Advanced Poetry, and the reading levels), with original questions in the `annual-exam-questions*.js` files
 - `grammar-lessons.js` — reference-backed grammar quiz packs for grades 3–8
 - `latin-stories.js` — Discover Latin story pairings, classroom cues, and illustration briefs
 - `assets/seek-find/` — original Roman story artwork for the interactive picture-search activities

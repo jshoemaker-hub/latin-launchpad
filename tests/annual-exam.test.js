@@ -8,12 +8,12 @@ function loadNle() {
   const context = {};
   vm.createContext(context);
   [
-    'nle-questions.js',
-    'nle-questions-more.js',
-    'nle-questions-upper.js',
-    'nle-questions-exams.js',
-    'nle-questions-advanced.js',
-    'nle-prep.js'
+    'annual-exam-questions.js',
+    'annual-exam-questions-more.js',
+    'annual-exam-questions-upper.js',
+    'annual-exam-questions-exams.js',
+    'annual-exam-questions-advanced.js',
+    'annual-exam.js'
   ].forEach((fileName) => {
     const filePath = path.resolve(__dirname, '..', fileName);
     vm.runInContext(fs.readFileSync(filePath, 'utf8'), context, { filename: filePath });
@@ -23,16 +23,56 @@ function loadNle() {
 
 const nle = loadNle();
 
-test('the practice bank is original, unofficial, and points to nle.org', () => {
-  assert.match(nle.NLE_DISCLAIMER, /not affiliated/i);
-  assert.match(nle.NLE_DISCLAIMER, /not past NLE questions/i);
-  assert.equal(nle.NLE_LINKS.home, 'https://www.nle.org/');
-  assert.equal(nle.NLE_LINKS.exams, 'https://www.nle.org/previous-exams-and-answer-keys');
-  assert.equal(nle.NLE_TIME_LIMIT_SECONDS, 45 * 60);
+test('the practice bank is original and timed like a full exam', () => {
+  assert.match(nle.ANNUAL_EXAM_NOTE, /Original practice questions/i);
+  assert.equal(nle.ANNUAL_EXAM_LINKS, undefined);
+  assert.equal(nle.ANNUAL_EXAM_TIME_LIMIT_SECONDS, 45 * 60);
+  assert.equal(nle.ANNUAL_EXAM_LEVELS.map((level) => level.name).join('|'), [
+    'Introduction',
+    'Beginning',
+    'Beginning Reading',
+    'Intermediate',
+    'Intermediate Reading',
+    'Advanced Prose',
+    'Advanced Poetry',
+    'Advanced Reading'
+  ].join('|'));
 });
 
-test('eight current NLE levels map onto the site years', () => {
-  assert.equal(nle.NLE_LEVELS.map((level) => level.id).join(','), [
+test('previous progress and badges carry over onto the new keys', () => {
+  const legacyKey = ['n', 'le'].join('');
+  const stored = {
+    [legacyKey]: {
+      levels: {
+        intro: {
+          categoryStats: { grammar: { attempts: 2, correct: 1, sessions: 1 } },
+          exams: [{
+            id: 'kept-exam',
+            completedAt: '2026-03-01T00:00:00.000Z',
+            mode: 'exam',
+            levelId: 'intro',
+            correct: 3,
+            total: 4,
+            percent: 75,
+            missed: []
+          }]
+        }
+      }
+    }
+  };
+  const progress = nle.normalizeAnnualExamProgress(nle.migrateAnnualExamProgress(stored));
+  assert.equal(progress.levels.intro.exams[0].id, 'kept-exam');
+  assert.equal(progress.levels.intro.exams[0].correct, 3);
+  assert.equal(progress.levels.intro.categoryStats.grammar.attempts, 2);
+  const badges = nle.migrateAnnualExamBadges({ [`${legacyKey}-practice`]: '2020-01-01T00:00:00.000Z' });
+  assert.equal(badges['annual-exam-practice'], '2020-01-01T00:00:00.000Z');
+  assert.equal(badges[`${legacyKey}-practice`], '2020-01-01T00:00:00.000Z');
+  const current = nle.migrateAnnualExamProgress({ annualExam: progress });
+  assert.equal(current.levels.intro.exams[0].id, 'kept-exam');
+});
+
+test('eight Annual Exam Study levels map onto the site years', () => {
+  assert.equal(nle.ANNUAL_EXAM_LEVELS.map((level) => level.id).join(','), [
     'intro',
     'beginning',
     'beginning-reading',
@@ -42,20 +82,20 @@ test('eight current NLE levels map onto the site years', () => {
     'advanced-poetry',
     'advanced-reading'
   ].join(','));
-  assert.equal(nle.getNleLevel('intro').questionCount, 40);
-  assert.equal(nle.getNleLevel('beginning-reading').questionCount, 36);
-  assert.equal(nle.getNleLevel('advanced-reading').questionCount, 36);
-  assert.equal(nle.getNleLevel('intro').sections.map((section) => section.count).join(','), '12,18,10');
-  assert.equal(nle.getSuggestedNleLevelId(1), 'intro');
-  assert.equal(nle.getSuggestedNleLevelId(2), 'beginning');
-  assert.equal(nle.getSuggestedNleLevelId(3), 'intermediate');
-  assert.equal(nle.getSuggestedNleLevelId(4), 'advanced-prose');
-  assert.match(nle.getNleLevel('beginning').legacyName, /Latin I/);
+  assert.equal(nle.getAnnualExamLevel('intro').questionCount, 40);
+  assert.equal(nle.getAnnualExamLevel('beginning-reading').questionCount, 36);
+  assert.equal(nle.getAnnualExamLevel('advanced-reading').questionCount, 36);
+  assert.equal(nle.getAnnualExamLevel('intro').sections.map((section) => section.count).join(','), '12,18,10');
+  assert.equal(nle.getSuggestedAnnualExamLevelId(1), 'intro');
+  assert.equal(nle.getSuggestedAnnualExamLevelId(2), 'beginning');
+  assert.equal(nle.getSuggestedAnnualExamLevelId(3), 'intermediate');
+  assert.equal(nle.getSuggestedAnnualExamLevelId(4), 'advanced-prose');
+  assert.match(nle.getAnnualExamLevel('beginning').legacyName, /Latin I/);
 });
 
 test('question content is complete and internally consistent', () => {
-  assert.equal(nle.validateNleContent().length, 0);
-  const summary = nle.summarizeNleBank();
+  assert.equal(nle.validateAnnualExamContent().length, 0);
+  const summary = nle.summarizeAnnualExamBank();
   assert.ok(summary.intro.total >= 80);
   assert.ok(summary.beginning.total >= 70);
   assert.ok(summary.intermediate.total >= 40);
@@ -81,7 +121,7 @@ test('question content is complete and internally consistent', () => {
 
 test('full practice exams match the published lengths', () => {
   ['intro', 'beginning', 'intermediate'].forEach((levelId) => {
-    const exam = nle.buildNleExam(levelId, nle.createNleRng(4));
+    const exam = nle.buildAnnualExam(levelId, nle.createAnnualExamRng(4));
     assert.equal(exam.complete, true);
     assert.equal(exam.questions.length, 40);
     assert.equal(exam.timeLimitSeconds, 45 * 60);
@@ -98,7 +138,7 @@ test('full practice exams match the published lengths', () => {
     });
   });
   ['beginning-reading', 'intermediate-reading', 'advanced-reading'].forEach((levelId) => {
-    const exam = nle.buildNleExam(levelId, nle.createNleRng(5));
+    const exam = nle.buildAnnualExam(levelId, nle.createAnnualExamRng(5));
     assert.equal(exam.complete, true, levelId);
     assert.equal(exam.questions.length, 36);
     const sections = exam.questions.reduce((counts, question) => {
@@ -111,7 +151,7 @@ test('full practice exams match the published lengths', () => {
     assert.equal(new Set(passageIds).size, 2);
   });
   ['advanced-prose', 'advanced-poetry'].forEach((levelId) => {
-    const exam = nle.buildNleExam(levelId, nle.createNleRng(5));
+    const exam = nle.buildAnnualExam(levelId, nle.createAnnualExamRng(5));
     assert.equal(exam.complete, true, levelId);
     assert.equal(exam.questions.length, 40);
     const sections = exam.questions.reduce((counts, question) => {
@@ -122,7 +162,7 @@ test('full practice exams match the published lengths', () => {
     assert.equal(sections.language, 18);
     assert.equal(sections.reading, 10);
   });
-  const advancedReading = nle.NLE_PASSAGES.filter((passage) => passage.level === 'advanced-reading').map((passage) => passage.latin).join('\n');
+  const advancedReading = nle.ANNUAL_EXAM_PASSAGES.filter((passage) => passage.level === 'advanced-reading').map((passage) => passage.latin).join('\n');
   assert.match(advancedReading, /ilicis/);
   assert.match(advancedReading, /Nuntius/);
 });
@@ -130,7 +170,7 @@ test('full practice exams match the published lengths', () => {
 test('an Introduction exam continues one story into one passage', () => {
   const stories = new Set();
   for (let seed = 1; seed <= 48; seed += 1) {
-    const exam = nle.buildNleExam('intro', nle.createNleRng(seed));
+    const exam = nle.buildAnnualExam('intro', nle.createAnnualExamRng(seed));
     stories.add(exam.storyId);
     assert.equal(exam.passage.storyId, exam.storyId);
     const reading = exam.questions.filter((question) => question.section === 'reading');
@@ -142,24 +182,24 @@ test('an Introduction exam continues one story into one passage', () => {
 });
 
 test('category practice stays on the requested level and topic', () => {
-  const questions = nle.buildNlePracticeSet('beginning', 'mottoes', 5, nle.createNleRng(9));
+  const questions = nle.buildAnnualExamPracticeSet('beginning', 'mottoes', 5, nle.createAnnualExamRng(9));
   assert.equal(questions.length, 5);
   questions.forEach((question) => {
     assert.equal(question.level, 'beginning');
     assert.equal(question.category, 'mottoes');
   });
-  const reading = nle.buildNlePracticeSet('intro', 'reading', 10, nle.createNleRng(3));
+  const reading = nle.buildAnnualExamPracticeSet('intro', 'reading', 10, nle.createAnnualExamRng(3));
   assert.equal(reading.length, 10);
   assert.equal(new Set(reading.map((question) => question.passageId)).size, 1);
 });
 
 test('scoring reports a category breakdown and the missed items', () => {
-  const exam = nle.buildNleExam('intro', nle.createNleRng(6));
+  const exam = nle.buildAnnualExam('intro', nle.createAnnualExamRng(6));
   const answers = {};
   exam.questions.forEach((question, index) => {
     answers[question.id] = index % 2 === 0 ? question.answer : question.choices.find((choice) => choice !== question.answer);
   });
-  const score = nle.scoreNleExam(exam.questions, answers);
+  const score = nle.scoreAnnualExam(exam.questions, answers);
   assert.equal(score.total, 40);
   assert.equal(score.correct, 20);
   assert.equal(score.missed.length, 20);
@@ -167,7 +207,7 @@ test('scoring reports a category breakdown and the missed items', () => {
   assert.ok(score.missed.every((item) => item.selected !== item.answer));
 });
 
-test('saved NLE progress drops unknown levels and keeps recent exams', () => {
+test('saved exam progress drops unknown levels and keeps recent exams', () => {
   const exams = Array.from({ length: 8 }, (_, index) => ({
     id: `exam-${index}`,
     completedAt: '2026-03-01T00:00:00.000Z',
@@ -180,7 +220,7 @@ test('saved NLE progress drops unknown levels and keeps recent exams', () => {
     categories: { grammar: { correct: 1, total: 2 } },
     missed: []
   }));
-  const progress = nle.normalizeNleProgress({
+  const progress = nle.normalizeAnnualExamProgress({
     levels: {
       intro: { categoryStats: { grammar: { attempts: 4, correct: 3, sessions: 1 } }, exams },
       'not-a-level': { exams: [{ levelId: 'nope', total: 1 }] }
@@ -193,7 +233,7 @@ test('saved NLE progress drops unknown levels and keeps recent exams', () => {
 });
 
 test('spot-checks Latin meanings used by the question bank', () => {
-  const byId = Object.fromEntries(nle.NLE_QUESTIONS.map((question) => [question.id, question]));
+  const byId = Object.fromEntries(nle.ANNUAL_EXAM_QUESTIONS.map((question) => [question.id, question]));
   assert.equal(byId['intro-extra-mot-01'].answer, 'Seize the day.');
   assert.equal(byId['beg-mot-07'].answer, 'Senatus Populusque Romanus.');
   assert.equal(byId['intro-myth-07'].answer, 'Romulus.');

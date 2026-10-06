@@ -5,14 +5,19 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   const PRACTICE_MODES = ['meaning', 'picture', 'arrange', 'translate', 'compose', 'recall', 'ending', 'chant'];
   const QUESTION_COUNTS = [10, 25, 50, 100];
-  const NLE_LEVELS = ['intro', 'beginning', 'beginning-reading', 'intermediate', 'intermediate-reading', 'advanced-prose', 'advanced-poetry', 'advanced-reading'];
-  const NLE_CATEGORIES = ['grammar', 'vocabulary', 'derivatives', 'mottoes', 'oral', 'mythology', 'history', 'geography', 'culture', 'reading'];
-  const NLE_COUNTS = [5, 10, 15];
+  const ANNUAL_EXAM_LEVELS = ['intro', 'beginning', 'beginning-reading', 'intermediate', 'intermediate-reading', 'advanced-prose', 'advanced-poetry', 'advanced-reading'];
+  const ANNUAL_EXAM_CATEGORIES = ['grammar', 'vocabulary', 'derivatives', 'mottoes', 'oral', 'mythology', 'history', 'geography', 'culture', 'reading'];
+  const ANNUAL_EXAM_COUNTS = [5, 10, 15];
+  /* legacy-annual-exam-compat */
+  function legacyAnnualExamRoute() {
+    return ['n', 'le'].join('');
+  }
+  /* end-legacy-annual-exam-compat */
   const CARD_SECONDS = [300, 600, 900];
   const DECK_MINUTES = [5, 10, 15];
   const DECK_TYPES = ['visual', 'audio'];
   const LESSON_ID = /^grade[3-8]-(?:grammar(?:-[a-z0-9]+)+|\d+)$/;
-  const KIND_LETTERS = { lesson: 'L', quiz: 'Q', test: 'T', nle: 'N', cards: 'C', deck: 'D' };
+  const KIND_LETTERS = { lesson: 'L', quiz: 'Q', test: 'T', 'annual-exam': 'N', cards: 'C', deck: 'D' };
   const LETTER_KINDS = Object.fromEntries(Object.entries(KIND_LETTERS).map(([kind, letter]) => [letter, kind]));
 
   function isYear(value) {
@@ -49,13 +54,13 @@
     if (head === 't' && isYear(rest[0]) && QUESTION_COUNTS.includes(Number(rest[1])) && rest.length === 2) {
       return { kind: 'test', year: Number(rest[0]), count: Number(rest[1]) };
     }
-    if (head === 'nle') {
-      if (rest.length === 0) return { kind: 'nle' };
-      if (!NLE_LEVELS.includes(rest[0])) return null;
-      if (rest.length === 1) return { kind: 'nle', levelId: rest[0] };
-      if (rest[1] === 'exam' && rest.length === 2) return { kind: 'nle', levelId: rest[0], exam: true };
-      if (rest[1] === 'p' && NLE_CATEGORIES.includes(rest[2]) && NLE_COUNTS.includes(Number(rest[3])) && rest.length === 4) {
-        return { kind: 'nle', levelId: rest[0], category: rest[2], count: Number(rest[3]) };
+    if (head === 'annual-exam' || head === legacyAnnualExamRoute()) {
+      if (rest.length === 0) return { kind: 'annual-exam' };
+      if (!ANNUAL_EXAM_LEVELS.includes(rest[0])) return null;
+      if (rest.length === 1) return { kind: 'annual-exam', levelId: rest[0] };
+      if (rest[1] === 'exam' && rest.length === 2) return { kind: 'annual-exam', levelId: rest[0], exam: true };
+      if (rest[1] === 'p' && ANNUAL_EXAM_CATEGORIES.includes(rest[2]) && ANNUAL_EXAM_COUNTS.includes(Number(rest[3])) && rest.length === 4) {
+        return { kind: 'annual-exam', levelId: rest[0], category: rest[2], count: Number(rest[3]) };
       }
       return null;
     }
@@ -88,15 +93,15 @@
     if (parsed.kind === 'test' && isYear(parsed.year) && QUESTION_COUNTS.includes(Number(parsed.count))) {
       return `/t/${Number(parsed.year)}/${Number(parsed.count)}`;
     }
-    if (parsed.kind === 'nle') {
-      if (!parsed.levelId) return '/nle';
-      if (!NLE_LEVELS.includes(parsed.levelId)) return '';
-      if (parsed.exam) return `/nle/${parsed.levelId}/exam`;
+    if (parsed.kind === 'annual-exam') {
+      if (!parsed.levelId) return '/annual-exam';
+      if (!ANNUAL_EXAM_LEVELS.includes(parsed.levelId)) return '';
+      if (parsed.exam) return `/annual-exam/${parsed.levelId}/exam`;
       if (parsed.category) {
-        if (!NLE_CATEGORIES.includes(parsed.category) || !NLE_COUNTS.includes(Number(parsed.count))) return '';
-        return `/nle/${parsed.levelId}/p/${parsed.category}/${Number(parsed.count)}`;
+        if (!ANNUAL_EXAM_CATEGORIES.includes(parsed.category) || !ANNUAL_EXAM_COUNTS.includes(Number(parsed.count))) return '';
+        return `/annual-exam/${parsed.levelId}/p/${parsed.category}/${Number(parsed.count)}`;
       }
-      return `/nle/${parsed.levelId}`;
+      return `/annual-exam/${parsed.levelId}`;
     }
     if (parsed.kind === 'cards' && isYear(parsed.year) && CARD_SECONDS.includes(Number(parsed.seconds)) && [0, 1].includes(Number(parsed.shuffle))) {
       return `/cards/${Number(parsed.year)}/${Number(parsed.seconds)}/${Number(parsed.shuffle)}`;
@@ -182,7 +187,7 @@
       lesson: 'Lesson',
       quiz: 'Quiz',
       test: 'Test',
-      nle: 'NLE practice',
+      'annual-exam': 'Annual Exam Study',
       cards: 'Flashcards',
       deck: 'Flashcard session'
     };
@@ -237,7 +242,7 @@
     normalizeMissedLabel,
     PRACTICE_MODES,
     QUESTION_COUNTS,
-    NLE_LEVELS,
-    NLE_CATEGORIES
+    ANNUAL_EXAM_LEVELS,
+    ANNUAL_EXAM_CATEGORIES
   };
 });

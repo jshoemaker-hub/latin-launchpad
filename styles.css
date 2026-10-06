@@ -4627,16 +4627,16 @@ body.print-preview-open .app-shell {
   }
 }
 
-.nle-disclaimer,
-.nle-links,
-.nle-level-heading p,
-.nle-feedback,
-.nle-miss p,
-.nle-recent {
+.annual-exam-disclaimer,
+.annual-exam-links,
+.annual-exam-level-heading p,
+.annual-exam-feedback,
+.annual-exam-miss p,
+.annual-exam-recent {
   color: var(--muted);
 }
 
-.nle-disclaimer {
+.annual-exam-disclaimer {
   margin: 8px 0 0;
   padding: 12px 14px;
   border: 1px solid #f3d19c;
@@ -4647,34 +4647,34 @@ body.print-preview-open .app-shell {
   line-height: 1.45;
 }
 
-.nle-disclaimer a {
+.annual-exam-disclaimer a {
   color: #9a3412;
 }
 
-.nle-links,
-.nle-actions,
-.nle-count-row,
-.nle-recent {
+.annual-exam-links,
+.annual-exam-actions,
+.annual-exam-count-row,
+.annual-exam-recent {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
 }
 
-.nle-links {
+.annual-exam-links {
   margin: 18px 0;
   font-weight: 800;
 }
 
-.nle-level-grid,
-.nle-category-grid {
+.annual-exam-level-grid,
+.annual-exam-category-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 12px;
 }
 
-.nle-level-card,
-.nle-category-card {
+.annual-exam-level-card,
+.annual-exam-category-card {
   display: grid;
   gap: 6px;
   width: 100%;
@@ -4687,9 +4687,9 @@ body.print-preview-open .app-shell {
   cursor: pointer;
 }
 
-.nle-level-card span,
-.nle-category-card span,
-.nle-question-top span {
+.annual-exam-level-card span,
+.annual-exam-category-card span,
+.annual-exam-question-top span {
   color: var(--primary);
   font-size: 0.78rem;
   font-weight: 900;
@@ -4697,62 +4697,62 @@ body.print-preview-open .app-shell {
   text-transform: uppercase;
 }
 
-.nle-level-card small,
-.nle-miss p {
+.annual-exam-level-card small,
+.annual-exam-miss p {
   color: var(--muted);
 }
 
-.nle-level-card.suggested {
+.annual-exam-level-card.suggested {
   border-color: var(--primary);
   background: #eff6ff;
   box-shadow: inset 0 0 0 1px var(--primary);
 }
 
-.nle-level-heading,
-.nle-syllabus,
-.nle-results,
-.nle-passage-card,
-.nle-miss {
+.annual-exam-level-heading,
+.annual-exam-syllabus,
+.annual-exam-results,
+.annual-exam-passage-card,
+.annual-exam-miss {
   margin-top: 18px;
 }
 
-.nle-syllabus {
+.annual-exam-syllabus {
   display: grid;
   gap: 14px;
 }
 
-.nle-syllabus section,
-.nle-passage-card,
-.nle-miss {
+.annual-exam-syllabus section,
+.annual-exam-passage-card,
+.annual-exam-miss {
   padding: 16px;
   border: 1px solid var(--border);
   border-radius: 16px;
   background: #fff;
 }
 
-.nle-syllabus h3,
-.nle-subhead,
-.nle-prompt,
-.nle-results h3,
-.nle-miss h3 {
+.annual-exam-syllabus h3,
+.annual-exam-subhead,
+.annual-exam-prompt,
+.annual-exam-results h3,
+.annual-exam-miss h3 {
   margin: 0 0 8px;
 }
 
-.nle-syllabus ul,
-.nle-recent,
-.nle-glossary {
+.annual-exam-syllabus ul,
+.annual-exam-recent,
+.annual-exam-glossary {
   margin: 0;
   padding-left: 18px;
 }
 
-.nle-text-link {
+.annual-exam-text-link {
   display: inline-flex;
   align-items: center;
   text-decoration: none;
 }
 
-.nle-question-top,
-.nle-dashboard .weak-review-header {
+.annual-exam-question-top,
+.annual-exam-dashboard .weak-review-header {
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -4760,18 +4760,18 @@ body.print-preview-open .app-shell {
   align-items: center;
 }
 
-.nle-dashboard {
+.annual-exam-dashboard {
   margin: 22px 0;
 }
 
-.nle-nav {
+.annual-exam-nav {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 12px;
 }
 
-.nle-nav-button {
+.annual-exam-nav-button {
   width: 36px;
   height: 36px;
   border: 1px solid var(--border);
@@ -4782,61 +4782,61 @@ body.print-preview-open .app-shell {
   cursor: pointer;
 }
 
-.nle-nav-button.answered {
+.annual-exam-nav-button.answered {
   background: #eef6ff;
   color: var(--primary);
 }
 
-.nle-nav-button.current {
+.annual-exam-nav-button.current {
   background: var(--primary);
   border-color: var(--primary);
   color: #fff;
 }
 
-.nle-passage {
+.annual-exam-passage {
   white-space: pre-wrap;
   font-family: Georgia, "Times New Roman", serif;
   line-height: 1.55;
 }
 
-.nle-passage-card {
+.annual-exam-passage-card {
   max-height: 320px;
   overflow: auto;
 }
 
-.nle-options .option-button {
+.annual-exam-options .option-button {
   width: 100%;
 }
 
-.nle-feedback {
+.annual-exam-feedback {
   font-weight: 700;
 }
 
-.nle-results h3:first-of-type {
+.annual-exam-results h3:first-of-type {
   font-size: 3rem;
   line-height: 1;
 }
 
-.nle-count-row {
+.annual-exam-count-row {
   margin-top: 16px;
 }
 
 @media (max-width: 680px) {
-  .nle-level-grid,
-  .nle-category-grid {
+  .annual-exam-level-grid,
+  .annual-exam-category-grid {
     grid-template-columns: 1fr;
   }
 
-  .nle-passage-card {
+  .annual-exam-passage-card {
     max-height: 240px;
   }
 
-  .nle-results h3:first-of-type {
+  .annual-exam-results h3:first-of-type {
     font-size: 2.4rem;
   }
 
-  .nle-actions .primary-button,
-  .nle-actions .secondary-button {
+  .annual-exam-actions .primary-button,
+  .annual-exam-actions .secondary-button {
     width: 100%;
     text-align: center;
   }
@@ -5059,7 +5059,7 @@ body.print-preview-open .app-shell {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-.nle-category-assignment {
+.annual-exam-category-assignment {
   display: flex;
   flex-direction: column;
   align-items: flex-start;

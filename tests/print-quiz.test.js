@@ -39,7 +39,7 @@ test('printable questions key the authored answer and a separate answer page', (
   assert.equal(exam.answerLetter, 'B');
   assert.match(app, /quiz-answer-key/);
   assert.match(app, /data-assessment-action="print"/);
-  assert.match(app, /data-nle-action="print-exam"/);
+  assert.match(app, /data-annual-exam-action="print-exam"/);
   assert.match(app, /renderPrintHeader\(lesson, sheetTitle, lessonLabel\)/);
   assert.match(css, /\.quiz-answer-key\s*\{\s*break-before:\s*page/);
   assert.match(css, /\.quiz-choices[\s\S]*background:\s*transparent/);

@@ -6,7 +6,7 @@
   <title>Latin Launchpad — Latin Practice for Years 1–4</title>
 
   <!-- SEO -->
-  <meta name="description" content="Latin Launchpad is a free Latin practice site for Years 1–4. Build vocabulary, master grammar, and explore popular Latin phrases with interactive lessons, quizzes, and printable worksheets.">
+  <meta name="description" content="Latin Launchpad is a free Latin practice site for Years 1–4. Build vocabulary, master grammar, and explore popular Latin phrases with interactive lessons, quizzes, Annual Exam Study, and printable worksheets.">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="https://latinlaunchpad.com/">
 
@@ -14,7 +14,7 @@
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://latinlaunchpad.com/">
   <meta property="og:title" content="Latin Launchpad — Latin Practice for Years 1–4">
-  <meta property="og:description" content="Free Latin lessons, quizzes, and printables for Years 1–4. Vocabulary, grammar, and popular Latin phrases — all in one place.">
+  <meta property="og:description" content="Free Latin lessons, quizzes, Annual Exam Study, and printables for Years 1–4. Vocabulary, grammar, and popular Latin phrases — all in one place.">
   <meta property="og:image" content="https://latinlaunchpad.com/og-image.jpg">
   <meta property="og:site_name" content="Latin Launchpad">
   <meta property="og:locale" content="en_US">
@@ -22,7 +22,7 @@
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Latin Launchpad — Latin Practice for Years 1–4">
-  <meta name="twitter:description" content="Free Latin lessons, quizzes, and printables for Years 1–4.">
+  <meta name="twitter:description" content="Free Latin lessons, quizzes, Annual Exam Study, and printables for Years 1–4.">
   <meta name="twitter:image" content="https://latinlaunchpad.com/og-image.jpg">
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -35,7 +35,7 @@
         "@type": "WebSite",
         "name": "Latin Launchpad",
         "url": "https://latinlaunchpad.com/",
-        "description": "Free Latin practice for Years 1–4 (grades 3–8), with vocabulary, grammar, phrases, stories, and quizzes."
+        "description": "Free Latin practice for Years 1–4 (grades 3–8), with vocabulary, grammar, phrases, stories, quizzes, and Annual Exam Study."
       },
       {
         "@type": "EducationalOrganization",
@@ -84,7 +84,7 @@
           <button type="button" id="studyButton" class="pill-button">Study</button>
           <button type="button" id="dictionaryButton" class="pill-button">Dictionary</button>
           <button type="button" id="assessmentsButton" class="pill-button">Tests &amp; Quizzes</button>
-          <button type="button" id="nleButton" class="pill-button">NLE Prep</button>
+          <button type="button" id="annualExamButton" class="pill-button">Annual Exam Study</button>
           <button type="button" id="dashboardButton" class="pill-button">Dashboard</button>
           <button type="button" id="accountButton" class="pill-button">Account</button>
           <button type="button" id="contactButton" class="pill-button">Contact</button>
@@ -187,9 +187,9 @@
                   <strong>Tests &amp; Quizzes</strong>
                   <span>Build a chapter quiz or level test.</span>
                 </button>
-                <button id="homePracticeNle" type="button" class="practice-link">
-                  <strong>NLE Prep</strong>
-                  <span>Unofficial National Latin Exam practice.</span>
+                <button id="homePracticeAnnualExam" type="button" class="practice-link">
+                  <strong>Annual Exam Study</strong>
+                  <span>Practice questions for the yearly Latin exam levels.</span>
                 </button>
                 <button id="homePracticeStudy" type="button" class="practice-link">
                   <strong>Vocabulary Study</strong>
@@ -522,15 +522,15 @@
             </div>
             <button id="backToLessonsFromDashboard" class="secondary-button">Back</button>
           </div>
-          <section class="nle-dashboard" aria-label="NLE practice progress">
+          <section class="annual-exam-dashboard" aria-label="Annual Exam Study progress">
             <div class="weak-review-header">
               <div>
-                <span class="section-kicker">Unofficial practice</span>
-                <h3>National Latin Exam</h3>
+                <span class="section-kicker">Practice</span>
+                <h3>Annual Exam Study</h3>
               </div>
-              <button id="dashboardNleButton" type="button" class="secondary-button">Open NLE prep</button>
+              <button id="dashboardAnnualExamButton" type="button" class="secondary-button">Open Annual Exam Study</button>
             </div>
-            <div id="nleDashboardSummary"></div>
+            <div id="annualExamDashboardSummary"></div>
           </section>
           <div class="dashboard-grid">
             <div class="stat-card">
@@ -569,19 +569,19 @@
           </div>
         </div>
       </section>
-      <section id="nlePage" class="page">
-        <div class="card nle-card">
+      <section id="annualExamPage" class="page">
+        <div class="card annual-exam-card">
           <div class="page-header">
             <div>
-              <span class="section-kicker">Unofficial practice</span>
-              <h2>National Latin Exam prep</h2>
-              <p>Choose a level, review what that exam covers, practice by category, or take a timed exam in the NLE's multiple-choice format.</p>
+              <span class="section-kicker">Practice</span>
+              <h2>Annual Exam Study</h2>
+              <p>Choose a level, review what that exam covers, practice by category, or take a timed multiple-choice exam.</p>
             </div>
             <button type="button" class="secondary-button" data-copy-assignment>Copy assignment link</button>
-            <button id="nleBackButton" type="button" class="secondary-button">Home</button>
+            <button id="annualExamBackButton" type="button" class="secondary-button">Home</button>
           </div>
-          <p class="nle-disclaimer">Unofficial practice. Latin Launchpad is not affiliated with, endorsed by, or sponsored by the National Latin Exam, the American Classical League, or the National Junior Classical League. These questions are original. They are not past NLE questions. For the official syllabus, past exams, and registration, visit <a href="https://www.nle.org/" target="_blank" rel="noopener noreferrer">nle.org</a>.</p>
-          <div id="nleStage"></div>
+          <p class="annual-exam-disclaimer">Original practice questions written for Latin Launchpad. Choose a level, practice by category, or take a timed multiple-choice exam.</p>
+          <div id="annualExamStage"></div>
         </div>
       </section>
 
@@ -674,12 +674,12 @@
   <script defer src="classroom-latin.js"></script>
   <script defer src="learning-objectives.js"></script>
   <script defer src="grammar-lessons.js"></script>
-  <script defer src="nle-questions.js"></script>
-  <script defer src="nle-questions-more.js"></script>
-  <script defer src="nle-questions-upper.js"></script>
-  <script defer src="nle-questions-exams.js"></script>
-  <script defer src="nle-questions-advanced.js"></script>
-  <script defer src="nle-prep.js"></script>
+  <script defer src="annual-exam-questions.js"></script>
+  <script defer src="annual-exam-questions-more.js"></script>
+  <script defer src="annual-exam-questions-upper.js"></script>
+  <script defer src="annual-exam-questions-exams.js"></script>
+  <script defer src="annual-exam-questions-advanced.js"></script>
+  <script defer src="annual-exam.js"></script>
   <script defer src="analytics.js"></script>
   <script defer src="assignment-links.js"></script>
   <script defer src="app.js"></script>
