@@ -162,6 +162,19 @@ const GENITIVE_HEADWORD_HINTS = {
   temporis: 'Temporis is the genitive of tempus (“of the time”), not the ending that means “to/for/by/with the ___s.”',
   urbis: 'Urbis is the genitive of urbs (“of the city”), not the ending that means “to/for/by/with the ___s.”'
 };
+const FIRST_CONJ_CHANTS = new Set(['ambulo', 'amo', 'appello', 'canto', 'celebro', 'cogito', 'curo', 'dono', 'laboro', 'laudo', 'monstro', 'narro', 'navigo', 'ordino', 'paro', 'porto', 'pugno', 'rogito', 'rogo', 'saluto', 'servo', 'specto', 'spero', 'tento', 'visito', 'voco']);
+const SECOND_CONJ_CHANTS = new Set(['doceo', 'gaudeo', 'habeo', 'iubeo', 'maneo', 'moneo', 'moveo', 'respondeo', 'rideo', 'salveo', 'sedeo', 'sileo', 'soleo', 'spondeo', 'studeo', 'succenseo', 'teneo', 'timeo', 'video']);
+const FOURTH_CONJ_CHANTS = new Set(['audio', 'dormio', 'servio', 'venio']);
+const SKIP_NEUTER_CHANT = new Set(['circum']);
+const ER_CHANT_KEEP = new Set(['puer']);
+const ER_CHANT_DROP = new Set(['ager', 'liber', 'magister', 'noster']);
+const PRACTICE_MODE_IDS = ['meaning', 'picture', 'arrange', 'translate', 'compose', 'recall', 'ending', 'chant'];
+const TYPED_PRACTICE_MODES = ['translate', 'compose', 'recall', 'ending', 'chant'];
+const FLASHCARD_RATINGS = {
+  unknown: { label: 'Not known', delayMs: 0 },
+  hesitant: { label: 'Hesitant', delayMs: 24 * 60 * 60 * 1000 },
+  mastered: { label: 'Mastered', delayMs: 3 * 24 * 60 * 60 * 1000 }
+};
 
 const STORAGE_KEY = 'latinLaunchpadState';
 const PROFILES_STORAGE_KEY = 'latinLaunchpadProfiles';
@@ -356,6 +369,8 @@ const AppState = {
   lessonPhase: 'intro',
   lessonAttemptMode: 'lesson',
   practiceMode: 'meaning',
+  practiceOrder: null,
+  practiceOrderKey: '',
   productionAnswer: '',
   arrangeTokens: [],
   activeResourceTab: 'overview',
@@ -401,7 +416,8 @@ const StudyState = {
   durationSeconds: 300,
   remainingMs: 300000,
   timerId: null,
-  lastTick: 0
+  lastTick: 0,
+  dueOnly: false
 };
 
 const pages = {
@@ -547,6 +563,8 @@ const elements = {
   flashcardPrevious: document.getElementById('flashcardPrevious'),
   flashcardFlip: document.getElementById('flashcardFlip'),
   flashcardNext: document.getElementById('flashcardNext'),
+  flashcardReviewDue: document.getElementById('flashcardReviewDue'),
+  reviewQueueSummary: document.getElementById('reviewQueueSummary'),
   dictionaryBackButton: document.getElementById('dictionaryBackButton'),
   dictionarySearch: document.getElementById('dictionarySearch'),
   dictionaryGradeFilter: document.getElementById('dictionaryGradeFilter'),
@@ -671,7 +689,9 @@ function normalizeWordStats(wordStats) {
           correct: Number.isFinite(entry.correct) ? Math.max(0, entry.correct) : 0,
           misses: Number.isFinite(entry.misses) ? Math.max(0, entry.misses) : 0,
           lastPracticedAt: typeof entry.lastPracticedAt === 'string' ? entry.lastPracticedAt : '',
-          lastMissedAt: typeof entry.lastMissedAt === 'string' ? entry.lastMissedAt : ''
+          lastMissedAt: typeof entry.lastMissedAt === 'string' ? entry.lastMissedAt : '',
+          rating: entry.rating === 'unknown' || entry.rating === 'hesitant' || entry.rating === 'mastered' ? entry.rating : '',
+          nextReviewAt: typeof entry.nextReviewAt === 'string' ? entry.nextReviewAt : ''
         }
       ])
   );
@@ -1593,6 +1613,8 @@ function selectGrade(grade) {
   const normalizedGrade = normalizeCurriculumGrade(grade);
   if (!normalizedGrade) return;
   AppState.grade = normalizedGrade;
+  StudyState.dueOnly = false;
+  StudyState.words = [];
   AssessmentState.testLevelPinned = false;
   AssessmentState.testGrade = normalizedGrade;
   localStorage.setItem(GRADE_STORAGE_KEY, String(normalizedGrade));
@@ -1889,6 +1911,14 @@ function supportsArrangePractice(lesson) {
   return !isReviewAttempt() && lesson?.words.some((word) => getArrangeWordTokens(word.latin).length > 1);
 }
 
+function supportsEndingPractice(lesson) {
+  return getEndingQuestions(lesson).length > 0;
+}
+
+function supportsChantPractice(lesson) {
+  return getChantQuestions(lesson).length > 0;
+}
+
 function getLatinTokens(value) {
   return String(value || '').match(/[A-Za-zÀ-ž]+|[^\sA-Za-zÀ-ž]/g) || [];
 }
@@ -1905,7 +1935,15 @@ function getLessonPictureQuestions(lesson) {
   return (lesson?.words || []).filter((word) => !word.isPhrase && hasRealPicture(word.emoji));
 }
 
-function getActiveQuestions(lesson) {
+function getEndingQuestions(lesson) {
+  return (lesson?.words || []).filter((word) => !word.isPhrase && getSurfaceEnding(word.latin));
+}
+
+function getChantQuestions(lesson) {
+  return (lesson?.words || []).filter((word) => !word.isPhrase && buildChant(word));
+}
+
+function getBaseQuestions(lesson) {
   if (!lesson) return [];
   if (isReviewAttempt()) return AppState.reviewQueue;
   if (AppState.practiceMode === 'picture' && supportsPicturePractice(lesson)) {
@@ -1914,7 +1952,30 @@ function getActiveQuestions(lesson) {
   if (AppState.practiceMode === 'arrange' && supportsArrangePractice(lesson)) {
     return getArrangeQuestions(lesson);
   }
-  return lesson.words;
+  if (AppState.practiceMode === 'ending') return getEndingQuestions(lesson);
+  if (AppState.practiceMode === 'chant') return getChantQuestions(lesson);
+  return lesson.words || [];
+}
+
+function practiceOrderKey(lesson) {
+  return `${lesson?.id || ''}:${AppState.practiceMode}:${isReviewAttempt() ? 'review' : 'fresh'}`;
+}
+
+function getActiveQuestions(lesson) {
+  const base = getBaseQuestions(lesson);
+  if (
+    AppState.practiceOrderKey === practiceOrderKey(lesson)
+    && Array.isArray(AppState.practiceOrder)
+    && AppState.practiceOrder.length === base.length
+  ) {
+    return AppState.practiceOrder;
+  }
+  return base;
+}
+
+function rememberPracticeOrder(lesson) {
+  AppState.practiceOrder = shuffleItems(getBaseQuestions(lesson));
+  AppState.practiceOrderKey = practiceOrderKey(lesson);
 }
 
 function getWordKey(question) {
@@ -1941,7 +2002,9 @@ function recordWordAttempt(question, correct) {
     correct: (previous.correct || 0) + (correct ? 1 : 0),
     misses: (previous.misses || 0) + (correct ? 0 : 1),
     lastPracticedAt: now,
-    lastMissedAt: correct ? (previous.lastMissedAt || '') : now
+    lastMissedAt: correct ? (previous.lastMissedAt || '') : now,
+    rating: previous.rating || '',
+    nextReviewAt: previous.nextReviewAt || ''
   };
   AppState.progress.wordStats = stats;
 }
@@ -1981,6 +2044,9 @@ function renderPracticeModeChooser(lesson) {
       ${supportsArrangePractice(lesson) ? renderPracticeModeButton('arrange', 'Arrange') : ''}
       ${renderPracticeModeButton('translate', 'Translate')}
       ${renderPracticeModeButton('compose', 'Compose')}
+      ${renderPracticeModeButton('recall', 'English to Latin')}
+      ${supportsEndingPractice(lesson) ? renderPracticeModeButton('ending', 'Endings') : ''}
+      ${supportsChantPractice(lesson) ? renderPracticeModeButton('chant', 'Chant') : ''}
     </div>
   `;
 }
@@ -2000,10 +2066,14 @@ function renderPracticeModeButton(mode, label) {
 
 function selectPracticeMode(mode) {
   const lesson = getSelectedLesson();
-  if (!lesson || !['meaning', 'picture', 'arrange', 'translate', 'compose'].includes(mode)) return;
+  if (!lesson || !PRACTICE_MODE_IDS.includes(mode)) return;
   if (mode === 'picture' && !supportsPicturePractice(lesson)) mode = 'meaning';
   if (mode === 'arrange' && !supportsArrangePractice(lesson)) mode = 'meaning';
+  if (mode === 'ending' && !supportsEndingPractice(lesson)) mode = 'meaning';
+  if (mode === 'chant' && !supportsChantPractice(lesson)) mode = 'meaning';
   AppState.practiceMode = mode;
+  AppState.practiceOrder = null;
+  AppState.practiceOrderKey = '';
   renderWordIntroduction(lesson);
   syncAssignmentHash();
 }
@@ -2070,7 +2140,10 @@ function renderWordIntroduction(lesson) {
     picture: 'Start picture match',
     arrange: 'Start arranging',
     translate: 'Start translating',
-    compose: 'Start composing'
+    compose: 'Start composing',
+    recall: 'Start English to Latin',
+    ending: 'Start endings',
+    chant: 'Start chant'
   };
   elements.nextQuestionButton.textContent = startLabels[AppState.practiceMode] || 'Start practice';
 }
@@ -2079,6 +2152,8 @@ function startLessonPractice() {
   const lesson = getSelectedLesson();
   if (lesson && AppState.practiceMode === 'picture' && !supportsPicturePractice(lesson)) AppState.practiceMode = 'meaning';
   if (lesson && AppState.practiceMode === 'arrange' && !supportsArrangePractice(lesson)) AppState.practiceMode = 'meaning';
+  if (lesson && AppState.practiceMode === 'ending' && !supportsEndingPractice(lesson)) AppState.practiceMode = 'meaning';
+  if (lesson && AppState.practiceMode === 'chant' && !supportsChantPractice(lesson)) AppState.practiceMode = 'meaning';
   AppState.lessonPhase = 'practice';
   AppState.currentQuestionIndex = 0;
   AppState.selectedOption = null;
@@ -2086,6 +2161,7 @@ function startLessonPractice() {
   AppState.currentLessonCorrect = 0;
   AppState.productionAnswer = '';
   AppState.arrangeTokens = [];
+  if (lesson) rememberPracticeOrder(lesson);
   renderQuestion();
 }
 
@@ -2097,7 +2173,15 @@ function renderPracticeToolbar(lesson) {
     : 0;
   const label = isReviewAttempt()
     ? 'Review'
-    : ({ picture: 'Picture match', arrange: 'Arrange', translate: 'Translate', compose: 'Compose' }[AppState.practiceMode] || 'Practice');
+    : ({
+      picture: 'Picture match',
+      arrange: 'Arrange',
+      translate: 'Translate',
+      compose: 'Compose',
+      recall: 'English to Latin',
+      ending: 'Endings',
+      chant: 'Chant'
+    }[AppState.practiceMode] || 'Practice');
   return `
     <section class="practice-toolbar" aria-label="Practice progress">
       <div>
@@ -3837,6 +3921,92 @@ function getEndingHint(latin) {
   return '';
 }
 
+function getSurfaceEnding(latin) {
+  const key = hintHeadwordKey(latin);
+  if (!key || key.length < 3 || /\s/.test(String(latin || ''))) return null;
+  const hints = ENDING_HINTS.slice().sort((left, right) => right.suffix.length - left.suffix.length);
+  const match = hints.find((entry) => key.endsWith(entry.suffix) && key.length - entry.suffix.length >= 2);
+  if (!match) return null;
+  return {
+    stem: key.slice(0, -match.suffix.length),
+    ending: match.suffix
+  };
+}
+
+function nounCaseChant(stem, endings) {
+  return {
+    kind: 'noun',
+    labels: ['Nominative', 'Genitive', 'Dative', 'Accusative', 'Ablative'],
+    forms: endings.map((ending) => `${stem}${ending}`)
+  };
+}
+
+function verbPersonChant(forms) {
+  return {
+    kind: 'verb',
+    labels: ['I', 'you', 'he/she', 'we', 'you all', 'they'],
+    forms
+  };
+}
+
+function firstConjugationChant(key) {
+  const stem = key.slice(0, -1);
+  if (stem.length < 2) return null;
+  return verbPersonChant([`${stem}o`, `${stem}as`, `${stem}at`, `${stem}amus`, `${stem}atis`, `${stem}ant`]);
+}
+
+function secondConjugationChant(key) {
+  if (!key.endsWith('eo')) return null;
+  const stem = key.slice(0, -2);
+  if (stem.length < 2) return null;
+  return verbPersonChant([`${stem}eo`, `${stem}es`, `${stem}et`, `${stem}emus`, `${stem}etis`, `${stem}ent`]);
+}
+
+function fourthConjugationChant(key) {
+  const stem = key.slice(0, -1);
+  if (stem.length < 3) return null;
+  return verbPersonChant([`${stem}o`, `${stem}s`, `${stem}t`, `${stem}mus`, `${stem}tis`, `${stem}unt`]);
+}
+
+function erChant(key) {
+  if (ER_CHANT_KEEP.has(key)) return nounCaseChant(key, ['', 'i', 'o', 'um', 'o']);
+  if (ER_CHANT_DROP.has(key) && key.endsWith('er')) {
+    const stem = `${key.slice(0, -2)}r`;
+    return {
+      kind: 'noun',
+      labels: ['Nominative', 'Genitive', 'Dative', 'Accusative', 'Ablative'],
+      forms: [key, `${stem}i`, `${stem}o`, `${stem}um`, `${stem}o`]
+    };
+  }
+  return null;
+}
+
+function buildChant(question) {
+  const latin = typeof question === 'string' ? question : question?.latin;
+  const key = hintHeadwordKey(latin);
+  if (!key || question?.isPhrase || /\s/.test(String(latin || ''))) return null;
+  if (FIRST_CONJ_CHANTS.has(key)) return firstConjugationChant(key);
+  if (SECOND_CONJ_CHANTS.has(key)) return secondConjugationChant(key);
+  if (FOURTH_CONJ_CHANTS.has(key)) return fourthConjugationChant(key);
+  const erForms = erChant(key);
+  if (erForms) return erForms;
+  const hint = getEndingHint(key);
+  if (/In first-declension nouns, -a is the basic subject/.test(hint) && key.endsWith('a')) {
+    return nounCaseChant(key.slice(0, -1), ['a', 'ae', 'ae', 'am', 'a']);
+  }
+  if (/In second-declension nouns, -us is the subject form/.test(hint) && key.endsWith('us')) {
+    const stem = key.slice(0, -2);
+    if (stem.length < 2) return null;
+    return nounCaseChant(stem, ['us', 'i', 'o', 'um', 'o']);
+  }
+  if (/In second-declension nouns, -um/.test(hint) && key.endsWith('um') && !SKIP_NEUTER_CHANT.has(key)) {
+    const stem = key.slice(0, -2);
+    if (stem.length < 2) return null;
+    return nounCaseChant(stem, ['um', 'i', 'o', 'um', 'o']);
+  }
+  return null;
+}
+
 function renderEndingHint(question) {
   const generatedHint = question.hint ? '' : getEndingHint(question.latin);
   const hint = question.hint || generatedHint;
@@ -3865,7 +4035,11 @@ function renderQuestion() {
   const choices = createChoices(question, questions);
   const pictureMode = AppState.practiceMode === 'picture' && supportsPicturePractice(lesson);
   const arrangeMode = AppState.practiceMode === 'arrange';
-  const typedMode = AppState.practiceMode === 'translate' || AppState.practiceMode === 'compose';
+  const typedMode = TYPED_PRACTICE_MODES.includes(AppState.practiceMode);
+  const recallCue = AppState.practiceMode === 'recall' ? recallLetterCue(question, questions) : '';
+  const endingDrill = AppState.practiceMode === 'ending' ? getSurfaceEnding(question.latin) : null;
+  const chant = AppState.practiceMode === 'chant' ? buildChant(question) : null;
+  const hideLatin = arrangeMode || ['compose', 'recall', 'ending'].includes(AppState.practiceMode);
   AppState.lessonPhase = 'practice';
   AppState.answerChecked = false;
   AppState.selectedOption = null;
@@ -3888,17 +4062,30 @@ function renderQuestion() {
     : typedMode
       ? renderTypedInteraction(question)
       : '<div class="options-grid' + (pictureMode ? ' picture-options-grid' : '') + '" id="optionsGrid"></div>';
-  const eyebrow = arrangeMode ? 'Build the sentence' : typedMode ? 'Write your answer' : 'Listen and choose';
-  const displayedLatin = AppState.practiceMode === 'compose' || arrangeMode ? '' : `
+  const eyebrow = arrangeMode
+    ? 'Build the sentence'
+    : AppState.practiceMode === 'ending'
+      ? 'Fill in the ending'
+      : AppState.practiceMode === 'chant'
+        ? 'Chant the forms'
+        : typedMode
+          ? 'Write your answer'
+          : 'Listen and choose';
+  const displayedLatin = hideLatin ? '' : `
     <p class="question-latin">${escapeHtml(question.latin)}</p>
     ${renderSyllableCue(question.latin)}`;
+  const gloss = question.previewAnswer || question.english;
   const modePrompt = arrangeMode
-    ? `Arrange the words to mean: <span>${escapeHtml(question.previewAnswer || question.english)}</span>`
+    ? `Arrange the words to mean: <span>${escapeHtml(gloss)}</span>`
     : AppState.practiceMode === 'translate'
       ? 'Type the English meaning.'
-      : AppState.practiceMode === 'compose'
-        ? `Write this in Latin: <span>${escapeHtml(question.previewAnswer || question.english)}</span>`
-        : promptHtml;
+      : AppState.practiceMode === 'compose' || AppState.practiceMode === 'recall'
+        ? `Write this in Latin: <span>${escapeHtml(gloss)}</span>${recallCue ? ` <small>(${escapeHtml(recallCue)})</small>` : ''}`
+        : AppState.practiceMode === 'ending' && endingDrill
+          ? `Type the missing ending for <span>${escapeHtml(gloss)}</span>: <span class="ending-stem">${escapeHtml(endingDrill.stem)}___</span>`
+          : AppState.practiceMode === 'chant' && chant
+            ? `Chant <span>${escapeHtml(question.latin)}</span> (${escapeHtml(gloss)}). Type ${escapeHtml(chant.labels.join(', '))}, separated by commas.`
+            : promptHtml;
   elements.questionArea.innerHTML = `
     <div class="question-card" data-question-card>
       <div class="question-word-row">
@@ -3906,7 +4093,7 @@ function renderQuestion() {
           <span class="question-eyebrow">${eyebrow}</span>
           ${displayedLatin}
         </div>
-        ${AppState.practiceMode === 'compose' || arrangeMode ? '' : renderQuestionSoundControls(question)}
+        ${hideLatin ? '' : renderQuestionSoundControls(question)}
       </div>
       ${contextHtml}
       <h3>${modePrompt}</h3>
@@ -3924,13 +4111,20 @@ function renderQuestion() {
   elements.lessonResult.innerHTML = '';
   elements.lessonResult.removeAttribute('data-tone');
   saveState();
-  if (AppState.speechAutoPlay) {
+  if (AppState.speechAutoPlay && !['recall', 'ending'].includes(AppState.practiceMode)) {
     window.setTimeout(() => speakLatin(question.latin), 180);
   }
 }
 
-function renderTypedInteraction(question) {
-  const label = AppState.practiceMode === 'compose' ? 'Latin answer' : 'English answer';
+function renderTypedInteraction() {
+  const labels = {
+    compose: 'Latin answer',
+    recall: 'Latin answer',
+    ending: 'Ending',
+    chant: 'Forms, separated by commas',
+    translate: 'English answer'
+  };
+  const label = labels[AppState.practiceMode] || 'Your answer';
   return `
     <label class="production-field">
       <span>${label}</span>
@@ -3991,14 +4185,98 @@ function getAcceptedEnglishAnswers(question) {
   return Array.from(new Set(answers));
 }
 
+function foldLatinAnswer(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/æ/g, 'ae')
+    .replace(/œ/g, 'oe')
+    .replace(/[āàáâä]/g, 'a')
+    .replace(/[ēèéêë]/g, 'e')
+    .replace(/[īìíîï]/g, 'i')
+    .replace(/[ōòóôö]/g, 'o')
+    .replace(/[ūùúûü]/g, 'u')
+    .replace(/[ȳýÿ]/g, 'y')
+    .replace(/[^a-z\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function foldVowelAlternates(value) {
+  return foldLatinAnswer(value).replace(/j/g, 'i').replace(/v/g, 'u');
+}
+
+function glossSegments(english) {
+  return String(english || '')
+    .toLowerCase()
+    .split(/\s*(?:\/|;|,|\bor\b)\s*/)
+    .map((part) => part.replace(/[^a-z\s-]/g, '').replace(/\s+/g, ' ').trim())
+    .filter(Boolean);
+}
+
+function recallLetterCue(question, words) {
+  const segments = glossSegments(question?.previewAnswer || question?.english);
+  if (segments.length === 0) return '';
+  const targetKey = hintHeadwordKey(question?.latin);
+  const shared = (words || []).some((word) => {
+    if (!word || hintHeadwordKey(word.latin) === targetKey) return false;
+    const other = glossSegments(word.previewAnswer || word.english);
+    return segments.some((part) => other.includes(part));
+  });
+  if (!shared) return '';
+  const letters = foldLatinAnswer(question.latin).replace(/\s/g, '').length;
+  return letters > 0 ? `${letters} letters` : '';
+}
+
+function acceptedLatinForms(question) {
+  const forms = [];
+  const add = (value) => {
+    const folded = foldLatinAnswer(value);
+    if (folded) forms.push(folded);
+  };
+  add(question?.latin);
+  add(String(question?.principalParts || '').split(',')[0]);
+  if (Array.isArray(question?.latinAlternates)) question.latinAlternates.forEach(add);
+  return Array.from(new Set(forms));
+}
+
+function matchesTargetLatin(typed, question) {
+  const answer = foldVowelAlternates(typed);
+  if (!answer) return false;
+  return acceptedLatinForms(question).some((form) => foldVowelAlternates(form) === answer);
+}
+
+function matchesEnding(typed, question) {
+  const drill = getSurfaceEnding(question?.latin);
+  if (!drill) return false;
+  const answer = foldVowelAlternates(typed);
+  if (!answer) return false;
+  return answer === foldVowelAlternates(drill.ending) || matchesTargetLatin(typed, question);
+}
+
+function matchesChant(typed, forms) {
+  const chunks = String(typed || '').split(/[,;\n]+/).map((part) => part.trim()).filter(Boolean);
+  const parts = chunks.length === 1 && chunks[0].split(/\s+/).length === forms.length
+    ? chunks[0].split(/\s+/)
+    : chunks;
+  if (parts.length !== forms.length) return false;
+  return parts.every((part, index) => foldVowelAlternates(part) === foldVowelAlternates(forms[index]));
+}
+
 function isProductionAnswerCorrect(question) {
   if (AppState.practiceMode === 'arrange') {
     const placed = [...elements.questionArea.querySelectorAll('[data-arrange-placed]')].map((button) => button.textContent).join(' ');
     const target = getArrangeWordTokens(question.latin).join(' ');
     return normalizePracticeAnswer(placed) === normalizePracticeAnswer(target);
   }
+  if (AppState.practiceMode === 'compose' || AppState.practiceMode === 'recall') {
+    return matchesTargetLatin(AppState.productionAnswer, question);
+  }
+  if (AppState.practiceMode === 'ending') return matchesEnding(AppState.productionAnswer, question);
+  if (AppState.practiceMode === 'chant') {
+    const chant = buildChant(question);
+    return Boolean(chant) && matchesChant(AppState.productionAnswer, chant.forms);
+  }
   const answer = normalizePracticeAnswer(AppState.productionAnswer);
-  if (AppState.practiceMode === 'compose') return answer === normalizePracticeAnswer(question.latin);
   return getAcceptedEnglishAnswers(question).some((accepted) => answer === accepted);
 }
 
@@ -4073,7 +4351,9 @@ function createChoices(question, words) {
       .sort(() => Math.random() - 0.5);
   }
 
-  const uniqueChoices = Array.from(new Set(words.map((item) => item.english)));
+  const sameType = (item) => Boolean(item?.isPhrase) === Boolean(question?.isPhrase);
+  const poolWords = (Array.isArray(words) ? words : []).filter(sameType);
+  const uniqueChoices = Array.from(new Set(poolWords.map((item) => item.english)));
   const distractorPool = uniqueChoices.filter(isDistractor);
   const choices = [target];
 
@@ -4082,7 +4362,7 @@ function createChoices(question, words) {
     choices.push(distractorPool.splice(index, 1)[0]);
   }
 
-  if (choices.length < 4) {
+  if (choices.length < 4 && !question?.isPhrase) {
     const fallbackPool = Array.from(
       new Set(
         Object.values(GRADE_WORDS)
@@ -4178,18 +4458,31 @@ function selectOption(value) {
   });
 }
 
+function practiceModelAnswer(question) {
+  if (AppState.practiceMode === 'ending') {
+    const drill = getSurfaceEnding(question.latin);
+    if (drill) return `The ending is -${drill.ending}. ${question.latin} means ${question.previewAnswer || question.english}.`;
+  }
+  if (AppState.practiceMode === 'chant') {
+    const chant = buildChant(question);
+    if (chant) return chant.forms.join(', ');
+  }
+  return `${question.latin} means ${question.previewAnswer || question.english}.`;
+}
+
 function renderQuestionFeedback(question, correct) {
   const correctLines = ['Nice catch!', 'Exactly.', 'Strong work.'];
   const incorrectLines = ['Good try.', 'Almost.', 'Keep going.'];
   const lineIndex = AppState.currentQuestionIndex % correctLines.length;
   const title = correct ? correctLines[lineIndex] : incorrectLines[lineIndex];
-  const modelAnswer = `${question.latin} means ${question.previewAnswer || question.english}.`;
-  const detail = !correct && ['arrange', 'translate', 'compose'].includes(AppState.practiceMode)
+  const modelAnswer = practiceModelAnswer(question);
+  const showModel = ['arrange', 'translate', 'compose', 'recall', 'ending', 'chant'].includes(AppState.practiceMode);
+  const detail = !correct && showModel
     ? `${modelAnswer}${question.explanation ? ` ${question.explanation}` : ''}`
     : (question.explanation || modelAnswer);
   const tag = correct
     ? (isReviewAttempt() ? 'Review win' : '+10 points')
-    : (['arrange', 'translate', 'compose'].includes(AppState.practiceMode) ? 'Model answer' : 'Correct meaning');
+    : (showModel ? 'Model answer' : 'Correct meaning');
 
   return `
     <div class="feedback-card ${correct ? 'success' : 'error'}">
@@ -4206,7 +4499,7 @@ function checkAnswer() {
   const questions = getActiveQuestions(lesson);
   const question = questions[AppState.currentQuestionIndex];
   if (!question) return;
-  const productionMode = ['arrange', 'translate', 'compose'].includes(AppState.practiceMode);
+  const productionMode = AppState.practiceMode === 'arrange' || TYPED_PRACTICE_MODES.includes(AppState.practiceMode);
   if (!productionMode && !AppState.selectedOption) {
     elements.lessonResult.dataset.tone = 'warning';
     elements.lessonResult.textContent = 'Choose an answer before moving on.';
@@ -4612,7 +4905,81 @@ function getStudyPhraseCards(selectedGrades) {
     .sort((a, b) => a.latin.localeCompare(b.latin));
 }
 
+function wordStatKey(word) {
+  return word?.masteryKey || word?.latin || '';
+}
+
+function isReviewDue(entry, now = Date.now()) {
+  if (!entry || !Object.prototype.hasOwnProperty.call(FLASHCARD_RATINGS, entry.rating)) return false;
+  if (entry.rating === 'unknown') return true;
+  const due = Date.parse(entry.nextReviewAt || '');
+  return !Number.isFinite(due) || due <= now;
+}
+
+function getDueStudyWords() {
+  const stats = normalizeWordStats(AppState.progress.wordStats);
+  return getStudyWords().filter((word) => isReviewDue(stats[wordStatKey(word)]));
+}
+
+function updateReviewQueueSummary() {
+  if (!elements.reviewQueueSummary || !elements.flashcardReviewDue) return;
+  const dueCount = getDueStudyWords().length;
+  elements.reviewQueueSummary.textContent = dueCount > 0
+    ? `${dueCount} ${dueCount === 1 ? 'card is' : 'cards are'} due for review.`
+    : 'No cards are due for review yet. Rate a card to start the queue.';
+  elements.flashcardReviewDue.textContent = StudyState.dueOnly ? 'All cards' : 'Review due cards';
+  elements.flashcardReviewDue.disabled = !StudyState.dueOnly && dueCount === 0;
+}
+
+function rateFlashcard(rating) {
+  if (!Object.prototype.hasOwnProperty.call(FLASHCARD_RATINGS, rating)) return;
+  const word = StudyState.words[StudyState.index];
+  const key = wordStatKey(word);
+  if (!key) return;
+  const stats = normalizeWordStats(AppState.progress.wordStats);
+  const previous = stats[key] || {};
+  stats[key] = {
+    latin: word.latin || previous.latin || key,
+    english: word.english || previous.english || '',
+    emoji: word.emoji || previous.emoji || '',
+    attempts: previous.attempts || 0,
+    correct: previous.correct || 0,
+    misses: previous.misses || 0,
+    lastPracticedAt: previous.lastPracticedAt || '',
+    lastMissedAt: previous.lastMissedAt || '',
+    rating,
+    nextReviewAt: new Date(Date.now() + FLASHCARD_RATINGS[rating].delayMs).toISOString()
+  };
+  AppState.progress.wordStats = stats;
+  if (rating === 'mastered') AppState.progress.wordsMastered[key] = true;
+  else delete AppState.progress.wordsMastered[key];
+  saveState();
+  StudyState.showingAnswer = true;
+  renderFlashcard();
+  renderHome();
+  renderDashboard();
+}
+
+function toggleDueFlashcards() {
+  if (StudyState.dueOnly) {
+    StudyState.dueOnly = false;
+    StudyState.words = [];
+    ensureStudyWords();
+    renderFlashcard();
+    return;
+  }
+  const due = getDueStudyWords();
+  if (due.length === 0) return;
+  StudyState.dueOnly = true;
+  StudyState.words = shuffleItems(due);
+  StudyState.index = 0;
+  StudyState.showingAnswer = false;
+  StudyState.seenKeys = new Set();
+  renderFlashcard();
+}
+
 function ensureStudyWords() {
+  if (StudyState.dueOnly) return;
   const words = getStudyWords();
   const currentKeys = StudyState.words.map((word) => normalizeVocabularyHeadword(word.latin)).sort().join('|');
   const nextKeys = words.map((word) => normalizeVocabularyHeadword(word.latin)).sort().join('|');
@@ -4735,7 +5102,25 @@ function selectStudyMode(mode) {
   syncAssignmentHash();
 }
 
+function renderFlashcardRating(word) {
+  const stat = normalizeWordStats(AppState.progress.wordStats)[wordStatKey(word)] || {};
+  if (!StudyState.showingAnswer) {
+    const note = stat.rating && FLASHCARD_RATINGS[stat.rating]
+      ? `Last rating: ${FLASHCARD_RATINGS[stat.rating].label}. Reveal the answer to rate it again.`
+      : 'Reveal the answer, then rate this card.';
+    return `<p class="flashcard-rate-note">${escapeHtml(note)}</p>`;
+  }
+  return `
+    <div class="flashcard-ratings" role="group" aria-label="How well do you know this word?">
+      ${Object.entries(FLASHCARD_RATINGS).map(([id, meta]) => `
+        <button type="button" class="flashcard-rating${stat.rating === id ? ' active' : ''}" data-flashcard-rating="${id}" aria-pressed="${stat.rating === id ? 'true' : 'false'}">${escapeHtml(meta.label)}</button>
+      `).join('')}
+    </div>
+  `;
+}
+
 function renderFlashcard() {
+  updateReviewQueueSummary();
   const word = StudyState.words[StudyState.index];
   if (!word) {
     elements.flashcardStage.innerHTML = '<p class="study-empty">Choose a year to load flashcards.</p>';
@@ -4753,6 +5138,7 @@ function renderFlashcard() {
       ${StudyState.showingAnswer && word.principalParts ? `<small>Headword: ${escapeHtml(word.latin)}</small>` : ''}
       ${StudyState.showingAnswer && word.isPhrase && word.note ? `<small>${escapeHtml(word.note)}</small>` : ''}
       ${StudyState.showingAnswer ? '' : renderSpeakButton(word.latin, 'Listen', 0.74)}
+      ${renderFlashcardRating(word)}
     </div>
     <div class="flashcard-time">${formatFlashcardTime(StudyState.remainingMs)}</div>
     ${renderFlashcardCompletion()}
@@ -6060,9 +6446,12 @@ function setupEvents() {
     }
     const speakButton = target?.closest('[data-speak-latin]');
     if (speakButton) speakLatin(speakButton.dataset.speakLatin, Number(speakButton.dataset.speakRate) || 0.82);
+    const ratingButton = target?.closest('[data-flashcard-rating]');
+    if (ratingButton) rateFlashcard(ratingButton.dataset.flashcardRating);
   });
   elements.flashcardStart.addEventListener('click', toggleFlashcardTimer);
   elements.flashcardShuffle.addEventListener('click', shuffleFlashcards);
+  elements.flashcardReviewDue?.addEventListener('click', toggleDueFlashcards);
   elements.flashcardPrevious.addEventListener('click', () => moveFlashcard(-1));
   elements.flashcardNext.addEventListener('click', () => moveFlashcard(1));
   elements.flashcardFlip.addEventListener('click', () => {

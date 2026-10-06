@@ -8,6 +8,9 @@ test('assignment routes round-trip for every activity kind', () => {
   const routes = [
     { kind: 'year', year: 1 },
     { kind: 'lesson', year: 1, lessonId: 'grade3-1', mode: 'meaning' },
+    { kind: 'lesson', year: 1, lessonId: 'grade3-1', mode: 'recall' },
+    { kind: 'lesson', year: 1, lessonId: 'grade3-2', mode: 'ending' },
+    { kind: 'lesson', year: 2, lessonId: 'grade4-3', mode: 'chant' },
     { kind: 'lesson', year: 4, lessonId: 'grade7-2', mode: 'compose' },
     { kind: 'lesson', year: 2, lessonId: 'grade4-grammar-amo', mode: 'picture' },
     { kind: 'quiz', year: 1, count: 10, lessonIds: ['grade3-1', 'grade3-grammar-endings'] },

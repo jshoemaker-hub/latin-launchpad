@@ -409,6 +409,7 @@
             <div id="vocabularyList" class="vocabulary-list"></div>
           </section>
           <section id="flashcardPanel" class="study-panel" data-study-panel="flashcards" hidden>
+            <p id="reviewQueueSummary" class="review-queue-summary">No cards are due for review yet. Rate a card to start the queue.</p>
             <div class="flashcard-toolbar">
               <div class="flashcard-speeds" role="group" aria-label="Flashcard session length">
                 <span>Session</span>
@@ -418,6 +419,7 @@
               </div>
               <div class="flashcard-actions">
                 <button type="button" class="secondary-button" data-copy-assignment>Copy assignment link</button>
+                <button id="flashcardReviewDue" type="button" class="secondary-button">Review due cards</button>
                 <button id="flashcardShuffle" type="button" class="secondary-button">Shuffle</button>
                 <button id="flashcardStart" type="button" class="primary-button">Start timer</button>
               </div>
