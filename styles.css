@@ -12,23 +12,20 @@
 }
 
 .analytics-consent {
-  position: fixed;
-  z-index: 1000;
-  right: 20px;
-  bottom: 20px;
-  left: 20px;
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  max-width: 860px;
-  margin: 0 auto;
-  padding: 18px 20px;
+  max-width: 1160px;
+  margin: 0 auto 12px;
+  padding: 14px 16px;
   color: #172036;
   background: #fff;
   border: 1px solid #cbd7ee;
   border-radius: 8px;
-  box-shadow: 0 12px 35px rgba(23, 32, 54, 0.2);
+  box-shadow: 0 8px 24px rgba(23, 32, 54, 0.08);
 }
 
 .analytics-consent p {
@@ -43,18 +40,17 @@
 }
 
 .analytics-preferences-button {
-  position: fixed;
-  z-index: 900;
-  right: 12px;
-  bottom: 10px;
-  padding: 5px 8px;
-  color: #40516f;
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 4px 2px;
+  color: #1e3a8a;
   font: inherit;
-  font-size: 12px;
+  font-size: 0.9rem;
   text-decoration: underline;
-  background: rgba(255, 255, 255, 0.94);
+  text-underline-offset: 3px;
+  background: transparent;
   border: 0;
-  border-radius: 4px;
   cursor: pointer;
 }
 
@@ -149,13 +145,24 @@ button:disabled {
   white-space: nowrap;
 }
 
+.header-menu-button {
+  display: none;
+}
+
+.header-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
 .header-grade-control select {
   min-width: 54px;
   border: 0;
   border-radius: 999px;
   padding: 5px 22px 5px 8px;
   background-color: var(--primary-soft);
-  color: var(--primary);
+  color: #1e3a8a;
   font-weight: 900;
   cursor: pointer;
 }
@@ -887,7 +894,18 @@ input {
 }
 
 .badge-item.locked {
-  opacity: 0.58;
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.badge-item.locked .badge-mark {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.badge-item.locked h4,
+.badge-item.locked p {
+  color: #334155;
 }
 
 .badge-item.earned {
@@ -1798,7 +1816,9 @@ input {
 
 .story-link {
   display: inline-flex;
-  padding: 0;
+  align-items: center;
+  min-height: 24px;
+  padding: 6px 0;
   border: 0;
   background: transparent;
   margin-top: 16px;
@@ -2145,7 +2165,7 @@ input {
 .flashcard-speeds, .flashcard-actions, .flashcard-navigation { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
 .flashcard-speeds > span { margin-right: 4px; color: var(--muted); font-weight: 800; }
 .flashcard-speeds button { min-height: 38px; padding: 8px 11px; border: 1px solid var(--border); border-radius: 8px; background: #ffffff; color: var(--muted); cursor: pointer; font-weight: 900; }
-.flashcard-speeds button.active { border-color: var(--primary); background: var(--primary-soft); color: var(--primary); }
+.flashcard-speeds button.active { border-color: #1e3a8a; background: var(--primary-soft); color: #1e3a8a; }
 .flashcard-stage { position: relative; display: grid; align-content: center; min-height: 360px; overflow: hidden; border: 1px solid #b8d1c5; border-radius: 8px; background: #f7fcf9; }
 .flashcard-progress { position: absolute; inset: 0 0 auto; height: 8px; background: #dce9e3; }
 .flashcard-progress span { display: block; height: 100%; background: #2f766b; transition: width 0.1s linear; }
@@ -2239,8 +2259,8 @@ input {
 }
 
 .audio-toggle input {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   margin: 0;
 }
 
@@ -3817,8 +3837,8 @@ input {
 }
 
 .consent-check input {
-  width: 18px;
-  height: 18px;
+  width: 24px;
+  height: 24px;
   margin: 3px 0 0;
 }
 
@@ -3925,9 +3945,26 @@ input {
 }
 
 .site-footer a,
+.site-footer button,
 .trust-page a {
   color: var(--primary);
   text-underline-offset: 3px;
+}
+
+.site-footer a,
+.site-footer button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 4px 0;
+}
+
+.site-summary {
+  max-width: 720px;
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
 }
 
 .trust-shell {
@@ -4593,5 +4630,106 @@ body.print-preview-open .app-shell {
   .word-bank li {
     margin-bottom: 7px;
     break-inside: avoid;
+  }
+}
+
+.welcome-flashcard-more {
+  margin: 12px 0 0;
+}
+
+.welcome-flashcard-more a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  color: #115e59;
+  font-weight: 800;
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    padding: 8px 12px 28px;
+  }
+
+  .app-header {
+    gap: 8px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
+  }
+
+  .app-header h1 {
+    font-size: 1.28rem;
+  }
+
+  .tagline {
+    display: none;
+  }
+
+  .header-menu-button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 8px 14px;
+  }
+
+  .header-nav {
+    display: none;
+    width: 100%;
+  }
+
+  .header-nav.is-open {
+    display: flex;
+  }
+
+  .analytics-consent {
+    gap: 8px;
+    margin: 0 0 8px;
+    padding: 8px 10px;
+  }
+
+  .analytics-consent p {
+    font-size: 0.88rem;
+  }
+
+  .analytics-consent .primary-button,
+  .analytics-consent .secondary-button {
+    padding: 8px 10px;
+  }
+
+  .login-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;
+  }
+
+  .welcome-flashcard-panel {
+    order: -1;
+    padding: 12px;
+  }
+
+  .welcome-flashcard-panel h3 {
+    font-size: 1.25rem;
+  }
+
+  .welcome-flashcard-panel p {
+    margin: 4px 0 10px;
+  }
+
+  .welcome-flashcard-levels button {
+    min-height: 44px;
+  }
+
+  .login-copy {
+    padding: 0;
+  }
+
+  .login-copy h2,
+  .home-hero-panel h2 {
+    font-size: 1.45rem;
+  }
+
+  .login-copy p {
+    margin-top: 8px;
+    font-size: 0.98rem;
   }
 }

@@ -3,11 +3,22 @@ const assert = require('node:assert/strict');
 
 process.env.RESEND_API_KEY = 're_test_key';
 process.env.RESEND_FROM_EMAIL = 'Latin Launchpad <contact@example.com>';
+process.env.CONTACT_TOKEN_SECRET = 'contact-token-test-secret';
 
 let handler;
+let readyToken;
 
 test.before(async () => {
   ({ default: handler } = await import('../netlify/functions/contact.mjs'));
+  const issued = await handler(new Request('https://latin-launchpad.netlify.app/api/contact', {
+    method: 'GET',
+    headers: {
+      origin: 'https://latin-launchpad.netlify.app',
+      host: 'latin-launchpad.netlify.app'
+    }
+  }));
+  readyToken = (await issued.json()).token;
+  await new Promise((resolve) => setTimeout(resolve, 900));
 });
 
 function contactEvent(overrides = {}) {
@@ -24,7 +35,7 @@ function contactEvent(overrides = {}) {
       subject: 'Contact test',
       message: 'Does this reach the inbox?',
       website: '',
-      submittedAt: Date.now() - 2000,
+      formToken: readyToken,
       ...overrides
     })
   });
@@ -71,7 +82,7 @@ test('accepts a native form submission when JavaScript is unavailable', async (t
     subject: 'Native form test',
     message: 'This form submitted without JavaScript.',
     website: '',
-    submittedAt: ''
+    formToken: readyToken
   });
   const response = await handler(new Request('https://latin-launchpad.netlify.app/api/contact', {
     method: 'POST',
@@ -95,9 +106,9 @@ test('rejects requests from a different origin', async () => {
   assert.equal(response.status, 403);
 });
 
-test('rejects non-POST requests', async () => {
+test('rejects unsupported methods', async () => {
   const response = await handler(new Request('https://latin-launchpad.netlify.app/api/contact', {
-    method: 'GET',
+    method: 'PUT',
     headers: {
       origin: 'https://latin-launchpad.netlify.app',
       host: 'latin-launchpad.netlify.app'
@@ -122,7 +133,38 @@ test('rejects malformed JSON', async () => {
 });
 
 test('rejects submissions completed too quickly', async () => {
-  const response = await handler(contactEvent({ submittedAt: Date.now() }));
+  const issued = await handler(new Request('https://latin-launchpad.netlify.app/api/contact', {
+    method: 'GET',
+    headers: {
+      origin: 'https://latin-launchpad.netlify.app',
+      host: 'latin-launchpad.netlify.app'
+    }
+  }));
+  const freshToken = (await issued.json()).token;
+  const response = await handler(contactEvent({ formToken: freshToken }));
+
+  assert.equal(response.status, 400);
+});
+
+test('rejects a client-supplied timestamp without a server token', async () => {
+  const response = await handler(contactEvent({
+    formToken: '',
+    submittedAt: Date.now() - 5000
+  }));
+
+  assert.equal(response.status, 400);
+});
+
+test('rejects a null JSON body', async () => {
+  const response = await handler(new Request('https://latin-launchpad.netlify.app/api/contact', {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      origin: 'https://latin-launchpad.netlify.app',
+      host: 'latin-launchpad.netlify.app'
+    },
+    body: 'null'
+  }));
 
   assert.equal(response.status, 400);
 });

@@ -60,7 +60,8 @@
   }
 
   function closeBanner() {
-    document.getElementById('analyticsConsentBanner')?.remove();
+    const banner = document.getElementById('analyticsConsentBanner');
+    if (banner) banner.hidden = true;
   }
 
   function setConsent(value) {
@@ -70,8 +71,16 @@
     if (value === 'granted') loadAnalytics();
   }
 
-  function showConsentBanner() {
-    if (document.getElementById('analyticsConsentBanner')) return;
+  function wireBanner(banner) {
+    if (!banner || banner.dataset.bound === 'true') return;
+    banner.dataset.bound = 'true';
+    banner.addEventListener('click', (event) => {
+      const button = event.target.closest('[data-analytics-choice]');
+      if (button) setConsent(button.dataset.analyticsChoice);
+    });
+  }
+
+  function buildBanner() {
     const banner = document.createElement('aside');
     banner.id = 'analyticsConsentBanner';
     banner.className = 'analytics-consent';
@@ -79,26 +88,47 @@
     banner.innerHTML = `
       <div>
         <strong id="analyticsConsentTitle">Optional analytics</strong>
-        <p>An adult may allow anonymous usage analytics to help improve Latin Launchpad. Advertising features are off. <a href="privacy.html#analytics">Learn more</a>.</p>
+        <p>An adult may allow anonymous usage analytics to help improve Latin Launchpad. Advertising features are off. <a href="privacy.html#analytics">Learn more about analytics</a>.</p>
       </div>
       <div class="analytics-consent-actions">
         <button type="button" class="secondary-button" data-analytics-choice="denied">No thanks</button>
         <button type="button" class="primary-button" data-analytics-choice="granted">Allow analytics</button>
       </div>`;
-    banner.addEventListener('click', (event) => {
-      const button = event.target.closest('[data-analytics-choice]');
-      if (button) setConsent(button.dataset.analyticsChoice);
-    });
-    document.body.appendChild(banner);
+    return banner;
+  }
+
+  function showConsentBanner() {
+    let banner = document.getElementById('analyticsConsentBanner');
+    if (!banner) {
+      banner = buildBanner();
+      const shell = document.querySelector('.app-shell');
+      if (shell) shell.prepend(banner);
+      else document.body.prepend(banner);
+    }
+    banner.hidden = false;
+    wireBanner(banner);
+  }
+
+  function bindPreferencesButton(button) {
+    if (!button || button.dataset.bound === 'true') return;
+    button.dataset.bound = 'true';
+    button.addEventListener('click', showConsentBanner);
   }
 
   function addPreferencesButton() {
+    const existing = document.querySelector('.analytics-preferences-button');
+    if (existing) {
+      bindPreferencesButton(existing);
+      return;
+    }
     const button = document.createElement('button');
     button.type = 'button';
     button.className = 'analytics-preferences-button';
     button.textContent = 'Analytics choices';
-    button.addEventListener('click', showConsentBanner);
-    document.body.appendChild(button);
+    bindPreferencesButton(button);
+    const nav = document.querySelector('.site-footer nav');
+    if (nav) nav.appendChild(button);
+    else (document.querySelector('.site-footer') || document.body).appendChild(button);
   }
 
   window.LatinLaunchpadAnalytics = {
@@ -113,7 +143,15 @@
 
   document.addEventListener('DOMContentLoaded', () => {
     addPreferencesButton();
-    if (readConsent() === 'granted') loadAnalytics();
-    else if (readConsent() !== 'denied') showConsentBanner();
+    const banner = document.getElementById('analyticsConsentBanner');
+    if (banner) wireBanner(banner);
+    if (readConsent() === 'granted') {
+      closeBanner();
+      loadAnalytics();
+    } else if (readConsent() === 'denied') {
+      closeBanner();
+    } else if (!banner) {
+      showConsentBanner();
+    }
   });
 })();

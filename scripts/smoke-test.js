@@ -36,7 +36,7 @@ function assert(condition, message) {
 }
 
 function checkJavaScriptSyntax() {
-  [appPath, analyticsPath, contactFormPath, wordBanksPath, referenceIndexPath, phrasesPath, storiesPath, culturePath, classroomPath, grammarPath].forEach((filePath) => {
+  [appPath, analyticsPath, contactFormPath, wordBanksPath, referenceIndexPath, phrasesPath, storiesPath, culturePath, classroomPath, grammarPath, path.join(root, 'flashcards.js')].forEach((filePath) => {
     new vm.Script(fs.readFileSync(filePath, 'utf8'), { filename: filePath });
   });
 }
@@ -280,7 +280,8 @@ function checkTrustPages() {
   trustPageFiles.forEach((fileName) => {
     assert(html.includes(`href="${fileName}"`), `Main footer does not link to ${fileName}`);
   });
-  assert(fs.existsSync(path.join(root, 'og-image.png')), 'Missing Open Graph image');
+  const ogImage = fs.statSync(path.join(root, 'og-image.jpg'));
+  assert(ogImage.size > 0 && ogImage.size < 200 * 1024, 'Open Graph image should be a compact JPEG');
   [
     'signupEligibility',
     'accountCreatorRole',
@@ -336,7 +337,7 @@ function checkContactFormContract() {
     'The in-app contact form must submit to the contact endpoint'
   );
   assert(
-    html.includes('<script src="contact-form.js"></script>'),
+    /<script[^>]*src="contact-form.js"/.test(html),
     'The in-app contact form needs the contact helper script'
   );
   const contactForm = fs.readFileSync(contactFormPath, 'utf8');
@@ -352,7 +353,7 @@ function checkContactFormContract() {
   const standaloneContact = fs.readFileSync(path.join(root, 'contact.html'), 'utf8');
   assert(
     standaloneContact.includes('data-contact-form') &&
-      standaloneContact.includes('<script src="contact-form.js"></script>'),
+      /<script[^>]*src="contact-form.js"/.test(standaloneContact),
     'The standalone contact page must use the same contact behavior'
   );
   const contactFunction = fs.readFileSync(contactFunctionPath, 'utf8');
@@ -395,7 +396,7 @@ function checkAnalyticsPrivacyContract() {
   assert(!netlifyConfig.includes('[[headers]]'), 'Netlify headers must have a single source of truth in _headers');
   ['index.html', 'flashcards.html', ...trustPageFiles].forEach((file) => {
     const page = fs.readFileSync(path.join(root, file), 'utf8');
-    assert(page.includes('<script src="analytics.js"></script>'), `${file} must load the consent-controlled analytics helper`);
+    assert(/<script[^>]*src="analytics.js"/.test(page), `${file} must load the consent-controlled analytics helper`);
   });
   const privacy = fs.readFileSync(path.join(root, 'privacy.html'), 'utf8');
   assert(

@@ -122,24 +122,34 @@ const LESSONS = [
 
 const ENDING_HINTS = [
   { suffix: 'arum', hint: 'In first-declension nouns, -arum means “of the ___s” for many feminine items.' },
-  { suffix: 'ae', hint: 'In first-declension nouns, -ae can mean “of the ___” or “the ___s.”' },
-  { suffix: 'am', hint: 'In first-declension nouns, -am marks the direct object: “the ___” as the receiver of the action.' },
-  { suffix: 'a', hint: 'In first-declension nouns, -a is the basic subject form: “the ___” performs the action.' },
   { suffix: 'orum', hint: 'In second-declension nouns, -orum means “of the ___s” for masculine or neuter items.' },
-  { suffix: 'us', hint: 'In second-declension masculine nouns, -us is the subject form for one person or thing.' },
-  { suffix: 'i', hint: 'In second-declension nouns, -i may mean “of the ___” or “the ___s.”' },
-  { suffix: 'um', hint: 'In second-declension nouns, -um can mark the object or a neuter subject.' },
-  { suffix: 'is', hint: 'In noun forms, -is often means “to/for the ___s” or “by/with the ___s.” In verbs, it can also be a plural ending.' },
   { suffix: 'amus', hint: 'In first-conjugation verbs, -amus means “we ___.”' },
   { suffix: 'atis', hint: 'In first-conjugation verbs, -atis means “you all ___.”' },
+  { suffix: 'emus', hint: 'In second-conjugation verbs, -emus means “we ___.”' },
+  { suffix: 'etis', hint: 'In second-conjugation verbs, -etis means “you all ___.”' },
+  { suffix: 'ae', hint: 'In first-declension nouns, -ae can mean “of the ___” or “the ___s.”' },
+  { suffix: 'am', hint: 'In first-declension nouns, -am marks the direct object: “the ___” as the receiver of the action.' },
+  { suffix: 'us', hint: 'In second-declension nouns, -us is the subject form for one person or thing.' },
+  { suffix: 'um', hint: 'In second-declension nouns, -um can mark the object or a neuter subject.' },
+  { suffix: 'is', hint: 'In noun forms, -is often means “to/for the ___s” or “by/with the ___s.” In verbs, it can also be a plural ending.' },
   { suffix: 'at', hint: 'In first-conjugation verbs, -at means “he/she ___.”' },
   { suffix: 'as', hint: 'In first-conjugation verbs, -as means “you ___” (singular).' },
   { suffix: 'eo', hint: 'In second-conjugation verbs, -eo means “I ___.”' },
-  { suffix: 'emus', hint: 'In second-conjugation verbs, -emus means “we ___.”' },
-  { suffix: 'etis', hint: 'In second-conjugation verbs, -etis means “you all ___.”' },
   { suffix: 'et', hint: 'In second-conjugation verbs, -et means “he/she ___.”' },
-  { suffix: 'es', hint: 'In second-conjugation verbs, -es means “you ___” (singular).' }
+  { suffix: 'es', hint: 'In second-conjugation verbs, -es means “you ___” (singular).' },
+  { suffix: 'a', hint: 'In first-declension nouns, -a is the basic subject form: “the ___” performs the action.' },
+  { suffix: 'i', hint: 'In second-declension nouns, -i may mean “of the ___” or “the ___s.”' }
 ];
+
+const THIRD_NEUTER_US = new Set(['tempus', 'opus', 'vulnus', 'pectus', 'munus', 'jus']);
+const THIRD_OTHER_US = new Set(['virtus', 'salus']);
+const FOURTH_DECLENSION_US = new Set(['adventus', 'aestus', 'arcus', 'crepitus', 'cursus', 'exercitus', 'gradus', 'habitus', 'motus', 'portus', 'senatus', 'sumptus', 'versus', 'domus']);
+const THIRD_NOMINATIVE_IS = new Set(['civis', 'clavis', 'collis', 'hostis', 'ignis', 'iuvenis', 'martialis', 'navis', 'nobilis', 'panis', 'pelvis', 'vestis', 'vis']);
+const NEUTER_PLURAL_A = new Set(['bona', 'carmina', 'membra', 'opera', 'scripta']);
+const GENITIVE_HEADWORD_HINTS = {
+  temporis: 'Temporis is the genitive of tempus (“of the time”), not the ending that means “to/for/by/with the ___s.”',
+  urbis: 'Urbis is the genitive of urbs (“of the city”), not the ending that means “to/for/by/with the ___s.”'
+};
 
 const STORAGE_KEY = 'latinLaunchpadState';
 const PROFILES_STORAGE_KEY = 'latinLaunchpadProfiles';
@@ -149,13 +159,57 @@ const GUEST_PROFILE_ID = 'guest';
 const SUPABASE_URL = 'https://fmwdkpjetpftuuposmog.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_c7bs4AqY2ni-el3GqKxGuA_HbaUA_fJ';
 const AUTH_REDIRECT_URL = 'https://latinlaunchpad.com/';
+const SUPABASE_SCRIPT = 'supabase.js';
 let _supabaseClient = null;
+let _supabaseLoad = null;
+
+function shouldLoadAccountClient() {
+  const hash = window.location.hash || '';
+  if (hash.includes('access_token') || hash.includes('type=recovery') || hash.includes('error_description')) return true;
+  if (isEmailAccount()) return true;
+  try {
+    for (let index = 0; index < localStorage.length; index += 1) {
+      const key = localStorage.key(index) || '';
+      if (/^sb-.+-auth-token$/.test(key) && (localStorage.getItem(key) || '').includes('access_token')) return true;
+    }
+  } catch (error) {
+    return false;
+  }
+  return false;
+}
+
+function ensureSupabase() {
+  if (window.supabase) return Promise.resolve(window.supabase);
+  if (_supabaseLoad) return _supabaseLoad;
+  _supabaseLoad = new Promise((resolve, reject) => {
+    const script = document.createElement('script');
+    script.src = SUPABASE_SCRIPT;
+    script.async = true;
+    script.onload = () => resolve(window.supabase);
+    script.onerror = () => {
+      _supabaseLoad = null;
+      reject(new Error('Account library failed to load'));
+    };
+    document.head.appendChild(script);
+  });
+  return _supabaseLoad;
+}
 
 function getSupabase() {
   if (window.supabase && !_supabaseClient) {
     _supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
   return _supabaseClient;
+}
+
+async function getSupabaseAsync() {
+  try {
+    await ensureSupabase();
+  } catch (error) {
+    console.warn('Account library failed to load.', error);
+    return null;
+  }
+  return getSupabase();
 }
 const VALID_GRADES = CURRICULUM_LEVELS.map((level) => level.grade);
 const FLASHCARD_SESSION_DURATIONS = [300, 600, 900];
@@ -691,7 +745,7 @@ function loadState() {
 // ── Supabase sync ──────────────────────────────────────────────────────────
 
 async function supabaseLoadProfile(email) {
-  const db = getSupabase();
+  const db = await getSupabaseAsync();
   if (!db) return null;
   try {
     const [profileRes, progressRes, wordsRes, badgesRes] = await Promise.all([
@@ -751,7 +805,7 @@ async function supabaseLoadProfile(email) {
 
 async function supabaseSaveState() {
   if (!isEmailAccount()) return;
-  const db = getSupabase();
+  const db = await getSupabaseAsync();
   if (!db) return;
   const email = AppState.account.email;
   try {
@@ -804,7 +858,7 @@ async function supabaseSaveState() {
 
 // ── End Supabase sync ──────────────────────────────────────────────────────
 
-function showPage(page) {
+function showPage(page, options = {}) {
   if (!pages[page]) {
     console.warn(`showPage called with unknown page: ${page}`);
     return;
@@ -813,8 +867,10 @@ function showPage(page) {
   if (page !== 'study') stopFlashcardTimer();
   pages[page].classList.add('active');
   updateNavState(page);
+  document.getElementById('headerNav')?.classList.remove('is-open');
+  document.getElementById('headerMenuButton')?.setAttribute('aria-expanded', 'false');
   window.LatinLaunchpadAnalytics?.trackPageView(page);
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (!options.preserveScroll) window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function updateNavState(page) {
@@ -1068,7 +1124,7 @@ async function signInWithEmail(email, password) {
   if (submitButton) submitButton.disabled = true;
   setAccountMessage('Signing in…', 'neutral');
 
-  const db = getSupabase();
+  const db = await getSupabaseAsync();
   if (db) {
     try {
       const { data, error } = await db.auth.signInWithPassword({ email: normalizedEmail, password });
@@ -1107,7 +1163,7 @@ async function signUpWithEmail(email, password) {
   if (submitButton) submitButton.disabled = true;
   setAccountMessage('Creating account…', 'neutral');
 
-  const db = getSupabase();
+  const db = await getSupabaseAsync();
   if (db) {
     try {
       const { data, error } = await db.auth.signUp({
@@ -1153,7 +1209,7 @@ async function sendPasswordReset(email) {
   const submitButton = elements.forgotPasswordForm?.querySelector('[type="submit"]');
   if (submitButton) submitButton.disabled = true;
 
-  const db = getSupabase();
+  const db = await getSupabaseAsync();
   if (db) {
     try {
       const { error } = await db.auth.resetPasswordForEmail(normalizedEmail, {
@@ -1206,7 +1262,7 @@ async function updatePassword(newPassword, confirmPassword) {
   const submitButton = elements.resetPasswordForm?.querySelector('[type="submit"]');
   if (submitButton) submitButton.disabled = true;
 
-  const db = getSupabase();
+  const db = await getSupabaseAsync();
   if (db) {
     try {
       const { error } = await db.auth.updateUser({ password: newPassword });
@@ -1268,7 +1324,7 @@ async function exportAccountData() {
       return;
     }
 
-    const db = getSupabase();
+    const db = await getSupabaseAsync();
     if (!db) throw new Error('Account service unavailable');
     const { data: userData, error: userError } = await db.auth.getUser();
     if (userError || !userData.user?.email) throw userError || new Error('No authenticated user');
@@ -1328,7 +1384,7 @@ async function deleteAccount() {
   setAccountDataMessage('Deleting your account…');
 
   try {
-    const db = getSupabase();
+    const db = await getSupabaseAsync();
     if (!db) throw new Error('Account service unavailable');
     const profileId = AppState.account.profileId;
     const { error } = await db.rpc('delete_current_account');
@@ -1356,7 +1412,7 @@ async function deleteAccount() {
 
 function continueAsGuest() {
   saveState();
-  const db = getSupabase();
+  const db = window.supabase ? getSupabase() : null;
   if (db) db.auth.signOut().catch(() => {});
   activateGuestProfile();
   setAccountMessage('Using guest mode.', 'success');
@@ -1388,6 +1444,9 @@ async function init() {
   renderAccountControls();
   let passwordRecoveryActive = false;
 
+  if (shouldLoadAccountClient()) {
+    await ensureSupabase().catch((error) => console.warn('Account library failed to load.', error));
+  }
   const db = getSupabase();
   if (db) {
     // Set up auth listener FIRST — before getSession — so the Supabase client
@@ -2123,7 +2182,7 @@ function renderLessonSeekFind(lesson) {
       <div class="seek-find-layout">
         <figure class="seek-find-figure">
           <div class="seek-find-canvas">
-            <img src="${escapeHtml(config.image)}" alt="${escapeHtml(lesson.story.pictureCue)}" width="1536" height="1024" loading="lazy" />
+            ${renderResponsiveStoryImage(config.image, lesson.story.pictureCue, '(max-width: 900px) 92vw, 640px')}
             ${hotspots}
             ${complete ? '<div class="seek-find-complete-banner" role="status"><span aria-hidden="true">★</span> Euge! You found them all!</div>' : ''}
           </div>
@@ -3404,6 +3463,17 @@ function renderHighlightedLatin(text, words) {
     .join('');
 }
 
+function renderResponsiveStoryImage(src, alt, sizes) {
+  const safeSrc = escapeHtml(src || '');
+  if (!safeSrc) return '';
+  const base = String(src || '').replace(/\.(jpe?g|png|webp)$/i, '');
+  const webpSrcset = `${escapeHtml(`${base}-768.webp`)} 768w, ${escapeHtml(`${base}-1280.webp`)} 1280w`;
+  return `<picture>
+    <source type="image/webp" srcset="${webpSrcset}" sizes="${escapeHtml(sizes)}" />
+    <img src="${safeSrc}" alt="${escapeHtml(alt || '')}" width="1536" height="1024" loading="lazy" decoding="async" />
+  </picture>`;
+}
+
 function renderStoryScene(lessonOrStory) {
   if (!elements.storyScene) return;
   const lesson = lessonOrStory?.story ? lessonOrStory : null;
@@ -3426,7 +3496,7 @@ function renderStoryScene(lessonOrStory) {
     <section class="story-scene-panel" style="--scene-bg: ${escapeHtml(story.visual.bg)}; --scene-accent: ${escapeHtml(story.visual.accent)};">
       <figure class="story-visual">
         ${storyImage
-          ? `<img src="${escapeHtml(storyImage)}" alt="${escapeHtml(story.pictureCue)}" width="1536" height="1024" loading="lazy" />`
+          ? renderResponsiveStoryImage(storyImage, story.pictureCue, '(max-width: 700px) 92vw, 480px')
           : `<div class="story-visual-fallback" role="img" aria-label="${escapeHtml(story.pictureCue)}">${story.visual.icons.map((icon) => `<span aria-hidden="true">${escapeHtml(icon)}</span>`).join('')}</div>`}
       </figure>
       <div class="story-copy">
@@ -3490,7 +3560,7 @@ function renderFullStory(lesson) {
         <button class="story-reader-close" type="button" data-story-close aria-label="Close full story">&times;</button>
       </header>
       <figure class="story-reader-illustration">
-        <img src="${escapeHtml(story.seekFind?.image || '')}" alt="${escapeHtml(story.pictureCue)}" width="1536" height="1024" />
+        ${renderResponsiveStoryImage(story.seekFind?.image || '', story.pictureCue, '(max-width: 700px) 92vw, 480px')}
         <figcaption>${escapeHtml(story.pictureCue)}</figcaption>
       </figure>
       <div class="story-reader-labels" aria-hidden="true">
@@ -3502,12 +3572,26 @@ function renderFullStory(lesson) {
   elements.storyReader.showModal();
 }
 
+function hintHeadwordKey(latin) {
+  return String(latin || '').toLowerCase().replace(/[^a-z]/g, '');
+}
+
 function getEndingHint(latin) {
-  const lower = latin.toLowerCase();
-  for (const entry of ENDING_HINTS) {
-    if (lower.endsWith(entry.suffix)) {
-      return entry.hint;
-    }
+  const key = hintHeadwordKey(latin);
+  if (!key) return '';
+  if (Object.prototype.hasOwnProperty.call(GENITIVE_HEADWORD_HINTS, key)) return GENITIVE_HEADWORD_HINTS[key];
+  if (key === 'contra') return 'Contra is a preposition meaning “against.” The final -a is not a first-declension noun ending.';
+  if (key === 'arma') return 'Arma is a second-declension neuter plural. This -a marks more than one thing, not a first-declension singular subject.';
+  if (NEUTER_PLURAL_A.has(key)) return 'This -a form is a neuter plural, not a first-declension singular subject.';
+  if (THIRD_NEUTER_US.has(key)) return 'This -us noun is third-declension neuter. Here -us is the subject form for one thing, not the usual second-declension masculine ending.';
+  if (THIRD_OTHER_US.has(key)) return 'This -us noun is third declension, not second-declension masculine. The subject form ends in -us, and other cases use a different stem.';
+  if (key === 'domus') return 'Domus is fourth declension, with a few second-declension forms. This -us is not the ordinary second-declension masculine ending.';
+  if (FOURTH_DECLENSION_US.has(key)) return 'This -us noun is fourth declension. The subject form ends in -us, and the genitive singular is also -us.';
+  if (THIRD_NOMINATIVE_IS.has(key)) return 'This -is word is a third-declension subject form for one person or thing, not the ending that means “to/for/by/with the ___s.”';
+
+  const hints = ENDING_HINTS.slice().sort((left, right) => right.suffix.length - left.suffix.length);
+  for (const entry of hints) {
+    if (key.endsWith(entry.suffix)) return entry.hint;
   }
   return '';
 }
@@ -3702,15 +3786,42 @@ function createPictureOptionButton(choice, lesson) {
   return button;
 }
 
+function latinHeadwordKey(latin) {
+  return String(latin || '').toLowerCase().replace(/[^a-z]/g, '');
+}
+
+function addMeaningVariants(meanings, english) {
+  String(english || '').split(/\s*\/\s*|\s*;\s*/).forEach((part) => {
+    const trimmed = part.trim();
+    if (trimmed) meanings.add(trimmed);
+  });
+}
+
+function meaningsForHeadword(latin, extraWords) {
+  const key = latinHeadwordKey(latin);
+  const meanings = new Set();
+  if (!key) return meanings;
+  const consider = (word) => {
+    if (!word || latinHeadwordKey(word.latin) !== key) return;
+    addMeaningVariants(meanings, word.english);
+    addMeaningVariants(meanings, word.previewAnswer);
+  };
+  if (typeof GRADE_WORDS !== 'undefined') Object.values(GRADE_WORDS).flat().forEach(consider);
+  (extraWords || []).forEach(consider);
+  return meanings;
+}
+
 function createChoices(question, words) {
   const target = question.english;
+  const blocked = meaningsForHeadword(question.latin, words);
+  const isDistractor = (text) => Boolean(text) && text !== target && !blocked.has(text);
   if (Array.isArray(question.choices) && question.choices.length > 0) {
-    return Array.from(new Set([target, ...question.choices].filter(Boolean)))
+    return Array.from(new Set([target, ...question.choices].filter((text) => text === target || isDistractor(text))))
       .sort(() => Math.random() - 0.5);
   }
 
   const uniqueChoices = Array.from(new Set(words.map((item) => item.english)));
-  const distractorPool = uniqueChoices.filter((text) => text !== target);
+  const distractorPool = uniqueChoices.filter(isDistractor);
   const choices = [target];
 
   while (choices.length < 4 && distractorPool.length > 0) {
@@ -3724,7 +3835,7 @@ function createChoices(question, words) {
         Object.values(GRADE_WORDS)
           .flat()
           .map((item) => item.english)
-          .filter((text) => text !== target && !choices.includes(text))
+          .filter((text) => isDistractor(text) && !choices.includes(text))
       )
     );
     while (choices.length < 4 && fallbackPool.length > 0) {
@@ -4354,6 +4465,32 @@ function tickFlashcards() {
   updateFlashcardClockDisplay();
 }
 
+function startFlashcardTimerWhenVisible() {
+  const stage = elements.flashcardStage;
+  if (!stage || typeof IntersectionObserver !== 'function') return;
+  let started = false;
+  const observer = new IntersectionObserver((entries) => {
+    const visible = entries.some((entry) => entry.isIntersecting && entry.intersectionRatio >= 0.5);
+    if (!visible || started) return;
+    if (!pages.study?.classList.contains('active') || StudyState.mode !== 'flashcards') {
+      observer.disconnect();
+      return;
+    }
+    started = true;
+    observer.disconnect();
+    if (StudyState.running) return;
+    StudyState.running = true;
+    StudyState.lastTick = performance.now();
+    StudyState.timerId = window.setInterval(tickFlashcards, 100);
+    renderFlashcard();
+  }, { threshold: [0.5] });
+  observer.observe(stage);
+  window.requestAnimationFrame(() => {
+    if (!pages.study?.classList.contains('active')) return;
+    stage.scrollIntoView({ block: 'center', behavior: 'auto' });
+  });
+}
+
 function toggleFlashcardTimer() {
   if (StudyState.running) {
     stopFlashcardTimer();
@@ -4550,12 +4687,14 @@ function renderAssessments() {
 
   elements.assessmentBuilder.innerHTML = `
     <div class="assessment-mode-tabs" role="tablist" aria-label="Assessment type">
-      <button type="button" class="segmented-button${AssessmentState.mode === 'quiz' ? ' active' : ''}" data-assessment-mode="quiz">Quiz</button>
-      <button type="button" class="segmented-button${AssessmentState.mode === 'test' ? ' active' : ''}" data-assessment-mode="test">Test</button>
+      <button type="button" class="segmented-button${AssessmentState.mode === 'quiz' ? ' active' : ''}" role="tab" id="assessmentTabQuiz" data-assessment-mode="quiz" aria-selected="${AssessmentState.mode === 'quiz' ? 'true' : 'false'}" aria-controls="assessmentSetupPanel" tabindex="${AssessmentState.mode === 'quiz' ? '0' : '-1'}">Quiz</button>
+      <button type="button" class="segmented-button${AssessmentState.mode === 'test' ? ' active' : ''}" role="tab" id="assessmentTabTest" data-assessment-mode="test" aria-selected="${AssessmentState.mode === 'test' ? 'true' : 'false'}" aria-controls="assessmentSetupPanel" tabindex="${AssessmentState.mode === 'test' ? '0' : '-1'}">Test</button>
     </div>
+    <div id="assessmentSetupPanel" role="tabpanel" aria-labelledby="${AssessmentState.mode === 'quiz' ? 'assessmentTabQuiz' : 'assessmentTabTest'}">
     ${AssessmentState.mode === 'quiz'
       ? renderQuizBuilder(quizChapters, quizBank)
       : renderTestBuilder(testBank)}
+    </div>
     <p class="assessment-message" aria-live="polite">${escapeHtml(AssessmentState.message)}</p>
     <button type="button" class="primary-button assessment-start-button" data-assessment-action="start">
       Start ${AssessmentState.mode === 'quiz' ? 'quiz' : 'test'}
@@ -4772,11 +4911,10 @@ function startQuickFlashcards(grade) {
   ensureStudyWords();
   shuffleFlashcards();
   resetFlashcardClock();
-  StudyState.running = true;
-  StudyState.lastTick = performance.now();
-  StudyState.timerId = window.setInterval(tickFlashcards, 100);
+  StudyState.running = false;
   renderStudyPage();
-  showPage('study');
+  showPage('study', { preserveScroll: true });
+  startFlashcardTimerWhenVisible();
 }
 
 function selectAssessmentOption(value) {
@@ -4847,6 +4985,7 @@ function nextAssessmentQuestion() {
 function setupEvents() {
   elements.startButton.addEventListener('click', showLessonListOrOnboarding);
   elements.welcomeAccountButton.addEventListener('click', () => {
+    ensureSupabase().catch(() => {});
     renderAccountControls();
     showPage('account');
   });
@@ -4876,6 +5015,7 @@ function setupEvents() {
     if (target) startQuickFlashcards(Number(target.dataset.homeFlashcardsGrade));
   }));
   elements.accountButton.addEventListener('click', () => {
+    ensureSupabase().catch(() => {});
     renderAccountControls();
     showForgotPasswordForm(false);
     showPage('account');
@@ -5121,6 +5261,25 @@ function setupEvents() {
       event.preventDefault();
       nextQuestion();
     }
+  });
+  elements.headerMenuButton = document.getElementById('headerMenuButton');
+  elements.headerMenuButton?.addEventListener('click', () => {
+    const nav = document.getElementById('headerNav');
+    if (!nav) return;
+    const open = !nav.classList.contains('is-open');
+    nav.classList.toggle('is-open', open);
+    elements.headerMenuButton.setAttribute('aria-expanded', String(open));
+  });
+  elements.assessmentBuilder?.addEventListener('keydown', (event) => {
+    const tab = event.target instanceof Element ? event.target.closest('[role="tab"]') : null;
+    if (!tab || (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft')) return;
+    const tabs = [...elements.assessmentBuilder.querySelectorAll('[role="tab"]')];
+    const index = tabs.indexOf(tab);
+    if (index < 0) return;
+    event.preventDefault();
+    const next = tabs[(index + (event.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+    next?.focus();
+    next?.click();
   });
   elements.assessmentBuilder?.addEventListener('click', (event) => {
     const target = event.target instanceof Element ? event.target : null;

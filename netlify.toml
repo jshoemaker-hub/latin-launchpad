@@ -1,6 +1,63 @@
 [build]
   publish = "dist"
-  command = "mkdir -p dist && cp _headers index.html flashcards.html about.html privacy.html terms.html contact.html parents-teachers.html school-privacy.html styles.css app.js analytics.js contact-form.js word-banks.js reference-vocabulary.js latin-phrases.js latin-stories.js latin-culture.js classroom-latin.js learning-objectives.js grammar-lessons.js og-image.png dist/ && cp -R assets dist/assets"
+  command = "mkdir -p dist && cp _headers index.html flashcards.html flashcards.js about.html privacy.html terms.html contact.html parents-teachers.html school-privacy.html 404.html styles.css app.js analytics.js contact-form.js word-banks.js reference-vocabulary.js latin-phrases.js latin-stories.js latin-culture.js classroom-latin.js learning-objectives.js grammar-lessons.js supabase.js og-image.jpg favicon.ico favicon.svg robots.txt sitemap.xml dist/ && cp -R assets dist/assets"
+
+[build.processing.html]
+  pretty_urls = true
 
 [functions]
   directory = "netlify/functions"
+
+[[redirects]]
+  from = "/index.html"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/about"
+  to = "/about.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/privacy"
+  to = "/privacy.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/terms"
+  to = "/terms.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/contact"
+  to = "/contact.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/parents-teachers"
+  to = "/parents-teachers.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/school-privacy"
+  to = "/school-privacy.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/flashcards"
+  to = "/flashcards.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/og-image.png"
+  to = "/og-image.jpg"
+  status = 301
+  force = true

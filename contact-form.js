@@ -7,15 +7,36 @@
     statusElement.dataset.tone = tone;
   }
 
-  function resetSubmissionTimer(form) {
-    const submittedAt = form.elements.namedItem('submittedAt');
-    if (submittedAt) submittedAt.value = String(Date.now());
+  async function loadFormToken(form) {
+    const field = form.elements.namedItem('formToken');
+    if (!field) return false;
+    try {
+      const response = await fetch(CONTACT_ENDPOINT, { headers: { Accept: 'application/json' } });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.token) return false;
+      field.value = result.token;
+      return true;
+    } catch (error) {
+      console.warn('Contact token error:', error);
+      return false;
+    }
   }
 
   async function sendContactForm(form, statusElement) {
     if (!form) return false;
     if (typeof form.reportValidity === 'function' && !form.reportValidity()) {
       setStatus(statusElement, 'Please complete the required fields first.', 'error');
+      return false;
+    }
+
+    const tokenField = form.elements.namedItem('formToken');
+    if (tokenField && !tokenField.value) {
+      const loaded = await loadFormToken(form);
+      if (!loaded) {
+        setStatus(statusElement, 'Please refresh the page and try again.', 'error');
+        return false;
+      }
+      setStatus(statusElement, 'Please wait a moment and try again.', 'error');
       return false;
     }
 
@@ -40,7 +61,7 @@
       }
 
       form.reset();
-      resetSubmissionTimer(form);
+      await loadFormToken(form);
       setStatus(statusElement, 'Message sent! We\'ll be in touch.', 'success');
       return true;
     } catch (error) {
@@ -61,7 +82,7 @@
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-contact-form]').forEach((form) => {
       const statusElement = document.getElementById(form.dataset.statusTarget || '');
-      resetSubmissionTimer(form);
+      loadFormToken(form);
       form.addEventListener('submit', (event) => {
         event.preventDefault();
         sendContactForm(form, statusElement);
