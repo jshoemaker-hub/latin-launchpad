@@ -81,9 +81,6 @@ const GRADE_WORDS = {
       ['loculus', 'small place', '📦'],
       ['murus', 'wall', '🧱'],
       ['numerus', 'number', '🔢'],
-      ['senatus', 'senate', '🏛️'],
-      ['eques', 'cavalryman', '🐴'],
-      ['pulcher', 'beautiful', '' ],
       ['libellus', 'little book', '📘'],
       ['arcus', 'arch', '🌈'],
       ['cubiculum', 'bedroom', '🛌'],
@@ -216,7 +213,6 @@ const GRADE_WORDS = {
       ['diurnus', 'daily', '☀️'],
       ['victoria', 'victory', '🏆'],
       ['tempestas', 'weather', '☁️'],
-      ['sophia', 'wisdom', '🧠'],
       ['disciplina', 'training', '🎓'],
       ['educatio', 'education', '📖'],
       ['filius', 'son', '👦']

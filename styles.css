@@ -4926,3 +4926,7 @@ body.print-preview-open .app-shell {
     font-size: 0.98rem;
   }
 }
+
+.analytics-consent[hidden] {
+  display: none !important;
+}

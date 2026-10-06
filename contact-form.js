@@ -7,6 +7,18 @@
     statusElement.dataset.tone = tone;
   }
 
+  function contactFormIsVisible(form) {
+    const page = form.closest('.page');
+    if (!page) return true;
+    return page.classList.contains('active');
+  }
+
+  function prepareVisibleContactForms() {
+    document.querySelectorAll('[data-contact-form]').forEach((form) => {
+      if (contactFormIsVisible(form)) loadFormToken(form);
+    });
+  }
+
   async function loadFormToken(form) {
     const field = form.elements.namedItem('formToken');
     if (!field) return false;
@@ -77,16 +89,16 @@
     }
   }
 
-  window.LatinLaunchpadContact = { CONTACT_ENDPOINT, sendContactForm };
+  window.LatinLaunchpadContact = { CONTACT_ENDPOINT, sendContactForm, prepareVisibleContactForms };
 
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('[data-contact-form]').forEach((form) => {
       const statusElement = document.getElementById(form.dataset.statusTarget || '');
-      loadFormToken(form);
       form.addEventListener('submit', (event) => {
         event.preventDefault();
         sendContactForm(form, statusElement);
       });
     });
+    prepareVisibleContactForms();
   });
 })();

@@ -6,7 +6,7 @@ const LEARNING_OBJECTIVES = {
     intro: "You're going to find out Latin is alive in the words you already use!",
     goals: [
       'Say Latin words out loud the right way',
-      'Build a 150-word foundation for people, home, nature, numbers, and daily life',
+      'Build a 120-word foundation for people, home, nature, numbers, and daily life',
       'Find 15+ English words that come from Latin (like aqua → aquarium)',
       'Notice that Latin words change their endings'
     ]
