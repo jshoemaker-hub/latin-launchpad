@@ -387,14 +387,20 @@ function startSession() {
 function renderCard() {
   const word  = state.deck[state.index];
   const total = state.deck.length;
+  const card = document.getElementById('flashcard');
+  // Snap to the front before writing the next word. Leaving the 3D
+  // transition on would rotate through the back face and flash the answer.
+  card.style.transition = 'none';
+  card.classList.remove('flipped');
+  void card.offsetWidth;
+  card.style.transition = '';
+  state.flipped = false;
   document.getElementById('cardEmoji').textContent     = word.emoji||'🏛️';
   document.getElementById('cardEmojiBack').textContent = word.emoji||'🏛️';
   document.getElementById('cardFront').textContent     = word.latin;
   document.getElementById('cardBack').textContent      = word.english;
   document.getElementById('cardCounter').textContent   = `${state.index+1} / ${total}`;
   document.getElementById('progressFill').style.width  = `${(state.index/total)*100}%`;
-  document.getElementById('flashcard').classList.remove('flipped');
-  state.flipped = false;
   const row = document.getElementById('answerRow');
   row.style.opacity = '0'; row.style.pointerEvents = 'none';
   updateLiveScore('liveCorrect','liveMissed','livePct');
