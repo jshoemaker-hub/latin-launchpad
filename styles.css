@@ -2176,6 +2176,21 @@ input {
 .flashcard-kicker { color: #855d12; font-size: 0.78rem; font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; }
 .flashcard-face > strong { max-width: 760px; overflow-wrap: anywhere; font-family: Georgia, serif; font-size: clamp(2rem, 5vw, 3.5rem); line-height: 1.1; }
 .flashcard-face > small { color: var(--muted); font-weight: 800; }
+.flashcard-ratings { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.flashcard-rating,
+.flashcard-rate-note { font-weight: 800; }
+.flashcard-rating {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: #ffffff;
+  cursor: pointer;
+}
+.flashcard-rating.active { border-color: var(--primary); background: #f3faf7; color: var(--primary); }
+.flashcard-rate-note { margin: 0; color: var(--muted); }
+.review-queue-summary { margin: 0 0 10px; color: var(--text); font-weight: 800; }
+.ending-stem { font-family: Georgia, serif; letter-spacing: 0.03em; }
 .flashcard-navigation { justify-content: center; margin-top: 14px; }
 
 .word-picture {
@@ -3568,7 +3583,8 @@ input {
   }
 
   .practice-mode-button {
-    flex: 1;
+    flex: 1 1 42%;
+    min-height: 44px;
   }
 
   .audio-toggle {

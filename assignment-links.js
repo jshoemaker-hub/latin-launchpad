@@ -3,7 +3,7 @@
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.LatinLaunchpadAssign = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
-  const PRACTICE_MODES = ['meaning', 'picture', 'arrange', 'translate', 'compose'];
+  const PRACTICE_MODES = ['meaning', 'picture', 'arrange', 'translate', 'compose', 'recall', 'ending', 'chant'];
   const QUESTION_COUNTS = [10, 25, 50, 100];
   const ANNUAL_EXAM_LEVELS = ['intro', 'beginning', 'beginning-reading', 'intermediate', 'intermediate-reading', 'advanced-prose', 'advanced-poetry', 'advanced-reading'];
   const ANNUAL_EXAM_CATEGORIES = ['grammar', 'vocabulary', 'derivatives', 'mottoes', 'oral', 'mythology', 'history', 'geography', 'culture', 'reading'];

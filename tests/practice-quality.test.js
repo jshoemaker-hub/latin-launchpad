@@ -88,6 +88,22 @@ test('multiple-choice distractors exclude every meaning of the same Latin word',
     assert.ok(!choices.includes('road'), 'via offered road as a wrong answer');
     assert.ok(!choices.includes('way'), 'via offered way as a wrong answer');
   }
+
+  const mixed = [
+    { latin: 'puella', english: 'girl' },
+    { latin: 'servus', english: 'servant' },
+    { latin: 'aqua', english: 'water' },
+    { latin: 'terra', english: 'earth' },
+    { latin: 'salve magister', english: 'hello, teacher', isPhrase: true }
+  ];
+  for (let attempt = 0; attempt < 12; attempt += 1) {
+    const choices = createChoices({ latin: 'puella', english: 'girl' }, mixed);
+    assert.ok(!choices.includes('hello, teacher'), 'a phrase was offered as a single-word distractor');
+    const phraseChoices = createChoices({ latin: 'salve magister', english: 'hello, teacher', isPhrase: true }, mixed);
+    assert.ok(phraseChoices.includes('hello, teacher'));
+    assert.ok(!phraseChoices.includes('girl'));
+    assert.ok(!phraseChoices.includes('servant'));
+  }
 });
 
 test('seek-find scenes ship resized WebP candidates', () => {
