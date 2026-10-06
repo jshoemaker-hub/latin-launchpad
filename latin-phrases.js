@@ -81,7 +81,7 @@ const LATIN_PHRASES = [
     latin: 'Verba volant, scripta manent',
     meaning: 'spoken words fly away, written words remain',
     note: 'A proverb about why writing matters.',
-    linkedWords: ['verbum', 'scripta', 'scribo', 'maneo'],
+    linkedWords: ['verbum', 'scriptum', 'scribo', 'maneo'],
     minGrade: 5,
     icon: 'W'
   },
