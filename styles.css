@@ -4148,7 +4148,7 @@ input {
 }
 
 body.print-preview-open {
-  background: #f5f7ff;
+  background: #e8edf5;
 }
 
 body.print-preview-open .app-shell {
@@ -4157,9 +4157,9 @@ body.print-preview-open .app-shell {
 
 .print-area.active {
   display: block;
-  max-width: 980px;
+  max-width: 8.4in;
   margin: 0 auto;
-  padding: 24px 18px 40px;
+  padding: 18px 16px 36px;
 }
 
 .print-preview-toolbar {
@@ -4167,8 +4167,8 @@ body.print-preview-open .app-shell {
   justify-content: space-between;
   gap: 16px;
   align-items: center;
-  margin-bottom: 18px;
-  padding: 18px;
+  margin-bottom: 14px;
+  padding: 16px 18px;
   background: #ffffff;
   border: 1px solid var(--border);
   border-radius: 18px;
@@ -4188,133 +4188,244 @@ body.print-preview-open .app-shell {
 }
 
 .print-sheet {
-  background: #ffffff;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 34px;
-  box-shadow: 0 24px 70px rgba(47, 59, 112, 0.12);
-  color: #111827;
+  --print-ink: #000;
+  box-sizing: border-box;
+  width: min(100%, 7.6in);
+  aspect-ratio: 7.6 / 10.1;
+  margin: 0 auto;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+  color: var(--print-ink);
+  border: 1px solid #c5cedd;
+  border-radius: 2px;
+  box-shadow: 0 18px 50px rgba(47, 59, 112, 0.12);
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.25;
 }
 
 .print-header {
   display: flex;
   justify-content: space-between;
-  gap: 18px;
-  align-items: flex-start;
-  padding-bottom: 14px;
-  border-bottom: 2px solid #111827;
+  align-items: flex-end;
+  gap: 0.22in;
+  padding-bottom: 0.07in;
+  border-bottom: 2.5px solid var(--print-ink);
+  flex: 0 0 auto;
 }
 
-.print-header h1 {
-  margin: 4px 0 0;
-  font-size: 1.7rem;
-  line-height: 1.12;
+.print-title-block {
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .print-kicker {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: 8pt;
   font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.print-name-lines {
-  display: grid;
-  gap: 10px;
-  min-width: 220px;
-  white-space: nowrap;
+.print-header h1 {
+  margin: 1px 0 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 22pt;
+  line-height: 1;
+  font-weight: 700;
 }
 
-.print-section {
-  margin-top: 18px;
+.print-subtitle {
+  margin: 3px 0 0;
+  font-size: 11.5pt;
+  line-height: 1.15;
+}
+
+.print-name-lines {
+  width: 46%;
+  min-width: 2.5in;
+  display: grid;
+  gap: 0.055in;
+  font-size: 11.5pt;
+}
+
+.write-field {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.08in;
+}
+
+.write-label {
+  flex: 0 0 0.78in;
+  font-weight: 700;
+}
+
+.write-line {
+  flex: 1 1 auto;
+  min-height: 1.2em;
+  border-bottom: 1.5px solid var(--print-ink);
+  text-align: center;
+  line-height: 1;
+}
+
+.write-line-value {
+  display: inline-block;
+  min-width: 0.85in;
+  padding: 0 0.28in;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.print-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.09in;
+  margin-top: 0.1in;
 }
 
 .print-section h2,
 .clue-panel h2,
 .word-bank h2 {
-  margin: 0 0 8px;
-  font-size: 0.86rem;
+  margin: 0 0 0.04in;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 9.5pt;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.print-intro p,
+.print-focus p {
+  margin: 0 0 0.035in;
+  font-size: 11.5pt;
+  line-height: 1.28;
+}
+
+.print-intro p:last-child,
+.print-focus p:last-child {
+  margin-bottom: 0;
+}
+
+.print-terms {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.recap-table {
+  border-top: 1.15pt solid var(--print-ink);
+  border-left: 1.15pt solid var(--print-ink);
+  background: #fff;
+}
+
+.recap-row {
+  display: grid;
+}
+
+.recap-table.cols-2 .recap-row {
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.45fr);
+}
+
+.recap-table.cols-3 .recap-row {
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.15fr) minmax(0, 1.55fr);
+}
+
+.recap-row > div {
+  min-width: 0;
+  padding: 0.045in 0.07in;
+  border-right: 0.9pt solid var(--print-ink);
+  border-bottom: 0.9pt solid var(--print-ink);
+  display: flex;
+  align-items: center;
+}
+
+.recap-head {
+  font-size: 8.5pt;
+  font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
-.print-section p {
-  margin: 0 0 8px;
+.recap-compact {
+  font-size: 11.5pt;
+  line-height: 1.25;
 }
 
-.print-focus-list {
+.terms-table {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 0;
-  margin: 0;
-  list-style: none;
+  flex-direction: column;
+  font-size: var(--recap-size, 12.5pt);
+  line-height: 1.22;
 }
 
-.print-focus-list li {
-  padding: 5px 9px;
-  border: 1px solid #9ca3af;
-  border-radius: 999px;
-  font-weight: 700;
+.terms-table .recap-row {
+  flex: 1 1 auto;
 }
 
-.summary-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-
-.summary-table th,
-.summary-table td {
-  border: 1px solid #9ca3af;
-  padding: 8px;
-  vertical-align: top;
-}
-
-.summary-table th {
-  background: #f3f4f6;
-  text-align: left;
-}
-
-.summary-table th:nth-child(1),
-.summary-table td:nth-child(1) {
-  width: 24%;
-  font-weight: 700;
-}
-
-.summary-table th:nth-child(2),
-.summary-table td:nth-child(2) {
-  width: 27%;
+.terms-table .recap-head {
+  flex: 0 0 auto;
 }
 
 .puzzle-layout {
-  display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: 22px;
-  align-items: start;
-  margin-top: 20px;
+  gap: 0.1in;
+}
+
+.puzzle-stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  container-type: size;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .crossword-grid,
 .word-find-grid {
-  border-collapse: collapse;
+  width: min(100cqi, 100cqb);
+  height: min(100cqi, 100cqb);
+  display: grid;
+  grid-template-columns: repeat(var(--grid-size), minmax(0, 1fr));
+  grid-template-rows: repeat(var(--grid-size), minmax(0, 1fr));
+  background: transparent;
+}
+
+.word-find-grid {
+  border-top: 1.2pt solid var(--print-ink);
+  border-left: 1.2pt solid var(--print-ink);
+  background: #fff;
 }
 
 .crossword-cell,
-.crossword-block {
+.crossword-block,
+.word-find-cell {
   position: relative;
-  width: 28px;
-  height: 28px;
-  border: 1px solid #111827;
+  min-width: 0;
+  min-height: 0;
+  background: transparent;
+  container-type: size;
 }
 
 .crossword-cell {
-  background: #ffffff;
+  border: 0.9pt solid var(--print-ink);
+  background: #fff;
 }
 
 .crossword-block {
-  background: #111827;
+  border: 0;
+  background: transparent;
+}
+
+.word-find-cell {
+  border-right: 0.9pt solid var(--print-ink);
+  border-bottom: 0.9pt solid var(--print-ink);
+  background: #fff;
 }
 
 .cell-number {
@@ -4325,274 +4436,141 @@ body.print-preview-open .app-shell {
   line-height: 1;
 }
 
+.print-sheet .cell-number {
+  top: 0.5px;
+  left: 1.5px;
+  z-index: 1;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 28cqmin;
+  font-weight: 700;
+}
+
 .cell-answer {
   display: grid;
   place-items: center;
   width: 100%;
   height: 100%;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 62cqmin;
   font-weight: 800;
+  line-height: 1;
 }
 
 .clue-panel {
   display: grid;
-  gap: 14px;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.06in 0.22in;
+  align-content: start;
+  font-size: var(--clue-size, 12pt);
+  line-height: 1.22;
+}
+
+.clue-panel:has(.clue-list-section:only-child) {
+  grid-template-columns: 1fr;
+}
+
+.clue-panel h2 {
+  padding-bottom: 0.02in;
+  border-bottom: 1px solid var(--print-ink);
 }
 
 .clue-list {
-  padding-left: 22px;
+  list-style: none;
   margin: 0;
+  padding: 0;
 }
 
 .clue-list li {
-  margin-bottom: 7px;
+  display: grid;
+  grid-template-columns: 2.4em minmax(0, 1fr);
+  column-gap: 0.35em;
+  align-items: start;
+  margin: 0 0 0.035in;
 }
 
-.word-find-grid td {
-  width: 26px;
-  height: 26px;
-  border: 1px solid #6b7280;
-  text-align: center;
-  vertical-align: middle;
-  font-size: 0.86rem;
+.clue-number {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.word-find-cell {
+  display: grid;
+  place-items: center;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 66cqmin;
   font-weight: 800;
+  line-height: 1;
 }
 
 .word-bank ul {
-  columns: 2;
-  padding-left: 18px;
+  display: grid;
+  grid-template-columns: repeat(var(--word-cols, 2), minmax(0, 1fr));
+  gap: 0.05in 0.2in;
   margin: 0;
-  font-weight: 700;
+  padding: 0;
+  list-style: none;
+  font-size: var(--word-size, 15pt);
+  font-weight: 800;
 }
 
 .word-bank li {
-  margin-bottom: 8px;
+  border-bottom: 1.25px solid var(--print-ink);
+  padding: 0 0 0.03in;
+  line-height: 1.15;
 }
 
 @media print {
   @page {
-    size: letter;
     margin: 0.45in;
+    size: portrait;
   }
 
+  html,
   body {
-    background: #ffffff;
-    color: #111827;
+    height: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    overflow: hidden !important;
   }
 
-  .print-preview-toolbar {
+  body > *:not(#printArea) {
     display: none !important;
   }
 
-  body.print-preview-open .app-shell {
+  .analytics-consent,
+  .print-preview-toolbar,
+  dialog {
     display: none !important;
   }
 
+  .print-area,
   .print-area.active {
     display: block !important;
-    max-width: none;
-    margin: 0;
-    padding: 0;
+    height: 100% !important;
+    max-height: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    background: #fff !important;
   }
 
   .print-sheet {
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    padding: 0;
-    min-height: calc(11in - 0.9in);
-    font-family: Georgia, "Times New Roman", serif;
-    font-size: 10.5pt;
-    line-height: 1.25;
-    color: #111827;
-    background: #ffffff;
-  }
-
-  .print-header {
-    display: flex;
-    justify-content: space-between;
-    gap: 18px;
-    align-items: flex-start;
-    padding-bottom: 12px;
-    border-bottom: 2px solid #111827;
-  }
-
-  .print-header h1 {
-    margin: 3px 0 0;
-    font-size: 18pt;
-    line-height: 1.08;
-  }
-
-  .print-kicker {
-    margin: 0;
-    font-family: Inter, system-ui, sans-serif;
-    font-size: 8.5pt;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .print-name-lines {
-    display: grid;
-    gap: 10px;
-    min-width: 190px;
-    font-family: Inter, system-ui, sans-serif;
-    font-size: 9pt;
-    white-space: nowrap;
-  }
-
-  .print-section {
-    margin-top: 12px;
-    break-inside: avoid;
-  }
-
-  .print-section h2,
-  .clue-panel h2,
-  .word-bank h2 {
-    margin: 0 0 6px;
-    font-family: Inter, system-ui, sans-serif;
-    font-size: 10pt;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-  }
-
-  .print-section p {
-    margin: 0 0 5px;
-  }
-
-  .print-focus-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-  }
-
-  .print-focus-list li {
-    padding: 4px 8px;
-    border: 1px solid #9ca3af;
-    border-radius: 999px;
-    font-family: Inter, system-ui, sans-serif;
-    font-size: 8.5pt;
-  }
-
-  .summary-table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-  }
-
-  .summary-table th,
-  .summary-table td {
-    border: 1px solid #9ca3af;
-    padding: 5px 6px;
-    vertical-align: top;
-  }
-
-  .summary-table th {
-    background: #f3f4f6;
-    font-family: Inter, system-ui, sans-serif;
-    font-size: 8.5pt;
-    text-align: left;
-  }
-
-  .summary-table th:nth-child(1),
-  .summary-table td:nth-child(1) {
-    width: 24%;
-    font-weight: 700;
-  }
-
-  .summary-table th:nth-child(2),
-  .summary-table td:nth-child(2) {
-    width: 27%;
-  }
-
-  .puzzle-layout {
-    display: grid;
-    grid-template-columns: max-content 1fr;
-    gap: 20px;
-    align-items: start;
-    margin-top: 18px;
-  }
-
-  .crossword-grid,
-  .word-find-grid {
-    border-collapse: collapse;
-  }
-
-  .crossword-cell,
-  .crossword-block {
-    position: relative;
-    width: 0.24in;
-    height: 0.24in;
-    border: 1px solid #111827;
-  }
-
-  .crossword-cell {
-    background: #ffffff;
-  }
-
-  .crossword-block {
-    background: #111827;
-  }
-
-  .cell-number {
-    position: absolute;
-    top: 1px;
-    left: 2px;
-    font-family: Inter, system-ui, sans-serif;
-    font-size: 5.8pt;
-    line-height: 1;
-  }
-
-  .cell-answer {
-    display: grid;
-    place-items: center;
-    width: 100%;
-    height: 100%;
-    font-family: Inter, system-ui, sans-serif;
-    font-size: 10pt;
-    font-weight: 800;
-  }
-
-  .clue-panel {
-    display: grid;
-    gap: 12px;
-  }
-
-  .clue-list {
-    columns: 1;
-    padding-left: 22px;
-    margin: 0;
-  }
-
-  .clue-list li {
-    margin-bottom: 5px;
-    break-inside: avoid;
-  }
-
-  .word-find-grid td {
-    width: 0.22in;
-    height: 0.22in;
-    border: 1px solid #6b7280;
-    text-align: center;
-    vertical-align: middle;
-    font-family: Inter, system-ui, sans-serif;
-    font-size: 9.5pt;
-    font-weight: 800;
-  }
-
-  .word-bank ul {
-    columns: 2;
-    padding-left: 18px;
-    margin: 0;
-    font-family: Inter, system-ui, sans-serif;
-    font-size: 10pt;
-  }
-
-  .word-bank li {
-    margin-bottom: 7px;
-    break-inside: avoid;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    aspect-ratio: auto;
+    margin: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    color: #000 !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 }
 
