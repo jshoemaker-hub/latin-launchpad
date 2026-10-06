@@ -143,7 +143,7 @@ const NLE_LEVELS = [
       { id: 'reading', label: 'Reading comprehension', count: 33, categories: ['reading'], allPassages: true },
       { id: 'extension', label: 'Passage extension', count: 3, categories: ['mythology', 'history', 'geography', 'culture'] }
     ],
-    formatNote: 'The official reading exam has 36 questions, about 33 based on one or two Latin passages and about 3 extension questions. This site has a shorter original passage set for this level.',
+    formatNote: 'The official reading exam has 36 questions in about 45 minutes: about 33 based on one or two Latin passages and about 3 extension questions. This practice uses two original passages.',
     syllabus: [
       { heading: 'How this exam is different', items: [
         'Questions come from the passages. There is no separate grammar drill.',
@@ -208,7 +208,7 @@ const NLE_LEVELS = [
       { id: 'reading', label: 'Reading comprehension', count: 33, categories: ['reading'], allPassages: true },
       { id: 'extension', label: 'Passage extension', count: 3, categories: ['mythology', 'history', 'geography', 'culture'] }
     ],
-    formatNote: 'The official exam has 36 questions drawn from two prose passages. A full original set for this level is still to come.',
+    formatNote: 'The official exam has 36 questions in about 45 minutes, drawn from two prose passages, plus a few extension questions. This practice uses two original passages.',
     syllabus: [
       { heading: 'Reading grammar', items: [
         'Subjunctive uses that help reading: purpose, indirect command, indirect question, and cum clauses.',
@@ -237,7 +237,7 @@ const NLE_LEVELS = [
       { id: 'language', label: 'Language', count: 18, categories: ['grammar', 'vocabulary', 'derivatives', 'mottoes', 'oral'] },
       { id: 'reading', label: 'Reading comprehension', count: 10, categories: ['reading'] }
     ],
-    formatNote: 'The official exam has 40 questions, including an authentic or lightly adapted prose passage. This site currently offers the syllabus for this level rather than a full original exam.',
+    formatNote: 'The official exam has 40 multiple-choice questions in about 45 minutes, including an authentic or lightly adapted prose passage. This practice uses 12 Roman-world questions, 18 language questions, and a 10-question original passage.',
     syllabus: [
       { heading: 'Language', items: [
         'Subjunctive clauses common in prose: purpose, result, indirect question, cum, fearing, and conditions.',
@@ -268,7 +268,7 @@ const NLE_LEVELS = [
       { id: 'language', label: 'Language', count: 18, categories: ['grammar', 'vocabulary', 'derivatives', 'mottoes', 'oral'] },
       { id: 'reading', label: 'Reading comprehension', count: 10, categories: ['reading'] }
     ],
-    formatNote: 'The official exam has 40 questions and a poetry passage. Scansion of dactylic hexameter and elegiac couplet belongs to this level. A full original set is a follow-up.',
+    formatNote: 'The official exam has 40 multiple-choice questions in about 45 minutes and a poetry passage. Scansion of dactylic hexameter and the elegiac couplet belongs here. This practice uses 12 Roman-world questions, 18 language questions, and a 10-question original passage.',
     syllabus: [
       { heading: 'Poetry language', items: [
         'The prose grammar of the advanced level, plus poetic forms, syncopated verbs, and Greek accusatives such as Aenean.',
@@ -297,7 +297,7 @@ const NLE_LEVELS = [
       { id: 'reading', label: 'Reading comprehension', count: 33, categories: ['reading'], allPassages: true },
       { id: 'extension', label: 'Passage extension', count: 3, categories: ['mythology', 'history', 'geography', 'culture'] }
     ],
-    formatNote: 'The official exam has 36 questions on two authentic passages, one prose and one poetry. This site does not yet include an original advanced reading exam.',
+    formatNote: 'The official exam has 36 questions in about 45 minutes on two passages, one prose and one poetry, plus a few extension questions. This practice uses one original prose passage and one original hexameter passage.',
     syllabus: [
       { heading: 'What is asked', items: [
         'Comprehension of real Latin from authors such as Cicero, Livy, Horace, Ovid, and Pliny, and sometimes later Latin.',
@@ -664,18 +664,32 @@ function validateNleContent() {
     const reading = questionsForPassage(passage.id, 'reading');
     if (!reading.length) errors.push(`passage ${passage.id} has no reading questions`);
   });
-  ['intro', 'beginning', 'intermediate'].forEach((levelId) => {
+  NLE_LEVELS.forEach((level) => {
     for (let seed = 1; seed <= 6; seed += 1) {
-      const exam = buildNleExam(levelId, createNleRng(seed));
-      if (!exam?.complete) errors.push(`${levelId} seed ${seed} is incomplete (${exam?.questions.length || 0})`);
+      const exam = buildNleExam(level.id, createNleRng(seed));
+      if (!exam?.complete) errors.push(`${level.id} seed ${seed} is incomplete (${exam?.questions.length || 0})`);
       const reading = exam?.questions.filter((question) => question.section === 'reading') || [];
-      const passageIds = new Set(reading.map((question) => question.passageId));
-      if (passageIds.size !== 1) errors.push(`${levelId} seed ${seed} used ${passageIds.size} passages`);
-      const orders = reading.map((question) => question.order);
-      const sorted = orders.slice().sort((left, right) => left - right);
-      if (orders.join(',') !== sorted.join(',')) errors.push(`${levelId} seed ${seed} reading questions are out of order`);
-      if (levelId === 'intro' && exam?.storyId && exam.passage && exam.passage.storyId !== exam.storyId) {
-        errors.push(`${levelId} seed ${seed} passage does not continue the language story`);
+      const expectedPassages = level.readingExam ? 2 : 1;
+      const groups = [];
+      reading.forEach((question) => {
+        const last = groups[groups.length - 1];
+        if (!last || last.id !== question.passageId) groups.push({ id: question.passageId, orders: [question.order] });
+        else last.orders.push(question.order);
+      });
+      if (new Set(reading.map((question) => question.passageId)).size !== expectedPassages) {
+        errors.push(`${level.id} seed ${seed} used ${groups.length} reading passages`);
+      }
+      groups.forEach((group) => {
+        const sorted = group.orders.slice().sort((left, right) => left - right);
+        if (group.orders.join(',') !== sorted.join(',')) errors.push(`${level.id} seed ${seed} passage ${group.id} is out of order`);
+      });
+      if (level.readingExam) {
+        const extension = exam?.questions.filter((question) => question.section === 'extension') || [];
+        if (reading.length !== 33) errors.push(`${level.id} seed ${seed} has ${reading.length} reading questions`);
+        if (extension.length !== 3) errors.push(`${level.id} seed ${seed} has ${extension.length} extension questions`);
+      }
+      if (level.id === 'intro' && exam?.storyId && exam.passage && exam.passage.storyId !== exam.storyId) {
+        errors.push(`${level.id} seed ${seed} passage does not continue the language story`);
       }
     }
   });
@@ -686,4 +700,5 @@ globalThis.NLE_DISCLAIMER = NLE_DISCLAIMER;
 globalThis.NLE_LINKS = NLE_LINKS;
 globalThis.NLE_LEVELS = NLE_LEVELS;
 globalThis.NLE_QUESTIONS = NLE_QUESTIONS;
+globalThis.NLE_PASSAGES = NLE_PASSAGES;
 globalThis.NLE_TIME_LIMIT_SECONDS = NLE_TIME_LIMIT_SECONDS;
