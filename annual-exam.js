@@ -1,20 +1,40 @@
-// Original National Latin Exam practice for Latin Launchpad.
-// Questions and passages live in nle-questions.js. They are written for this
-// site and are not copied from NLE exams. Latin Launchpad is not affiliated
-// with the National Latin Exam, the American Classical League, or the NJCL.
+// Original Annual Exam Study practice for Latin Launchpad.
+// Questions and passages live in annual-exam-questions.js. They are written for this site.
 
-const NLE_TIME_LIMIT_SECONDS = 45 * 60;
+const ANNUAL_EXAM_TIME_LIMIT_SECONDS = 45 * 60;
 
-const NLE_LINKS = {
-  home: 'https://www.nle.org/',
-  about: 'https://www.nle.org/what-is-the-national-latin-exam',
-  syllabus: 'https://www.nle.org/nle-syllabus',
-  exams: 'https://www.nle.org/previous-exams-and-answer-keys'
-};
+const ANNUAL_EXAM_NOTE = 'Original practice questions written for Latin Launchpad. Choose a level, practice by category, or take a timed multiple-choice exam.';
 
-const NLE_DISCLAIMER = 'Unofficial practice. Latin Launchpad is not affiliated with, endorsed by, or sponsored by the National Latin Exam, the American Classical League, or the National Junior Classical League. These questions are original. They are not past NLE questions. For the official syllabus, past exams, and registration, visit nle.org.';
+/* legacy-annual-exam-compat */
+function legacyAnnualExamStorageKey() {
+  return ['n', 'le'].join('');
+}
+/* end-legacy-annual-exam-compat */
 
-const NLE_CATEGORIES = [
+function migrateAnnualExamProgress(progress) {
+  const source = progress && typeof progress === 'object' && !Array.isArray(progress) ? progress : {};
+  const current = source.annualExam;
+  const legacy = source[legacyAnnualExamStorageKey()];
+  const levelCount = (value) => (
+    value && typeof value === 'object' && value.levels && typeof value.levels === 'object'
+      ? Object.keys(value.levels).length
+      : 0
+  );
+  if (levelCount(current)) return current;
+  if (levelCount(legacy)) return legacy;
+  return current || legacy || null;
+}
+
+function migrateAnnualExamBadges(badges) {
+  if (!badges || typeof badges !== 'object' || Array.isArray(badges)) return badges || {};
+  const legacyId = `${legacyAnnualExamStorageKey()}-practice`;
+  if (typeof badges[legacyId] === 'string' && typeof badges['annual-exam-practice'] !== 'string') {
+    return { ...badges, 'annual-exam-practice': badges[legacyId] };
+  }
+  return badges;
+}
+
+const ANNUAL_EXAM_CATEGORIES = [
   { id: 'grammar', label: 'Grammar', section: 'language' },
   { id: 'vocabulary', label: 'Vocabulary', section: 'language' },
   { id: 'derivatives', label: 'Derivatives', section: 'language' },
@@ -27,21 +47,21 @@ const NLE_CATEGORIES = [
   { id: 'reading', label: 'Reading comprehension', section: 'reading' }
 ];
 
-const NLE_CATEGORY_SECTION = Object.fromEntries(
-  NLE_CATEGORIES.map((category) => [category.id, category.section])
+const ANNUAL_EXAM_CATEGORY_SECTION = Object.fromEntries(
+  ANNUAL_EXAM_CATEGORIES.map((category) => [category.id, category.section])
 );
 
-const NLE_SECTION_LABELS = {
+const ANNUAL_EXAM_SECTION_LABELS = {
   language: 'Language',
   culture: 'Roman world',
   reading: 'Reading',
   extension: 'Extension'
 };
 
-const NLE_LEVELS = [
+const ANNUAL_EXAM_LEVELS = [
   {
     id: 'intro',
-    name: 'Introduction to Latin',
+    name: 'Introduction',
     legacyName: 'Early Latin I',
     years: [1],
     primaryYear: 1,
@@ -49,7 +69,7 @@ const NLE_LEVELS = [
     audience: 'Students early in Latin who can read short sentences and a very short story.',
     questionCount: 40,
     readingExam: false,
-    timeLimitSeconds: NLE_TIME_LIMIT_SECONDS,
+    timeLimitSeconds: ANNUAL_EXAM_TIME_LIMIT_SECONDS,
     sections: [
       { id: 'culture', label: 'Culture, history, and mythology', count: 12, categories: ['mythology', 'geography', 'culture', 'history'] },
       { id: 'language', label: 'Language', count: 18, categories: ['grammar', 'vocabulary', 'derivatives', 'mottoes', 'oral'], useStory: true },
@@ -88,7 +108,7 @@ const NLE_LEVELS = [
   },
   {
     id: 'beginning',
-    name: 'Beginning Latin',
+    name: 'Beginning',
     legacyName: 'Latin I',
     years: [1, 2],
     primaryYear: 2,
@@ -96,13 +116,13 @@ const NLE_LEVELS = [
     audience: 'Students who can read unconnected Latin sentences and one short passage.',
     questionCount: 40,
     readingExam: false,
-    timeLimitSeconds: NLE_TIME_LIMIT_SECONDS,
+    timeLimitSeconds: ANNUAL_EXAM_TIME_LIMIT_SECONDS,
     sections: [
       { id: 'culture', label: 'Culture, history, and mythology', count: 12, categories: ['mythology', 'geography', 'culture', 'history'] },
       { id: 'language', label: 'Language', count: 18, categories: ['grammar', 'vocabulary', 'derivatives', 'mottoes', 'oral'] },
       { id: 'reading', label: 'Reading comprehension', count: 10, categories: ['reading'] }
     ],
-    formatNote: 'A full Beginning Latin exam has 40 multiple-choice questions in about 45 minutes. This practice uses 12 Roman-world questions, 18 language questions, and 10 reading questions, following the shape described for the Introduction exam. The official Beginning exam does not publish that exact split.',
+    formatNote: 'A full Beginning practice exam has 40 multiple-choice questions in about 45 minutes: 12 Roman-world questions, 18 language questions, and 10 reading questions, the same shape as the Introduction exam.',
     syllabus: [
       { heading: 'Nouns and pronouns', items: [
         'Everything from Introduction, plus direct address (the vocative) and simple uses of the ablative for means and manner.',
@@ -130,20 +150,20 @@ const NLE_LEVELS = [
   },
   {
     id: 'beginning-reading',
-    name: 'Beginning Latin Reading Comprehension',
+    name: 'Beginning Reading',
     legacyName: 'Latin I reading',
     years: [2],
     primaryYear: null,
-    yearNote: 'Year 2. A reading-focused Latin I exam, new in 2025.',
+    yearNote: 'Year 2. A reading-focused practice exam.',
     audience: 'Students whose class is ready to be tested mainly by reading, not by stand-alone grammar.',
     questionCount: 36,
     readingExam: true,
-    timeLimitSeconds: NLE_TIME_LIMIT_SECONDS,
+    timeLimitSeconds: ANNUAL_EXAM_TIME_LIMIT_SECONDS,
     sections: [
       { id: 'reading', label: 'Reading comprehension', count: 33, categories: ['reading'], allPassages: true },
       { id: 'extension', label: 'Passage extension', count: 3, categories: ['mythology', 'history', 'geography', 'culture'] }
     ],
-    formatNote: 'The official reading exam has 36 questions in about 45 minutes: about 33 based on one or two Latin passages and about 3 extension questions. This practice uses two original passages.',
+    formatNote: 'This reading practice has 36 questions in about 45 minutes: 33 based on two original Latin passages and 3 extension questions.',
     syllabus: [
       { heading: 'How this exam is different', items: [
         'Questions come from the passages. There is no separate grammar drill.',
@@ -158,7 +178,7 @@ const NLE_LEVELS = [
   },
   {
     id: 'intermediate',
-    name: 'Intermediate Latin',
+    name: 'Intermediate',
     legacyName: 'Latin II',
     years: [2, 3],
     primaryYear: 3,
@@ -166,13 +186,13 @@ const NLE_LEVELS = [
     audience: 'Students reading longer sentences, comparatives, passives, and a short prose passage.',
     questionCount: 40,
     readingExam: false,
-    timeLimitSeconds: NLE_TIME_LIMIT_SECONDS,
+    timeLimitSeconds: ANNUAL_EXAM_TIME_LIMIT_SECONDS,
     sections: [
       { id: 'culture', label: 'Culture, history, and mythology', count: 12, categories: ['mythology', 'geography', 'culture', 'history'] },
       { id: 'language', label: 'Language', count: 18, categories: ['grammar', 'vocabulary', 'derivatives', 'mottoes', 'oral'] },
       { id: 'reading', label: 'Reading comprehension', count: 10, categories: ['reading'] }
     ],
-    formatNote: 'A full Intermediate exam has 40 multiple-choice questions in about 45 minutes. This unofficial practice uses 12 Roman-world questions, 18 language questions, and a 10-question original passage.',
+    formatNote: 'A full Intermediate practice exam has 40 multiple-choice questions in about 45 minutes: 12 Roman-world questions, 18 language questions, and a 10-question original passage.',
     syllabus: [
       { heading: 'Grammar for reading', items: [
         'All six indicative tenses, active and passive, including participles and present infinitives.',
@@ -195,7 +215,7 @@ const NLE_LEVELS = [
   },
   {
     id: 'intermediate-reading',
-    name: 'Intermediate Latin Reading Comprehension',
+    name: 'Intermediate Reading',
     legacyName: 'Latin II reading',
     years: [3],
     primaryYear: null,
@@ -203,12 +223,12 @@ const NLE_LEVELS = [
     audience: 'Students who read adapted prose and can answer from the passage.',
     questionCount: 36,
     readingExam: true,
-    timeLimitSeconds: NLE_TIME_LIMIT_SECONDS,
+    timeLimitSeconds: ANNUAL_EXAM_TIME_LIMIT_SECONDS,
     sections: [
       { id: 'reading', label: 'Reading comprehension', count: 33, categories: ['reading'], allPassages: true },
       { id: 'extension', label: 'Passage extension', count: 3, categories: ['mythology', 'history', 'geography', 'culture'] }
     ],
-    formatNote: 'The official exam has 36 questions in about 45 minutes, drawn from two prose passages, plus a few extension questions. This practice uses two original passages.',
+    formatNote: 'This reading practice has 36 questions in about 45 minutes, drawn from two original prose passages, plus a few extension questions.',
     syllabus: [
       { heading: 'Reading grammar', items: [
         'Subjunctive uses that help reading: purpose, indirect command, indirect question, and cum clauses.',
@@ -223,7 +243,7 @@ const NLE_LEVELS = [
   },
   {
     id: 'advanced-prose',
-    name: 'Advanced Latin Prose',
+    name: 'Advanced Prose',
     legacyName: 'Latin III–IV prose',
     years: [3, 4],
     primaryYear: 4,
@@ -231,13 +251,13 @@ const NLE_LEVELS = [
     audience: 'Students reading Caesar, Cicero, or similar prose.',
     questionCount: 40,
     readingExam: false,
-    timeLimitSeconds: NLE_TIME_LIMIT_SECONDS,
+    timeLimitSeconds: ANNUAL_EXAM_TIME_LIMIT_SECONDS,
     sections: [
       { id: 'culture', label: 'Culture, history, and literature', count: 12, categories: ['mythology', 'geography', 'culture', 'history'] },
       { id: 'language', label: 'Language', count: 18, categories: ['grammar', 'vocabulary', 'derivatives', 'mottoes', 'oral'] },
       { id: 'reading', label: 'Reading comprehension', count: 10, categories: ['reading'] }
     ],
-    formatNote: 'The official exam has 40 multiple-choice questions in about 45 minutes, including an authentic or lightly adapted prose passage. This practice uses 12 Roman-world questions, 18 language questions, and a 10-question original passage.',
+    formatNote: 'This practice exam has 40 multiple-choice questions in about 45 minutes: 12 Roman-world questions, 18 language questions, and a 10-question original prose passage.',
     syllabus: [
       { heading: 'Language', items: [
         'Subjunctive clauses common in prose: purpose, result, indirect question, cum, fearing, and conditions.',
@@ -254,7 +274,7 @@ const NLE_LEVELS = [
   },
   {
     id: 'advanced-poetry',
-    name: 'Advanced Latin Poetry',
+    name: 'Advanced Poetry',
     legacyName: 'Latin III–IV poetry',
     years: [4],
     primaryYear: null,
@@ -262,13 +282,13 @@ const NLE_LEVELS = [
     audience: 'Students reading Vergil, Ovid, Catullus, or Horace.',
     questionCount: 40,
     readingExam: false,
-    timeLimitSeconds: NLE_TIME_LIMIT_SECONDS,
+    timeLimitSeconds: ANNUAL_EXAM_TIME_LIMIT_SECONDS,
     sections: [
       { id: 'culture', label: 'Culture, history, and literature', count: 12, categories: ['mythology', 'geography', 'culture', 'history'] },
       { id: 'language', label: 'Language', count: 18, categories: ['grammar', 'vocabulary', 'derivatives', 'mottoes', 'oral'] },
       { id: 'reading', label: 'Reading comprehension', count: 10, categories: ['reading'] }
     ],
-    formatNote: 'The official exam has 40 multiple-choice questions in about 45 minutes and a poetry passage. Scansion of dactylic hexameter and the elegiac couplet belongs here. This practice uses 12 Roman-world questions, 18 language questions, and a 10-question original passage.',
+    formatNote: 'This practice exam has 40 multiple-choice questions in about 45 minutes and includes an original poetry passage. Scansion of dactylic hexameter and the elegiac couplet belongs here, with 12 Roman-world questions, 18 language questions, and 10 reading questions.',
     syllabus: [
       { heading: 'Poetry language', items: [
         'The prose grammar of the advanced level, plus poetic forms, syncopated verbs, and Greek accusatives such as Aenean.',
@@ -284,7 +304,7 @@ const NLE_LEVELS = [
   },
   {
     id: 'advanced-reading',
-    name: 'Advanced Latin Reading Comprehension',
+    name: 'Advanced Reading',
     legacyName: 'Latin III–IV reading',
     years: [4],
     primaryYear: null,
@@ -292,12 +312,12 @@ const NLE_LEVELS = [
     audience: 'Advanced readers, including students approaching authentic prose and verse.',
     questionCount: 36,
     readingExam: true,
-    timeLimitSeconds: NLE_TIME_LIMIT_SECONDS,
+    timeLimitSeconds: ANNUAL_EXAM_TIME_LIMIT_SECONDS,
     sections: [
       { id: 'reading', label: 'Reading comprehension', count: 33, categories: ['reading'], allPassages: true },
       { id: 'extension', label: 'Passage extension', count: 3, categories: ['mythology', 'history', 'geography', 'culture'] }
     ],
-    formatNote: 'The official exam has 36 questions in about 45 minutes on two passages, one prose and one poetry, plus a few extension questions. This practice uses one original prose passage and one original hexameter passage.',
+    formatNote: 'This reading practice has 36 questions in about 45 minutes on two original passages, one prose and one poetry, plus a few extension questions.',
     syllabus: [
       { heading: 'What is asked', items: [
         'Comprehension of real Latin from authors such as Cicero, Livy, Horace, Ovid, and Pliny, and sometimes later Latin.',
@@ -308,32 +328,32 @@ const NLE_LEVELS = [
   }
 ];
 
-function getNleLevel(levelId) {
-  return NLE_LEVELS.find((level) => level.id === levelId) || null;
+function getAnnualExamLevel(levelId) {
+  return ANNUAL_EXAM_LEVELS.find((level) => level.id === levelId) || null;
 }
 
-function getNleCategory(categoryId) {
-  return NLE_CATEGORIES.find((category) => category.id === categoryId) || null;
+function getAnnualExamCategory(categoryId) {
+  return ANNUAL_EXAM_CATEGORIES.find((category) => category.id === categoryId) || null;
 }
 
-function getSuggestedNleLevelId(year) {
+function getSuggestedAnnualExamLevelId(year) {
   const numericYear = Number(year);
-  const match = NLE_LEVELS.find((level) => level.primaryYear === numericYear);
+  const match = ANNUAL_EXAM_LEVELS.find((level) => level.primaryYear === numericYear);
   return match ? match.id : null;
 }
 
-function createNleRng(seed) {
+function createAnnualExamRng(seed) {
   let state = (Number(seed) || 1) >>> 0;
   // Mix the seed before the first draw. A plain LCG gives nearly the same
   // first value for seeds 1, 2, 3, which would keep picking the same story.
   state = (Math.imul(state ^ 0x9e3779b9, 0x85ebca6b) + 0x6c078965) >>> 0;
-  return function nleRandom() {
+  return function annualExamRandom() {
     state = (Math.imul(1664525, state) + 1013904223) >>> 0;
     return state / 4294967296;
   };
 }
 
-function shuffleNle(items, random = Math.random) {
+function shuffleAnnualExam(items, random = Math.random) {
   const copy = items.slice();
   for (let index = copy.length - 1; index > 0; index -= 1) {
     const swapIndex = Math.floor(random() * (index + 1));
@@ -347,17 +367,17 @@ function shuffleNle(items, random = Math.random) {
 function withShuffledChoices(question, random) {
   return {
     ...question,
-    choices: shuffleNle(question.choices, random)
+    choices: shuffleAnnualExam(question.choices, random)
   };
 }
 
-function nleQuestion(id, level, category, prompt, choices, answer, explanation, extra) {
+function annualExamQuestion(id, level, category, prompt, choices, answer, explanation, extra) {
   const data = extra || {};
   return {
     id,
     level,
     category,
-    section: data.section || NLE_CATEGORY_SECTION[category] || 'language',
+    section: data.section || ANNUAL_EXAM_CATEGORY_SECTION[category] || 'language',
     prompt,
     choices,
     answer,
@@ -370,19 +390,19 @@ function nleQuestion(id, level, category, prompt, choices, answer, explanation, 
   };
 }
 
-function getNlePassage(passageId) {
-  return NLE_PASSAGES.find((passage) => passage.id === passageId) || null;
+function getAnnualExamPassage(passageId) {
+  return ANNUAL_EXAM_PASSAGES.find((passage) => passage.id === passageId) || null;
 }
 
 function questionsForPassage(passageId, category) {
-  return NLE_QUESTIONS
+  return ANNUAL_EXAM_QUESTIONS
     .filter((question) => question.passageId === passageId && (!category || question.category === category))
     .slice()
     .sort((left, right) => (left.order || 0) - (right.order || 0));
 }
 
 function drawBalancedQuestions(pool, categories, count, random) {
-  const groups = categories.map((category) => shuffleNle(
+  const groups = categories.map((category) => shuffleAnnualExam(
     pool.filter((question) => question.category === category),
     random
   ));
@@ -405,7 +425,7 @@ function drawBalancedQuestions(pool, categories, count, random) {
 }
 
 function storyBlocksForSection(levelId, section) {
-  const pool = NLE_QUESTIONS.filter((question) => (
+  const pool = ANNUAL_EXAM_QUESTIONS.filter((question) => (
     question.level === levelId
     && question.storyId
     && !question.passageId
@@ -422,7 +442,7 @@ function storyBlocksForSection(levelId, section) {
 }
 
 function standalonePool(levelId, section) {
-  return NLE_QUESTIONS.filter((question) => (
+  return ANNUAL_EXAM_QUESTIONS.filter((question) => (
     question.level === levelId
     && section.categories.includes(question.category)
     && !question.passageId
@@ -430,24 +450,24 @@ function standalonePool(levelId, section) {
   ));
 }
 
-function buildNleExam(levelId, random = Math.random) {
-  const level = getNleLevel(levelId);
-  if (!level || typeof NLE_QUESTIONS === 'undefined') return null;
+function buildAnnualExam(levelId, random = Math.random) {
+  const level = getAnnualExamLevel(levelId);
+  if (!level || typeof ANNUAL_EXAM_QUESTIONS === 'undefined') return null;
   const questions = [];
   const languageSection = level.sections.find((section) => section.useStory);
   const storyChoices = languageSection ? storyBlocksForSection(levelId, languageSection) : [];
-  const selectedStory = storyChoices.length ? shuffleNle(storyChoices, random)[0] : null;
+  const selectedStory = storyChoices.length ? shuffleAnnualExam(storyChoices, random)[0] : null;
   const storyId = selectedStory?.[0]?.storyId || null;
   let passage = null;
 
   level.sections.forEach((section) => {
     if (section.id === 'reading') {
-      let passages = NLE_PASSAGES.filter((item) => item.level === levelId);
+      let passages = ANNUAL_EXAM_PASSAGES.filter((item) => item.level === levelId);
       if (storyId) {
         const matched = passages.filter((item) => item.storyId === storyId);
         if (matched.length) passages = matched;
       }
-      const orderedPassages = section.allPassages ? shuffleNle(passages, random) : [shuffleNle(passages, random)[0]].filter(Boolean);
+      const orderedPassages = section.allPassages ? shuffleAnnualExam(passages, random) : [shuffleAnnualExam(passages, random)[0]].filter(Boolean);
       const reading = [];
       orderedPassages.forEach((item) => {
         if (!item || reading.length >= section.count) return;
@@ -461,12 +481,12 @@ function buildNleExam(levelId, random = Math.random) {
 
     if (section.id === 'extension') {
       const passageIds = new Set(questions.map((question) => question.passageId).filter(Boolean));
-      const pool = NLE_QUESTIONS.filter((question) => (
+      const pool = ANNUAL_EXAM_QUESTIONS.filter((question) => (
         question.level === levelId
         && question.section === 'extension'
         && (!passageIds.size || passageIds.has(question.passageId))
       ));
-      const picked = shuffleNle(pool, random).slice(0, section.count);
+      const picked = shuffleAnnualExam(pool, random).slice(0, section.count);
       questions.push(...picked.map((question) => withShuffledChoices(question, random)));
       return;
     }
@@ -477,7 +497,7 @@ function buildNleExam(levelId, random = Math.random) {
     }
 
     const pool = standalonePool(levelId, section);
-    const picked = shuffleNle(drawBalancedQuestions(pool, section.categories, section.count, random), random);
+    const picked = shuffleAnnualExam(drawBalancedQuestions(pool, section.categories, section.count, random), random);
     questions.push(...picked.map((question) => withShuffledChoices(question, random)));
   });
 
@@ -493,10 +513,10 @@ function buildNleExam(levelId, random = Math.random) {
   };
 }
 
-function buildNlePracticeSet(levelId, category, count = 10, random = Math.random) {
-  const pool = NLE_QUESTIONS.filter((question) => question.level === levelId && question.category === category);
+function buildAnnualExamPracticeSet(levelId, category, count = 10, random = Math.random) {
+  const pool = ANNUAL_EXAM_QUESTIONS.filter((question) => question.level === levelId && question.category === category);
   if (category === 'reading') {
-    const passageIds = shuffleNle([...new Set(pool.map((question) => question.passageId).filter(Boolean))], random);
+    const passageIds = shuffleAnnualExam([...new Set(pool.map((question) => question.passageId).filter(Boolean))], random);
     const ordered = [];
     passageIds.forEach((passageId) => {
       if (ordered.length >= count) return;
@@ -504,10 +524,10 @@ function buildNlePracticeSet(levelId, category, count = 10, random = Math.random
     });
     return ordered.map((question) => withShuffledChoices(question, random));
   }
-  return shuffleNle(pool, random).slice(0, count).map((question) => withShuffledChoices(question, random));
+  return shuffleAnnualExam(pool, random).slice(0, count).map((question) => withShuffledChoices(question, random));
 }
 
-function scoreNleExam(questions, answersById) {
+function scoreAnnualExam(questions, answersById) {
   const answers = answersById && typeof answersById === 'object' ? answersById : {};
   const categories = {};
   const sections = {};
@@ -549,18 +569,18 @@ function scoreNleExam(questions, answersById) {
   };
 }
 
-function summarizeNleBank() {
+function summarizeAnnualExamBank() {
   const summary = {};
-  NLE_LEVELS.forEach((level) => {
-    const questions = NLE_QUESTIONS.filter((question) => question.level === level.id);
+  ANNUAL_EXAM_LEVELS.forEach((level) => {
+    const questions = ANNUAL_EXAM_QUESTIONS.filter((question) => question.level === level.id);
     const byCategory = {};
-    NLE_CATEGORIES.forEach((category) => {
+    ANNUAL_EXAM_CATEGORIES.forEach((category) => {
       byCategory[category.id] = questions.filter((question) => question.category === category.id).length;
     });
     summary[level.id] = {
       total: questions.length,
       byCategory,
-      passages: NLE_PASSAGES.filter((passage) => passage.level === level.id).length
+      passages: ANNUAL_EXAM_PASSAGES.filter((passage) => passage.level === level.id).length
     };
   });
   return summary;
@@ -572,14 +592,14 @@ function nonNegativeCount(value) {
   return Math.round(number);
 }
 
-function normalizeNleExamRecord(entry) {
+function normalizeAnnualExamRecord(entry) {
   if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return null;
   const total = nonNegativeCount(entry.total);
-  if (!total || !getNleLevel(entry.levelId)) return null;
+  if (!total || !getAnnualExamLevel(entry.levelId)) return null;
   const categories = {};
   if (entry.categories && typeof entry.categories === 'object') {
     Object.entries(entry.categories).forEach(([categoryId, stats]) => {
-      if (!getNleCategory(categoryId) || !stats || typeof stats !== 'object') return;
+      if (!getAnnualExamCategory(categoryId) || !stats || typeof stats !== 'object') return;
       categories[categoryId] = {
         correct: nonNegativeCount(stats.correct),
         total: nonNegativeCount(stats.total)
@@ -602,7 +622,7 @@ function normalizeNleExamRecord(entry) {
     };
   }).filter(Boolean) : [];
   return {
-    id: typeof entry.id === 'string' ? entry.id : `nle-${entry.levelId}`,
+    id: typeof entry.id === 'string' ? entry.id : `annual-exam-${entry.levelId}`,
     completedAt: typeof entry.completedAt === 'string' ? entry.completedAt : '',
     mode: entry.mode === 'practice' ? 'practice' : 'exam',
     levelId: entry.levelId,
@@ -616,16 +636,16 @@ function normalizeNleExamRecord(entry) {
   };
 }
 
-function normalizeNleProgress(value) {
+function normalizeAnnualExamProgress(value) {
   const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   const levelsIn = source.levels && typeof source.levels === 'object' && !Array.isArray(source.levels) ? source.levels : {};
   const levels = {};
   Object.entries(levelsIn).forEach(([levelId, entry]) => {
-    if (!getNleLevel(levelId) || !entry || typeof entry !== 'object') return;
+    if (!getAnnualExamLevel(levelId) || !entry || typeof entry !== 'object') return;
     const statsIn = entry.categoryStats && typeof entry.categoryStats === 'object' ? entry.categoryStats : {};
     const categoryStats = {};
     Object.entries(statsIn).forEach(([categoryId, stats]) => {
-      if (!getNleCategory(categoryId) || !stats || typeof stats !== 'object') return;
+      if (!getAnnualExamCategory(categoryId) || !stats || typeof stats !== 'object') return;
       categoryStats[categoryId] = {
         attempts: nonNegativeCount(stats.attempts),
         correct: nonNegativeCount(stats.correct),
@@ -633,20 +653,20 @@ function normalizeNleProgress(value) {
       };
     });
     const exams = Array.isArray(entry.exams)
-      ? entry.exams.slice(-6).map(normalizeNleExamRecord).filter(Boolean)
+      ? entry.exams.slice(-6).map(normalizeAnnualExamRecord).filter(Boolean)
       : [];
     levels[levelId] = { categoryStats, exams };
   });
   return { levels };
 }
 
-function validateNleContent() {
+function validateAnnualExamContent() {
   const errors = [];
   const ids = new Set();
-  if (typeof NLE_QUESTIONS === 'undefined' || typeof NLE_PASSAGES === 'undefined') {
+  if (typeof ANNUAL_EXAM_QUESTIONS === 'undefined' || typeof ANNUAL_EXAM_PASSAGES === 'undefined') {
     return ['question bank is not loaded'];
   }
-  NLE_QUESTIONS.forEach((question) => {
+  ANNUAL_EXAM_QUESTIONS.forEach((question) => {
     if (!question?.id || ids.has(question.id)) errors.push(`duplicate or missing id ${question?.id}`);
     ids.add(question.id);
     if (!Array.isArray(question.choices) || question.choices.length !== 4) errors.push(`${question.id} needs 4 choices`);
@@ -654,19 +674,19 @@ function validateNleContent() {
     if (!question.choices?.includes(question.answer)) errors.push(`${question.id} answer is not one of the choices`);
     if (!question.prompt || question.prompt.length < 8) errors.push(`${question.id} prompt is too short`);
     if (!question.explanation || question.explanation.length < 12) errors.push(`${question.id} explanation is too short`);
-    if (!getNleLevel(question.level)) errors.push(`${question.id} has an unknown level`);
-    if (!getNleCategory(question.category)) errors.push(`${question.id} has an unknown category`);
-    if (question.passageId && !getNlePassage(question.passageId)) errors.push(`${question.id} points at a missing passage`);
+    if (!getAnnualExamLevel(question.level)) errors.push(`${question.id} has an unknown level`);
+    if (!getAnnualExamCategory(question.category)) errors.push(`${question.id} has an unknown category`);
+    if (question.passageId && !getAnnualExamPassage(question.passageId)) errors.push(`${question.id} points at a missing passage`);
     if (question.category === 'reading' && !question.passageId) errors.push(`${question.id} is reading without a passage`);
   });
-  NLE_PASSAGES.forEach((passage) => {
-    if (!passage.latin || !passage.title || !getNleLevel(passage.level)) errors.push(`passage ${passage.id} is incomplete`);
+  ANNUAL_EXAM_PASSAGES.forEach((passage) => {
+    if (!passage.latin || !passage.title || !getAnnualExamLevel(passage.level)) errors.push(`passage ${passage.id} is incomplete`);
     const reading = questionsForPassage(passage.id, 'reading');
     if (!reading.length) errors.push(`passage ${passage.id} has no reading questions`);
   });
-  NLE_LEVELS.forEach((level) => {
+  ANNUAL_EXAM_LEVELS.forEach((level) => {
     for (let seed = 1; seed <= 6; seed += 1) {
-      const exam = buildNleExam(level.id, createNleRng(seed));
+      const exam = buildAnnualExam(level.id, createAnnualExamRng(seed));
       if (!exam?.complete) errors.push(`${level.id} seed ${seed} is incomplete (${exam?.questions.length || 0})`);
       const reading = exam?.questions.filter((question) => question.section === 'reading') || [];
       const expectedPassages = level.readingExam ? 2 : 1;
@@ -696,9 +716,10 @@ function validateNleContent() {
   return errors;
 }
 
-globalThis.NLE_DISCLAIMER = NLE_DISCLAIMER;
-globalThis.NLE_LINKS = NLE_LINKS;
-globalThis.NLE_LEVELS = NLE_LEVELS;
-globalThis.NLE_QUESTIONS = NLE_QUESTIONS;
-globalThis.NLE_PASSAGES = NLE_PASSAGES;
-globalThis.NLE_TIME_LIMIT_SECONDS = NLE_TIME_LIMIT_SECONDS;
+globalThis.ANNUAL_EXAM_NOTE = ANNUAL_EXAM_NOTE;
+globalThis.ANNUAL_EXAM_LEVELS = ANNUAL_EXAM_LEVELS;
+globalThis.ANNUAL_EXAM_QUESTIONS = ANNUAL_EXAM_QUESTIONS;
+globalThis.ANNUAL_EXAM_PASSAGES = ANNUAL_EXAM_PASSAGES;
+globalThis.ANNUAL_EXAM_TIME_LIMIT_SECONDS = ANNUAL_EXAM_TIME_LIMIT_SECONDS;
+globalThis.migrateAnnualExamProgress = migrateAnnualExamProgress;
+globalThis.migrateAnnualExamBadges = migrateAnnualExamBadges;

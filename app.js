@@ -334,11 +334,11 @@ const BADGE_DEFINITIONS = [
     criteria: () => false
   },
   {
-    id: 'nle-practice',
+    id: 'annual-exam-practice',
     name: 'Exam Ready',
     mark: 'N',
-    description: 'Finish an unofficial NLE practice exam.',
-    criteria: (state) => Object.values(state.progress.nle?.levels || {}).some((level) => (
+    description: 'Finish an Annual Exam Study practice exam.',
+    criteria: (state) => Object.values(state.progress.annualExam?.levels || {}).some((level) => (
       Array.isArray(level.exams) && level.exams.some((exam) => exam.mode === 'exam')
     ))
   }
@@ -416,7 +416,7 @@ const pages = {
   dictionary: document.getElementById('dictionaryPage'),
   lesson: document.getElementById('lessonPage'),
   dashboard: document.getElementById('dashboardPage'),
-  nle: document.getElementById('nlePage'),
+  annualExam: document.getElementById('annualExamPage'),
   resetPassword: document.getElementById('resetPasswordPage'),
   contact: document.getElementById('contactPage'),
   codeCheck: document.getElementById('codeCheckPage')
@@ -515,12 +515,12 @@ const elements = {
   studyButton: document.getElementById('studyButton'),
   dictionaryButton: document.getElementById('dictionaryButton'),
   assessmentsButton: document.getElementById('assessmentsButton'),
-  nleButton: document.getElementById('nleButton'),
-  nleBackButton: document.getElementById('nleBackButton'),
-  nleStage: document.getElementById('nleStage'),
-  homePracticeNle: document.getElementById('homePracticeNle'),
-  dashboardNleButton: document.getElementById('dashboardNleButton'),
-  nleDashboardSummary: document.getElementById('nleDashboardSummary'),
+  annualExamButton: document.getElementById('annualExamButton'),
+  annualExamBackButton: document.getElementById('annualExamBackButton'),
+  annualExamStage: document.getElementById('annualExamStage'),
+  homePracticeAnnualExam: document.getElementById('homePracticeAnnualExam'),
+  dashboardAnnualExamButton: document.getElementById('dashboardAnnualExamButton'),
+  annualExamDashboardSummary: document.getElementById('annualExamDashboardSummary'),
   assessmentsBackButton: document.getElementById('assessmentsBackButton'),
   assessmentBuilder: document.getElementById('assessmentBuilder'),
   assessmentRunner: document.getElementById('assessmentRunner'),
@@ -642,7 +642,11 @@ function normalizeProgress(progress) {
     lessons: normalizeLessonProgress(safeProgress.lessons),
     wordsMastered: isPlainObject(safeProgress.wordsMastered) ? safeProgress.wordsMastered : {},
     wordStats: normalizeWordStats(safeProgress.wordStats),
-    nle: typeof normalizeNleProgress === 'function' ? normalizeNleProgress(safeProgress.nle) : { levels: {} }
+    annualExam: typeof normalizeAnnualExamProgress === 'function'
+      ? normalizeAnnualExamProgress(
+        (typeof migrateAnnualExamProgress === 'function' ? migrateAnnualExamProgress(safeProgress) : null) || safeProgress.annualExam
+      )
+      : { levels: {} }
   };
 }
 
@@ -678,7 +682,9 @@ function normalizeWordStats(wordStats) {
 }
 
 function normalizeBadges(badges) {
-  if (!isPlainObject(badges)) return {};
+  const migrated = typeof migrateAnnualExamBadges === 'function' ? migrateAnnualExamBadges(badges) : badges;
+  if (!isPlainObject(migrated)) return {};
+  badges = migrated;
   const badgeIds = new Set(BADGE_DEFINITIONS.map((badge) => badge.id));
   return Object.fromEntries(
     Object.entries(badges)
@@ -903,16 +909,19 @@ function showPage(page, options = {}) {
   }
   Object.values(pages).forEach((section) => section.classList.remove('active'));
   if (page !== 'study') stopFlashcardTimer();
-  if (page !== 'nle') stopNleTimer();
-  else if (NleState.view === 'exam' && NleState.remainingMs > 0) startNleTimer();
+  if (page !== 'annualExam') stopAnnualExamTimer();
+  else if (AnnualExamState.view === 'exam' && AnnualExamState.remainingMs > 0) startAnnualExamTimer();
   pages[page].classList.add('active');
   if (page === 'contact') window.LatinLaunchpadContact?.prepareVisibleContactForms();
   updateNavState(page);
+  document.title = page === 'annualExam'
+    ? 'Annual Exam Study — Latin Launchpad'
+    : 'Latin Launchpad — Latin Practice for Years 1–4';
   document.getElementById('headerNav')?.classList.remove('is-open');
   document.getElementById('headerMenuButton')?.setAttribute('aria-expanded', 'false');
   window.LatinLaunchpadAnalytics?.trackPageView(page);
   if (!options.preserveScroll) window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (page !== 'nle') assignmentFocus = null;
+  if (page !== 'annualExam') assignmentFocus = null;
   if (!options.skipHash) syncAssignmentHash();
 }
 
@@ -927,7 +936,7 @@ function updateNavState(page) {
     study: 'studyButton',
     dictionary: 'dictionaryButton',
     assessments: 'assessmentsButton',
-    nle: 'nleButton',
+    annualExam: 'annualExamButton',
     dashboard: 'dashboardButton',
     account: 'accountButton',
     resetPassword: 'accountButton',
@@ -939,7 +948,7 @@ function updateNavState(page) {
     elements.studyButton,
     elements.dictionaryButton,
     elements.assessmentsButton,
-    elements.nleButton,
+    elements.annualExamButton,
     elements.dashboardButton,
     elements.accountButton,
     elements.contactButton
@@ -1484,9 +1493,17 @@ function activateGuestProfile() {
   renderAfterProfileChange();
 }
 
-function preserveLocalNleProgress(nextState, localSnapshot) {
-  if (!nextState?.progress || !localSnapshot?.progress?.nle) return;
-  if (!nextState.progress.nle) nextState.progress.nle = localSnapshot.progress.nle;
+function preserveLocalAnnualExamProgress(nextState, localSnapshot) {
+  if (!nextState?.progress || !localSnapshot?.progress) return;
+  const local = typeof migrateAnnualExamProgress === 'function'
+    ? migrateAnnualExamProgress(localSnapshot.progress)
+    : localSnapshot.progress.annualExam;
+  if (!local) return;
+  const remote = typeof migrateAnnualExamProgress === 'function'
+    ? migrateAnnualExamProgress(nextState.progress)
+    : nextState.progress.annualExam;
+  const remoteLevels = remote?.levels && typeof remote.levels === 'object' ? Object.keys(remote.levels).length : 0;
+  if (!remoteLevels) nextState.progress.annualExam = local;
 }
 
 async function init() {
@@ -1517,7 +1534,7 @@ async function init() {
         const remote = await supabaseLoadProfile(email);
         const existingLocal = getStoredProfile(account.profileId);
         const nextState = remote || existingLocal || createStateSnapshot(AppState, account);
-        preserveLocalNleProgress(nextState, existingLocal);
+        preserveLocalAnnualExamProgress(nextState, existingLocal);
         applyStoredState(nextState, account);
         AppState.account = account;
         evaluateBadges();
@@ -1540,7 +1557,7 @@ async function init() {
       const remote = await supabaseLoadProfile(email);
       const existingLocal = getStoredProfile(account.profileId);
       const nextState = remote || existingLocal || createStateSnapshot(AppState, account);
-      preserveLocalNleProgress(nextState, existingLocal);
+      preserveLocalAnnualExamProgress(nextState, existingLocal);
       applyStoredState(nextState, account);
       AppState.account = account;
       evaluateBadges();
@@ -4460,7 +4477,7 @@ function renderDashboard() {
   const visibleLessons = VALID_GRADES.includes(AppState.grade)
     ? getLessonsForSelection(AppState.grade)
     : LESSONS;
-  renderNleDashboard();
+  renderAnnualExamDashboard();
   elements.progressList.innerHTML = visibleLessons.map((lesson) => {
     const lessonProgress = AppState.progress.lessons[lesson.id];
     const status = lessonProgress
@@ -5240,15 +5257,15 @@ function printAssessment() {
   openPrintPreview(`${getCurriculumLevelTitle(grade)} ${sheetTitle}`, renderPrintableAssessment(questions, lesson, sheetTitle, lessonLabel));
 }
 
-function printNleExam() {
-  const level = getNleLevel(NleState.levelId);
+function printAnnualExam() {
+  const level = getAnnualExamLevel(AnnualExamState.levelId);
   if (!level) return;
-  const current = (NleState.view === 'exam' || NleState.view === 'practice') && NleState.questions.length
-    ? NleState.questions
-    : (buildNleExam(level.id, Math.random)?.questions || []);
+  const current = (AnnualExamState.view === 'exam' || AnnualExamState.view === 'practice') && AnnualExamState.questions.length
+    ? AnnualExamState.questions
+    : (buildAnnualExam(level.id, Math.random)?.questions || []);
   if (!current.length) {
-    NleState.message = 'No original questions are ready to print for that exam yet.';
-    renderNle();
+    AnnualExamState.message = 'No original questions are ready to print for that exam yet.';
+    renderAnnualExam();
     return;
   }
   const year = CURRICULUM_LEVELS.find((item) => item.year === level.primaryYear);
@@ -5257,7 +5274,7 @@ function printNleExam() {
     kind: 'vocabulary',
     title: level.name
   };
-  openPrintPreview(level.name, renderPrintableAssessment(current, lesson, 'Practice exam', level.name));
+  openPrintPreview(`Annual Exam Study: ${level.name}`, renderPrintableAssessment(current, lesson, 'Annual Exam Study', level.name));
 }
 
 function startAssessment() {
@@ -5394,7 +5411,7 @@ function nextAssessmentQuestion() {
   renderAssessments();
 }
 
-const NleState = {
+const AnnualExamState = {
   view: 'levels',
   levelId: null,
   category: '',
@@ -5413,80 +5430,80 @@ const NleState = {
   confirmSubmit: false
 };
 
-function stopNleTimer() {
-  if (NleState.timerId) {
-    window.clearInterval(NleState.timerId);
-    NleState.timerId = null;
+function stopAnnualExamTimer() {
+  if (AnnualExamState.timerId) {
+    window.clearInterval(AnnualExamState.timerId);
+    AnnualExamState.timerId = null;
   }
 }
 
-function startNleTimer() {
-  stopNleTimer();
-  NleState.lastTick = performance.now();
-  NleState.timerId = window.setInterval(tickNleExam, 250);
+function startAnnualExamTimer() {
+  stopAnnualExamTimer();
+  AnnualExamState.lastTick = performance.now();
+  AnnualExamState.timerId = window.setInterval(tickAnnualExam, 250);
 }
 
-function formatNleClock(milliseconds) {
+function formatAnnualExamClock(milliseconds) {
   const totalSeconds = Math.max(0, Math.ceil(milliseconds / 1000));
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   return `${minutes}:${String(seconds).padStart(2, '0')}`;
 }
 
-function tickNleExam() {
-  if (NleState.view !== 'exam') return;
+function tickAnnualExam() {
+  if (AnnualExamState.view !== 'exam') return;
   const now = performance.now();
-  NleState.remainingMs = Math.max(0, NleState.remainingMs - (now - NleState.lastTick));
-  NleState.lastTick = now;
-  const clock = elements.nleStage?.querySelector('[data-nle-clock]');
-  if (clock) clock.textContent = formatNleClock(NleState.remainingMs);
-  if (NleState.remainingMs <= 0) finishNleSession('exam');
+  AnnualExamState.remainingMs = Math.max(0, AnnualExamState.remainingMs - (now - AnnualExamState.lastTick));
+  AnnualExamState.lastTick = now;
+  const clock = elements.annualExamStage?.querySelector('[data-annual-exam-clock]');
+  if (clock) clock.textContent = formatAnnualExamClock(AnnualExamState.remainingMs);
+  if (AnnualExamState.remainingMs <= 0) finishAnnualExamSession('exam');
 }
 
-function suggestedNleLevelId() {
-  if (typeof getSuggestedNleLevelId !== 'function') return null;
+function suggestedAnnualExamLevelId() {
+  if (typeof getSuggestedAnnualExamLevelId !== 'function') return null;
   const level = getCurriculumLevelByGrade(AppState.grade);
-  return level ? getSuggestedNleLevelId(level.year) : null;
+  return level ? getSuggestedAnnualExamLevelId(level.year) : null;
 }
 
-function nleLevelProgress(levelId) {
-  const progress = typeof normalizeNleProgress === 'function'
-    ? normalizeNleProgress(AppState.progress.nle)
+function annualExamLevelProgress(levelId) {
+  const progress = typeof normalizeAnnualExamProgress === 'function'
+    ? normalizeAnnualExamProgress(AppState.progress.annualExam)
     : { levels: {} };
   return progress.levels[levelId] || { categoryStats: {}, exams: [] };
 }
 
-function showNlePrep() {
+function showAnnualExam() {
   assignmentFocus = null;
-  NleState.view = 'levels';
-  NleState.message = '';
-  NleState.confirmSubmit = false;
-  renderNle();
-  showPage('nle');
+  AnnualExamState.view = 'levels';
+  AnnualExamState.message = '';
+  AnnualExamState.confirmSubmit = false;
+  renderAnnualExam();
+  showPage('annualExam');
 }
 
-function renderNle() {
-  if (!elements.nleStage || typeof NLE_LEVELS === 'undefined') return;
-  if (elements.nleBackButton) {
-    elements.nleBackButton.textContent = NleState.view === 'levels' ? 'Home' : 'Back';
+function renderAnnualExam() {
+  if (!elements.annualExamStage || typeof ANNUAL_EXAM_LEVELS === 'undefined') return;
+  if (elements.annualExamBackButton) {
+    elements.annualExamBackButton.textContent = AnnualExamState.view === 'levels' ? 'Home' : 'Back';
   }
-  if (NleState.view === 'level') renderNleLevel();
-  else if (NleState.view === 'practice' || NleState.view === 'exam') renderNleQuestion();
-  else if (NleState.view === 'results') renderNleResults();
-  else renderNleLevels();
+  if (AnnualExamState.view === 'level') renderAnnualExamLevel();
+  else if (AnnualExamState.view === 'practice' || AnnualExamState.view === 'exam') renderAnnualExamQuestion();
+  else if (AnnualExamState.view === 'results') renderAnnualExamResults();
+  else renderAnnualExamLevels();
 }
 
-function renderNleLevels() {
-  const suggested = suggestedNleLevelId();
-  const cards = NLE_LEVELS.map((level) => {
-    const progress = nleLevelProgress(level.id);
+function renderAnnualExamLevels() {
+  const suggested = suggestedAnnualExamLevelId();
+  const cards = ANNUAL_EXAM_LEVELS.map((level) => {
+    const progress = annualExamLevelProgress(level.id);
     const latestExam = [...progress.exams].reverse().find((exam) => exam.mode === 'exam');
-    const questionCount = NLE_QUESTIONS.filter((question) => question.level === level.id).length;
+    const questionCount = ANNUAL_EXAM_QUESTIONS.filter((question) => question.level === level.id).length;
     const status = latestExam
       ? `Latest exam ${latestExam.correct}/${latestExam.total}`
-      : (questionCount ? `${questionCount} original questions` : 'Syllabus guide');
+      : (questionCount ? `${questionCount} original questions` : 'Topics coming');
     return `
-      <button type="button" class="nle-level-card${suggested === level.id ? ' suggested' : ''}" data-nle-action="open-level" data-nle-level="${escapeHtml(level.id)}">
+      <button type="button" class="annual-exam-level-card${suggested === level.id ? ' suggested' : ''}" data-annual-exam-action="open-level" data-annual-exam-level="${escapeHtml(level.id)}">
         <span>${escapeHtml(level.legacyName)}</span>
         <strong>${escapeHtml(level.name)}</strong>
         <small>${escapeHtml(level.yearNote)}</small>
@@ -5494,38 +5511,33 @@ function renderNleLevels() {
       </button>
     `;
   }).join('');
-  elements.nleStage.innerHTML = `
-    <p class="nle-links">
-      <a href="${NLE_LINKS.about}" target="_blank" rel="noopener noreferrer">What the NLE is</a>
-      <a href="${NLE_LINKS.syllabus}" target="_blank" rel="noopener noreferrer">Official syllabus</a>
-      <a href="${NLE_LINKS.exams}" target="_blank" rel="noopener noreferrer">Past exams on nle.org</a>
-    </p>
-    <div class="nle-level-grid">${cards}</div>
+  elements.annualExamStage.innerHTML = `
+    <div class="annual-exam-level-grid">${cards}</div>
   `;
 }
 
-function renderNleLevel() {
-  const level = getNleLevel(NleState.levelId);
+function renderAnnualExamLevel() {
+  const level = getAnnualExamLevel(AnnualExamState.levelId);
   if (!level) {
-    renderNleLevels();
+    renderAnnualExamLevels();
     return;
   }
-  const progress = nleLevelProgress(level.id);
-  const sample = buildNleExam(level.id, createNleRng(1));
+  const progress = annualExamLevelProgress(level.id);
+  const sample = buildAnnualExam(level.id, createAnnualExamRng(1));
   const syllabus = level.syllabus.map((group) => `
     <section>
       <h3>${escapeHtml(group.heading)}</h3>
       <ul>${group.items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>
     </section>
   `).join('');
-  const categories = NLE_CATEGORIES.map((category) => {
-    const count = NLE_QUESTIONS.filter((question) => question.level === level.id && question.category === category.id).length;
+  const categories = ANNUAL_EXAM_CATEGORIES.map((category) => {
+    const count = ANNUAL_EXAM_QUESTIONS.filter((question) => question.level === level.id && question.category === category.id).length;
     if (!count) return '';
     const stats = progress.categoryStats[category.id];
     const statText = stats ? `${stats.correct}/${stats.attempts} correct in practice` : `${count} questions`;
     return `
-      <div class="nle-category-assignment">
-        <button type="button" class="nle-category-card" data-nle-action="start-practice" data-nle-category="${escapeHtml(category.id)}">
+      <div class="annual-exam-category-assignment">
+        <button type="button" class="annual-exam-category-card" data-annual-exam-action="start-practice" data-annual-exam-category="${escapeHtml(category.id)}">
           <strong>${escapeHtml(category.label)}</strong>
           <span>${escapeHtml(statText)}</span>
         </button>
@@ -5539,111 +5551,111 @@ function renderNleLevel() {
   const recent = progress.exams.slice(-3).reverse().map((exam) => (
     `<li>${escapeHtml(exam.mode === 'exam' ? 'Exam' : 'Practice')} · ${exam.correct}/${exam.total}</li>`
   )).join('');
-  elements.nleStage.innerHTML = `
-    <div class="nle-level-heading">
+  elements.annualExamStage.innerHTML = `
+    <div class="annual-exam-level-heading">
       <span class="section-kicker">${escapeHtml(level.legacyName)}</span>
       <h3>${escapeHtml(level.name)}</h3>
       <p>${escapeHtml(level.yearNote)} ${escapeHtml(level.audience)}</p>
       <p>${escapeHtml(level.formatNote)}</p>
     </div>
-    <div class="nle-actions">
-      ${examLabel ? `<button type="button" class="primary-button" data-nle-action="start-exam">${escapeHtml(examLabel)}</button>` : ''}
-      ${examLabel ? '<button type="button" class="secondary-button" data-nle-action="print-exam">Print exam</button>' : ''}
+    <div class="annual-exam-actions">
+      ${examLabel ? `<button type="button" class="primary-button" data-annual-exam-action="start-exam">${escapeHtml(examLabel)}</button>` : ''}
+      ${examLabel ? '<button type="button" class="secondary-button" data-annual-exam-action="print-exam">Print exam</button>' : ''}
       ${examLabel ? '<button type="button" class="secondary-button" data-copy-assignment="exam">Copy exam link</button>' : ''}
-      <a class="secondary-button nle-text-link" href="${NLE_LINKS.syllabus}" target="_blank" rel="noopener noreferrer">Official syllabus</a>
     </div>
-    ${renderNleAssignmentNote(level)}
-    ${recent ? `<ul class="nle-recent">${recent}</ul>` : ''}
-    ${categories ? `<h3 class="nle-subhead">Practice by category</h3><div class="nle-category-grid">${categories}</div>
-    <div class="nle-count-row">
+    ${renderAnnualExamAssignmentNote(level)}
+    ${recent ? `<ul class="annual-exam-recent">${recent}</ul>` : ''}
+    ${categories ? `<h3 class="annual-exam-subhead">Practice by category</h3><div class="annual-exam-category-grid">${categories}</div>
+    <div class="annual-exam-count-row">
       <span>Practice length</span>
       ${[5, 10, 15].map((count) => `
-        <button type="button" class="segmented-button${NleState.practiceCount === count ? ' active' : ''}" data-nle-action="set-count" data-nle-count="${count}">${count}</button>
+        <button type="button" class="segmented-button${AnnualExamState.practiceCount === count ? ' active' : ''}" data-annual-exam-action="set-count" data-annual-exam-count="${count}">${count}</button>
       `).join('')}
-    </div>` : '<p>Question practice for this level is still to come. Use the syllabus, then try official past exams on nle.org.</p>'}
-    <div class="nle-syllabus">${syllabus}</div>
+    </div>` : '<p>Question practice for this level is still to come.</p>'}
+    <h3 class="annual-exam-subhead">What this level covers</h3>
+    <div class="annual-exam-syllabus">${syllabus}</div>
   `;
 }
 
 function passageMarkup(passage) {
   if (!passage) return '';
   const glossary = Array.isArray(passage.glossary) && passage.glossary.length
-    ? `<ul class="nle-glossary">${passage.glossary.map(([latin, english]) => `<li><strong>${escapeHtml(latin)}</strong> ${escapeHtml(english)}</li>`).join('')}</ul>`
+    ? `<ul class="annual-exam-glossary">${passage.glossary.map(([latin, english]) => `<li><strong>${escapeHtml(latin)}</strong> ${escapeHtml(english)}</li>`).join('')}</ul>`
     : '';
   return `
-    <section class="nle-passage-card">
+    <section class="annual-exam-passage-card">
       <h3>${escapeHtml(passage.title)}</h3>
-      <p class="nle-passage">${escapeHtml(passage.latin)}</p>
+      <p class="annual-exam-passage">${escapeHtml(passage.latin)}</p>
       ${glossary}
     </section>
   `;
 }
 
-function renderNleQuestion() {
-  const question = NleState.questions[NleState.index];
-  const level = getNleLevel(NleState.levelId);
+function renderAnnualExamQuestion() {
+  const question = AnnualExamState.questions[AnnualExamState.index];
+  const level = getAnnualExamLevel(AnnualExamState.levelId);
   if (!question || !level) return;
-  const passage = question.passageId ? getNlePassage(question.passageId) : null;
-  const showPassage = NleState.index === 0 || NleState.questions[NleState.index - 1]?.passageId !== question.passageId;
-  const category = getNleCategory(question.category);
-  const selected = NleState.answers[question.id] || '';
-  const isExam = NleState.view === 'exam';
-  const clock = isExam ? `<strong data-nle-clock role="timer">${formatNleClock(NleState.remainingMs)}</strong>` : '';
+  const passage = question.passageId ? getAnnualExamPassage(question.passageId) : null;
+  const showPassage = AnnualExamState.index === 0 || AnnualExamState.questions[AnnualExamState.index - 1]?.passageId !== question.passageId;
+  const category = getAnnualExamCategory(question.category);
+  const selected = AnnualExamState.answers[question.id] || '';
+  const isExam = AnnualExamState.view === 'exam';
+  const clock = isExam ? `<strong data-annual-exam-clock role="timer">${formatAnnualExamClock(AnnualExamState.remainingMs)}</strong>` : '';
   const navigator = isExam ? `
-    <div class="nle-nav" aria-label="Questions">
-      ${NleState.questions.map((item, index) => `
-        <button type="button" class="nle-nav-button${index === NleState.index ? ' current' : ''}${NleState.answers[item.id] ? ' answered' : ''}" data-nle-action="goto" data-nle-index="${index}">${index + 1}</button>
+    <div class="annual-exam-nav" aria-label="Questions">
+      ${AnnualExamState.questions.map((item, index) => `
+        <button type="button" class="annual-exam-nav-button${index === AnnualExamState.index ? ' current' : ''}${AnnualExamState.answers[item.id] ? ' answered' : ''}" data-annual-exam-action="goto" data-annual-exam-index="${index}">${index + 1}</button>
       `).join('')}
     </div>
   ` : '';
   const choices = question.choices.map((choice) => {
     const classes = ['option-button'];
     if (selected === choice) classes.push('selected');
-    if (!isExam && NleState.checked && choice === question.answer) classes.push('correct');
-    if (!isExam && NleState.checked && selected === choice && choice !== question.answer) classes.push('wrong');
-    return `<button type="button" class="${classes.join(' ')}" data-nle-action="choose" data-nle-choice="${escapeHtml(choice)}" ${!isExam && NleState.checked ? 'disabled' : ''}>${escapeHtml(choice)}</button>`;
+    if (!isExam && AnnualExamState.checked && choice === question.answer) classes.push('correct');
+    if (!isExam && AnnualExamState.checked && selected === choice && choice !== question.answer) classes.push('wrong');
+    return `<button type="button" class="${classes.join(' ')}" data-annual-exam-action="choose" data-annual-exam-choice="${escapeHtml(choice)}" ${!isExam && AnnualExamState.checked ? 'disabled' : ''}>${escapeHtml(choice)}</button>`;
   }).join('');
-  const feedback = !isExam && NleState.checked
-    ? `<p class="nle-feedback">${escapeHtml(selected === question.answer ? 'Correct.' : 'Not yet.')} ${escapeHtml(question.explanation)}</p>`
+  const feedback = !isExam && AnnualExamState.checked
+    ? `<p class="annual-exam-feedback">${escapeHtml(selected === question.answer ? 'Correct.' : 'Not yet.')} ${escapeHtml(question.explanation)}</p>`
     : '';
   const primary = isExam
-    ? `<button type="button" class="primary-button" data-nle-action="submit">${NleState.confirmSubmit ? 'Submit now' : 'Submit exam'}</button>`
-    : `<button type="button" class="primary-button" data-nle-action="${NleState.checked ? 'next' : 'check'}">${NleState.checked ? (NleState.index < NleState.questions.length - 1 ? 'Next' : 'Finish') : 'Check answer'}</button>`;
-  const examNext = isExam && NleState.index < NleState.questions.length - 1
-    ? `<button type="button" class="secondary-button" data-nle-action="goto" data-nle-index="${NleState.index + 1}">Next</button>`
+    ? `<button type="button" class="primary-button" data-annual-exam-action="submit">${AnnualExamState.confirmSubmit ? 'Submit now' : 'Submit exam'}</button>`
+    : `<button type="button" class="primary-button" data-annual-exam-action="${AnnualExamState.checked ? 'next' : 'check'}">${AnnualExamState.checked ? (AnnualExamState.index < AnnualExamState.questions.length - 1 ? 'Next' : 'Finish') : 'Check answer'}</button>`;
+  const examNext = isExam && AnnualExamState.index < AnnualExamState.questions.length - 1
+    ? `<button type="button" class="secondary-button" data-annual-exam-action="goto" data-annual-exam-index="${AnnualExamState.index + 1}">Next</button>`
     : '';
-  elements.nleStage.innerHTML = `
-    <div class="nle-question-top">
-      <span>${escapeHtml(isExam ? (NLE_SECTION_LABELS[question.section] || category?.label || 'Question') : (category?.label || 'Practice'))}</span>
-      <strong>${NleState.index + 1}/${NleState.questions.length}</strong>
+  elements.annualExamStage.innerHTML = `
+    <div class="annual-exam-question-top">
+      <span>${escapeHtml(isExam ? (ANNUAL_EXAM_SECTION_LABELS[question.section] || category?.label || 'Question') : (category?.label || 'Practice'))}</span>
+      <strong>${AnnualExamState.index + 1}/${AnnualExamState.questions.length}</strong>
       ${clock}
     </div>
     ${navigator}
     ${showPassage ? passageMarkup(passage) : ''}
     ${question.context ? `<p class="question-context">${escapeHtml(question.context)}</p>` : ''}
-    <h3 class="nle-prompt">${escapeHtml(question.prompt)}</h3>
-    <div class="options-grid nle-options">${choices}</div>
+    <h3 class="annual-exam-prompt">${escapeHtml(question.prompt)}</h3>
+    <div class="options-grid annual-exam-options">${choices}</div>
     ${feedback}
-    <p class="assessment-message">${escapeHtml(NleState.message)}</p>
-    <div class="nle-actions">
-      <button type="button" class="secondary-button" data-nle-action="print-exam">Print</button>
-      ${isExam && NleState.index > 0 ? '<button type="button" class="secondary-button" data-nle-action="prev">Previous</button>' : ''}
+    <p class="assessment-message">${escapeHtml(AnnualExamState.message)}</p>
+    <div class="annual-exam-actions">
+      <button type="button" class="secondary-button" data-annual-exam-action="print-exam">Print</button>
+      ${isExam && AnnualExamState.index > 0 ? '<button type="button" class="secondary-button" data-annual-exam-action="prev">Previous</button>' : ''}
       ${examNext}
       ${primary}
     </div>
   `;
 }
 
-function renderNleResults() {
-  const result = NleState.result;
-  const level = getNleLevel(NleState.levelId);
+function renderAnnualExamResults() {
+  const result = AnnualExamState.result;
+  const level = getAnnualExamLevel(AnnualExamState.levelId);
   if (!result || !level) return;
   const categoryRows = Object.entries(result.categories).map(([categoryId, stats]) => {
-    const category = getNleCategory(categoryId);
+    const category = getAnnualExamCategory(categoryId);
     return `<div><span>${escapeHtml(category?.label || categoryId)}</span><strong>${stats.correct}/${stats.total}</strong></div>`;
   }).join('');
   const missed = result.missed.map((item) => `
-    <article class="nle-miss">
+    <article class="annual-exam-miss">
       ${item.context ? `<p class="question-context">${escapeHtml(item.context)}</p>` : ''}
       <h3>${escapeHtml(item.prompt)}</h3>
       <p>Your answer: ${escapeHtml(item.selected || 'left blank')}</p>
@@ -5651,21 +5663,21 @@ function renderNleResults() {
       <p>${escapeHtml(item.explanation)}</p>
     </article>
   `).join('');
-  elements.nleStage.innerHTML = `
-    <section class="nle-results">
+  elements.annualExamStage.innerHTML = `
+    <section class="annual-exam-results">
       <span class="section-kicker">${result.mode === 'exam' ? 'Practice exam' : 'Practice'}</span>
       <h3>${result.correct}/${result.total}</h3>
       <p>${result.percent}% correct · ${escapeHtml(level.name)}</p>
       <div class="assessment-breakdown">${categoryRows}</div>
-      ${result.missed.length ? `<h3 class="nle-subhead">Review missed items</h3>${missed}` : '<p>Every answer was correct.</p>'}
-      <div class="nle-actions">
-        ${result.missed.length ? '<button type="button" class="secondary-button" data-nle-action="review-missed">Practice missed</button>' : ''}
-        <button type="button" class="primary-button" data-nle-action="back-level">Back to level</button>
+      ${result.missed.length ? `<h3 class="annual-exam-subhead">Review missed items</h3>${missed}` : '<p>Every answer was correct.</p>'}
+      <div class="annual-exam-actions">
+        ${result.missed.length ? '<button type="button" class="secondary-button" data-annual-exam-action="review-missed">Practice missed</button>' : ''}
+        <button type="button" class="primary-button" data-annual-exam-action="back-level">Back to level</button>
       </div>
       ${renderCompletionCode({
-        kind: 'nle',
+        kind: 'annual-exam',
         id: level.id,
-        mode: result.mode === 'exam' ? 'exam' : (NleState.category || 'practice'),
+        mode: result.mode === 'exam' ? 'exam' : (AnnualExamState.category || 'practice'),
         score: result.correct,
         total: result.total,
         missed: result.missed.map((item) => item.id)
@@ -5674,74 +5686,74 @@ function renderNleResults() {
   `;
 }
 
-function renderNleDashboard() {
-  if (!elements.nleDashboardSummary || typeof NLE_LEVELS === 'undefined') return;
-  const progress = normalizeNleProgress(AppState.progress.nle);
+function renderAnnualExamDashboard() {
+  if (!elements.annualExamDashboardSummary || typeof ANNUAL_EXAM_LEVELS === 'undefined') return;
+  const progress = normalizeAnnualExamProgress(AppState.progress.annualExam);
   const rows = Object.entries(progress.levels).flatMap(([levelId, entry]) => {
-    const level = getNleLevel(levelId);
+    const level = getAnnualExamLevel(levelId);
     const latest = [...entry.exams].reverse().find((exam) => exam.mode === 'exam') || entry.exams[entry.exams.length - 1];
     if (!level || !latest) return [];
     return [`<p><strong>${escapeHtml(level.name)}</strong> · ${latest.correct}/${latest.total}</p>`];
   });
-  elements.nleDashboardSummary.innerHTML = rows.length
+  elements.annualExamDashboardSummary.innerHTML = rows.length
     ? rows.join('')
-    : '<p>No NLE practice yet.</p>';
+    : '<p>No Annual Exam Study practice yet.</p>';
 }
 
-function beginNleQuestions(questions, mode) {
-  const level = getNleLevel(NleState.levelId);
+function beginAnnualExamQuestions(questions, mode) {
+  const level = getAnnualExamLevel(AnnualExamState.levelId);
   if (!level || !questions.length) {
-    NleState.message = 'No original questions are ready for that choice yet.';
-    NleState.view = 'level';
-    renderNle();
+    AnnualExamState.message = 'No original questions are ready for that choice yet.';
+    AnnualExamState.view = 'level';
+    renderAnnualExam();
     return;
   }
-  stopNleTimer();
-  NleState.mode = mode;
-  NleState.view = mode === 'exam' ? 'exam' : 'practice';
-  NleState.questions = questions;
-  NleState.answers = {};
-  NleState.index = 0;
-  NleState.checked = false;
-  NleState.result = null;
-  NleState.confirmSubmit = false;
-  NleState.startedAt = Date.now();
-  NleState.remainingMs = level.timeLimitSeconds * 1000;
-  NleState.message = mode === 'exam' && questions.length < level.questionCount
+  stopAnnualExamTimer();
+  AnnualExamState.mode = mode;
+  AnnualExamState.view = mode === 'exam' ? 'exam' : 'practice';
+  AnnualExamState.questions = questions;
+  AnnualExamState.answers = {};
+  AnnualExamState.index = 0;
+  AnnualExamState.checked = false;
+  AnnualExamState.result = null;
+  AnnualExamState.confirmSubmit = false;
+  AnnualExamState.startedAt = Date.now();
+  AnnualExamState.remainingMs = level.timeLimitSeconds * 1000;
+  AnnualExamState.message = mode === 'exam' && questions.length < level.questionCount
     ? `This set has ${questions.length} questions. A full ${level.name} exam has ${level.questionCount}.`
     : '';
-  renderNle();
-  showPage('nle');
-  if (mode === 'exam') startNleTimer();
+  renderAnnualExam();
+  showPage('annualExam');
+  if (mode === 'exam') startAnnualExamTimer();
 }
 
-function startNlePractice(category) {
-  NleState.category = category;
-  const questions = buildNlePracticeSet(NleState.levelId, category, NleState.practiceCount, Math.random);
-  beginNleQuestions(questions, 'practice');
+function startAnnualExamPractice(category) {
+  AnnualExamState.category = category;
+  const questions = buildAnnualExamPracticeSet(AnnualExamState.levelId, category, AnnualExamState.practiceCount, Math.random);
+  beginAnnualExamQuestions(questions, 'practice');
 }
 
-function startNleExam() {
-  NleState.category = '';
-  const exam = buildNleExam(NleState.levelId, Math.random);
-  beginNleQuestions(exam?.questions || [], 'exam');
+function startAnnualExamSession() {
+  AnnualExamState.category = '';
+  const exam = buildAnnualExam(AnnualExamState.levelId, Math.random);
+  beginAnnualExamQuestions(exam?.questions || [], 'exam');
 }
 
-function finishNleSession(mode) {
-  if (NleState.view === 'results') return;
-  stopNleTimer();
-  const level = getNleLevel(NleState.levelId);
+function finishAnnualExamSession(mode) {
+  if (AnnualExamState.view === 'results') return;
+  stopAnnualExamTimer();
+  const level = getAnnualExamLevel(AnnualExamState.levelId);
   if (!level) return;
-  const score = scoreNleExam(NleState.questions, NleState.answers);
+  const score = scoreAnnualExam(AnnualExamState.questions, AnnualExamState.answers);
   const secondsUsed = mode === 'exam'
-    ? Math.max(0, Math.round((level.timeLimitSeconds * 1000 - NleState.remainingMs) / 1000))
-    : Math.max(0, Math.round((Date.now() - NleState.startedAt) / 1000));
-  const record = normalizeNleExamRecord({
-    id: `nle-${mode}-${Date.now()}`,
+    ? Math.max(0, Math.round((level.timeLimitSeconds * 1000 - AnnualExamState.remainingMs) / 1000))
+    : Math.max(0, Math.round((Date.now() - AnnualExamState.startedAt) / 1000));
+  const record = normalizeAnnualExamRecord({
+    id: `annual-exam-${mode}-${Date.now()}`,
     completedAt: new Date().toISOString(),
     mode,
     levelId: level.id,
-    category: mode === 'practice' ? NleState.category : '',
+    category: mode === 'practice' ? AnnualExamState.category : '',
     correct: score.correct,
     total: score.total,
     percent: score.percent,
@@ -5749,119 +5761,119 @@ function finishNleSession(mode) {
     categories: score.categories,
     missed: score.missed
   });
-  const progress = normalizeNleProgress(AppState.progress.nle);
+  const progress = normalizeAnnualExamProgress(AppState.progress.annualExam);
   if (!progress.levels[level.id]) progress.levels[level.id] = { categoryStats: {}, exams: [] };
-  if (mode === 'practice' && NleState.category && score.categories[NleState.category]) {
-    const stats = progress.levels[level.id].categoryStats[NleState.category] || { attempts: 0, correct: 0, sessions: 0 };
-    stats.attempts += score.categories[NleState.category].total;
-    stats.correct += score.categories[NleState.category].correct;
+  if (mode === 'practice' && AnnualExamState.category && score.categories[AnnualExamState.category]) {
+    const stats = progress.levels[level.id].categoryStats[AnnualExamState.category] || { attempts: 0, correct: 0, sessions: 0 };
+    stats.attempts += score.categories[AnnualExamState.category].total;
+    stats.correct += score.categories[AnnualExamState.category].correct;
     stats.sessions += 1;
-    progress.levels[level.id].categoryStats[NleState.category] = stats;
+    progress.levels[level.id].categoryStats[AnnualExamState.category] = stats;
   }
   if (record) progress.levels[level.id].exams.push(record);
-  AppState.progress.nle = progress;
-  NleState.result = record;
-  NleState.view = 'results';
-  NleState.confirmSubmit = false;
+  AppState.progress.annualExam = progress;
+  AnnualExamState.result = record;
+  AnnualExamState.view = 'results';
+  AnnualExamState.confirmSubmit = false;
   saveState();
-  renderNle();
+  renderAnnualExam();
 }
 
-function handleNleClick(event) {
+function handleAnnualExamClick(event) {
   const target = event.target instanceof Element ? event.target : null;
-  const actionButton = target?.closest('[data-nle-action]');
-  if (!actionButton || !elements.nleStage?.contains(actionButton)) return;
-  const action = actionButton.dataset.nleAction;
+  const actionButton = target?.closest('[data-annual-exam-action]');
+  if (!actionButton || !elements.annualExamStage?.contains(actionButton)) return;
+  const action = actionButton.dataset.annualExamAction;
   if (action === 'open-level') {
     assignmentFocus = null;
-    NleState.levelId = actionButton.dataset.nleLevel;
-    NleState.view = 'level';
-    NleState.message = '';
-    renderNle();
+    AnnualExamState.levelId = actionButton.dataset.annualExamLevel;
+    AnnualExamState.view = 'level';
+    AnnualExamState.message = '';
+    renderAnnualExam();
     syncAssignmentHash();
     return;
   }
   if (action === 'set-count') {
-    NleState.practiceCount = Number(actionButton.dataset.nleCount) || 10;
-    if (assignmentFocus?.category) assignmentFocus = { ...assignmentFocus, count: NleState.practiceCount };
-    renderNle();
+    AnnualExamState.practiceCount = Number(actionButton.dataset.annualExamCount) || 10;
+    if (assignmentFocus?.category) assignmentFocus = { ...assignmentFocus, count: AnnualExamState.practiceCount };
+    renderAnnualExam();
     syncAssignmentHash();
     return;
   }
   if (action === 'start-practice') {
     assignmentFocus = null;
-    startNlePractice(actionButton.dataset.nleCategory);
+    startAnnualExamPractice(actionButton.dataset.annualExamCategory);
     return;
   }
   if (action === 'start-exam') {
     assignmentFocus = null;
-    startNleExam();
+    startAnnualExamSession();
     return;
   }
   if (action === 'print-exam') {
-    printNleExam();
+    printAnnualExam();
     return;
   }
-  if (action === 'choose' && !(NleState.view === 'practice' && NleState.checked)) {
-    const question = NleState.questions[NleState.index];
+  if (action === 'choose' && !(AnnualExamState.view === 'practice' && AnnualExamState.checked)) {
+    const question = AnnualExamState.questions[AnnualExamState.index];
     if (!question) return;
-    NleState.answers[question.id] = actionButton.dataset.nleChoice || '';
-    NleState.confirmSubmit = false;
-    renderNleQuestion();
+    AnnualExamState.answers[question.id] = actionButton.dataset.annualExamChoice || '';
+    AnnualExamState.confirmSubmit = false;
+    renderAnnualExamQuestion();
     return;
   }
   if (action === 'check') {
-    const question = NleState.questions[NleState.index];
+    const question = AnnualExamState.questions[AnnualExamState.index];
     if (!question) return;
-    if (!NleState.answers[question.id]) {
-      NleState.message = 'Choose an answer first.';
-      renderNleQuestion();
+    if (!AnnualExamState.answers[question.id]) {
+      AnnualExamState.message = 'Choose an answer first.';
+      renderAnnualExamQuestion();
       return;
     }
-    NleState.checked = true;
-    NleState.message = '';
-    renderNleQuestion();
+    AnnualExamState.checked = true;
+    AnnualExamState.message = '';
+    renderAnnualExamQuestion();
     return;
   }
   if (action === 'next') {
-    if (NleState.index < NleState.questions.length - 1) {
-      NleState.index += 1;
-      NleState.checked = false;
-      NleState.message = '';
-      renderNleQuestion();
+    if (AnnualExamState.index < AnnualExamState.questions.length - 1) {
+      AnnualExamState.index += 1;
+      AnnualExamState.checked = false;
+      AnnualExamState.message = '';
+      renderAnnualExamQuestion();
       return;
     }
-    finishNleSession('practice');
+    finishAnnualExamSession('practice');
     return;
   }
   if (action === 'prev') {
-    NleState.index = Math.max(0, NleState.index - 1);
-    NleState.confirmSubmit = false;
-    renderNleQuestion();
+    AnnualExamState.index = Math.max(0, AnnualExamState.index - 1);
+    AnnualExamState.confirmSubmit = false;
+    renderAnnualExamQuestion();
     return;
   }
   if (action === 'goto') {
-    NleState.index = Number(actionButton.dataset.nleIndex) || 0;
-    NleState.confirmSubmit = false;
-    renderNleQuestion();
+    AnnualExamState.index = Number(actionButton.dataset.annualExamIndex) || 0;
+    AnnualExamState.confirmSubmit = false;
+    renderAnnualExamQuestion();
     return;
   }
   if (action === 'submit') {
-    const unanswered = NleState.questions.filter((question) => !NleState.answers[question.id]).length;
-    if (unanswered && !NleState.confirmSubmit) {
-      NleState.confirmSubmit = true;
-      NleState.message = `${unanswered} question${unanswered === 1 ? ' is' : 's are'} still blank. Submit again to finish.`;
-      renderNleQuestion();
+    const unanswered = AnnualExamState.questions.filter((question) => !AnnualExamState.answers[question.id]).length;
+    if (unanswered && !AnnualExamState.confirmSubmit) {
+      AnnualExamState.confirmSubmit = true;
+      AnnualExamState.message = `${unanswered} question${unanswered === 1 ? ' is' : 's are'} still blank. Submit again to finish.`;
+      renderAnnualExamQuestion();
       return;
     }
-    finishNleSession('exam');
+    finishAnnualExamSession('exam');
     return;
   }
-  if (action === 'review-missed' && NleState.result?.missed.length) {
-    NleState.category = 'review';
-    beginNleQuestions(NleState.result.missed.map((item) => ({
+  if (action === 'review-missed' && AnnualExamState.result?.missed.length) {
+    AnnualExamState.category = 'review';
+    beginAnnualExamQuestions(AnnualExamState.result.missed.map((item) => ({
       id: item.id,
-      level: NleState.levelId,
+      level: AnnualExamState.levelId,
       category: item.category,
       section: item.section,
       prompt: item.prompt,
@@ -5874,29 +5886,29 @@ function handleNleClick(event) {
     return;
   }
   if (action === 'back-level') {
-    NleState.view = 'level';
-    NleState.message = '';
-    renderNle();
+    AnnualExamState.view = 'level';
+    AnnualExamState.message = '';
+    renderAnnualExam();
   }
 }
 
-function leaveNleView() {
+function leaveAnnualExamView() {
   assignmentFocus = null;
-  if (NleState.view === 'levels') {
+  if (AnnualExamState.view === 'levels') {
     showHomeOrWelcome();
     return;
   }
-  if (NleState.view === 'exam' && NleState.message !== 'Leave the exam? Choose Back again to exit without saving this attempt.') {
-    NleState.message = 'Leave the exam? Choose Back again to exit without saving this attempt.';
-    renderNleQuestion();
+  if (AnnualExamState.view === 'exam' && AnnualExamState.message !== 'Leave the exam? Choose Back again to exit without saving this attempt.') {
+    AnnualExamState.message = 'Leave the exam? Choose Back again to exit without saving this attempt.';
+    renderAnnualExamQuestion();
     return;
   }
-  stopNleTimer();
-  NleState.confirmSubmit = false;
-  NleState.message = '';
-  if (NleState.view === 'level') NleState.view = 'levels';
-  else NleState.view = 'level';
-  renderNle();
+  stopAnnualExamTimer();
+  AnnualExamState.confirmSubmit = false;
+  AnnualExamState.message = '';
+  if (AnnualExamState.view === 'level') AnnualExamState.view = 'levels';
+  else AnnualExamState.view = 'level';
+  renderAnnualExam();
   syncAssignmentHash();
 }
 
@@ -6034,11 +6046,11 @@ function setupEvents() {
   elements.studyButton.addEventListener('click', showStudyOrOnboarding);
   elements.dictionaryButton.addEventListener('click', showDictionary);
   elements.assessmentsButton.addEventListener('click', showAssessmentsOrOnboarding);
-  elements.nleButton.addEventListener('click', showNlePrep);
-  elements.nleBackButton.addEventListener('click', leaveNleView);
-  elements.nleStage.addEventListener('click', handleNleClick);
-  elements.homePracticeNle.addEventListener('click', showNlePrep);
-  elements.dashboardNleButton.addEventListener('click', showNlePrep);
+  elements.annualExamButton.addEventListener('click', showAnnualExam);
+  elements.annualExamBackButton.addEventListener('click', leaveAnnualExamView);
+  elements.annualExamStage.addEventListener('click', handleAnnualExamClick);
+  elements.homePracticeAnnualExam.addEventListener('click', showAnnualExam);
+  elements.dashboardAnnualExamButton.addEventListener('click', showAnnualExam);
   elements.dashboardButton.addEventListener('click', showDashboardOrOnboarding);
   elements.assessmentsBackButton.addEventListener('click', showHomeOrWelcome);
   elements.backToLessonsFromDashboard.addEventListener('click', () => {
@@ -6381,7 +6393,7 @@ function currentAssignmentRoute() {
   const page = activePageName();
   const year = yearForGrade(AppState.grade);
   if (page === 'codeCheck') return { kind: 'check' };
-  if (assignmentFocus && page === 'nle') return assignmentFocus;
+  if (assignmentFocus && page === 'annualExam') return assignmentFocus;
   if ((page === 'home' || page === 'lessonList') && year) return { kind: 'year', year };
   if (page === 'lesson' && year) {
     const lesson = getSelectedLesson();
@@ -6404,15 +6416,15 @@ function currentAssignmentRoute() {
       lessonIds: [...AssessmentState.selectedChapterIds].filter((id) => lessonMatchesYear(id, year)).sort()
     };
   }
-  if (page === 'nle') {
-    if (!NleState.levelId || NleState.view === 'levels') return { kind: 'nle' };
-    if (NleState.view === 'exam' || (NleState.view === 'results' && NleState.mode === 'exam')) {
-      return { kind: 'nle', levelId: NleState.levelId, exam: true };
+  if (page === 'annualExam') {
+    if (!AnnualExamState.levelId || AnnualExamState.view === 'levels') return { kind: 'annual-exam' };
+    if (AnnualExamState.view === 'exam' || (AnnualExamState.view === 'results' && AnnualExamState.mode === 'exam')) {
+      return { kind: 'annual-exam', levelId: AnnualExamState.levelId, exam: true };
     }
-    if ((NleState.view === 'practice' || (NleState.view === 'results' && NleState.mode === 'practice')) && NleState.category) {
-      return { kind: 'nle', levelId: NleState.levelId, category: NleState.category, count: NleState.practiceCount };
+    if ((AnnualExamState.view === 'practice' || (AnnualExamState.view === 'results' && AnnualExamState.mode === 'practice')) && AnnualExamState.category) {
+      return { kind: 'annual-exam', levelId: AnnualExamState.levelId, category: AnnualExamState.category, count: AnnualExamState.practiceCount };
     }
-    return { kind: 'nle', levelId: NleState.levelId };
+    return { kind: 'annual-exam', levelId: AnnualExamState.levelId };
   }
   if (page === 'study' && StudyState.mode === 'flashcards' && year) {
     return {
@@ -6494,23 +6506,23 @@ function applyAssignmentHash() {
       showPage('assessments', { skipHash: true });
       return;
     }
-    if (route.kind === 'nle') {
-      showPage('nle', { skipHash: true });
+    if (route.kind === 'annual-exam') {
+      showPage('annualExam', { skipHash: true });
       if (!route.levelId) {
-        NleState.view = 'levels';
-        renderNle();
+        AnnualExamState.view = 'levels';
+        renderAnnualExam();
         return;
       }
-      NleState.levelId = route.levelId;
-      NleState.view = 'level';
+      AnnualExamState.levelId = route.levelId;
+      AnnualExamState.view = 'level';
       if (route.exam) {
-        assignmentFocus = { kind: 'nle', levelId: route.levelId, exam: true };
+        assignmentFocus = { kind: 'annual-exam', levelId: route.levelId, exam: true };
       } else if (route.category) {
-        NleState.practiceCount = route.count;
-        NleState.category = route.category;
-        assignmentFocus = { kind: 'nle', levelId: route.levelId, category: route.category, count: route.count };
+        AnnualExamState.practiceCount = route.count;
+        AnnualExamState.category = route.category;
+        assignmentFocus = { kind: 'annual-exam', levelId: route.levelId, category: route.category, count: route.count };
       }
-      renderNle();
+      renderAnnualExam();
       return;
     }
     if (route.kind === 'cards' && grade) {
@@ -6571,7 +6583,7 @@ function noteFlashcardSeen() {
   if (label) StudyState.seenKeys.add(label);
 }
 
-function renderNleAssignmentNote(level) {
+function renderAnnualExamAssignmentNote(level) {
   if (!assignmentFocus || assignmentFocus.levelId !== level.id) return '';
   const text = assignmentFocus.exam
     ? 'Assigned: practice exam. The timer starts when you press Start.'
@@ -6606,13 +6618,13 @@ async function copyText(text) {
 
 function copyRouteOverride(button) {
   const which = button?.dataset.copyAssignment || '';
-  if (which === 'exam' && NleState.levelId) return { kind: 'nle', levelId: NleState.levelId, exam: true };
-  if (which === 'practice' && NleState.levelId && button.dataset.assignmentCategory) {
+  if (which === 'exam' && AnnualExamState.levelId) return { kind: 'annual-exam', levelId: AnnualExamState.levelId, exam: true };
+  if (which === 'practice' && AnnualExamState.levelId && button.dataset.assignmentCategory) {
     return {
-      kind: 'nle',
-      levelId: NleState.levelId,
+      kind: 'annual-exam',
+      levelId: AnnualExamState.levelId,
       category: button.dataset.assignmentCategory,
-      count: NleState.practiceCount
+      count: AnnualExamState.practiceCount
     };
   }
   return null;
