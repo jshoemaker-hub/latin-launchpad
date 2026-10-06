@@ -456,3 +456,122 @@ function getStorySceneForLesson(grade, lessonIndex) {
       }
     : null;
 }
+
+const STORY_NOUN_ENDINGS = new Set(['', 'a', 'ae', 'am', 'as', 'arum', 'is', 'e', 'i', 'o', 'um', 'os', 'orum', 'us', 'ui', 'u', 'uum', 'ibus', 'ei', 'em', 'es', 'ebus', 'ium', 'bus', 'm']);
+const STORY_VERB_ENDINGS = new Set(['t', 'nt', 'mus', 'tis', 're', 'ri', 'tur', 'mur', 'te', 'bo', 'bis', 'bit', 'bunt', 'bam', 'bat', 'bamus', 'batis', 'bant', 'vit', 'uit', 'vi', 'vere', 'sti', 'stis', 'runt', 'ere', 'io', 'at', 'ant', 'amus', 'atis']);
+
+function storyFold(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z]/g, '');
+}
+
+function storyTokenMatchesHeadword(headword, token) {
+  const key = storyFold(headword);
+  const word = storyFold(token);
+  if (!key || !word) return false;
+  if (key.length < 3) return word === key;
+  const stems = [key];
+  if (key.endsWith('us') || key.endsWith('um')) stems.push(key.slice(0, -2));
+  if (key.endsWith('er') && key.length > 3) stems.push(`${key.slice(0, -2)}r`);
+  return stems.some((stem) => {
+    if (stem.length < 3) return false;
+    if (word === stem || word === key) return true;
+    if (!word.startsWith(stem)) return false;
+    const rest = word.slice(stem.length);
+    if (!rest || STORY_VERB_ENDINGS.has(rest)) return !rest;
+    return STORY_NOUN_ENDINGS.has(rest);
+  });
+}
+
+function storyTextTokens(storyId) {
+  const story = LATIN_STORY_BY_ID[storyId];
+  const text = [
+    story?.latinCue || '',
+    ...(LATIN_FULL_STORIES[storyId] || []).map((paragraph) => paragraph.latin)
+  ].join(' ');
+  return text.split(/[^A-Za-z]+/).filter(Boolean);
+}
+
+function wordsHeardInStory(words, storyId) {
+  const tokens = storyTextTokens(storyId);
+  return words.filter((word) => tokens.some((token) => storyTokenMatchesHeadword(word.latin, token)));
+}
+
+function lessonListeningLine(words) {
+  const picked = words.slice(0, 4);
+  if (!picked.length) return null;
+  const gloss = (word) => String(word.english || '').split('/')[0].trim();
+  return {
+    latin: `Verba nova: ${picked.map((word) => word.latin).join(', ')}.`,
+    english: `New words: ${picked.map(gloss).join(', ')}.`,
+    listenFor: picked.map((word) => word.latin)
+  };
+}
+
+function cloneStoryScene(storyId) {
+  const story = LATIN_STORY_BY_ID[storyId];
+  if (!story) return null;
+  const seekFind = LATIN_SEEK_FIND_SCENES[storyId];
+  return {
+    ...story,
+    listenFor: story.listenFor.slice(),
+    fullStory: (LATIN_FULL_STORIES[storyId] || []).map((paragraph) => ({ ...paragraph })),
+    seekFind: seekFind
+      ? { ...seekFind, targets: seekFind.targets.map((target) => ({ ...target })) }
+      : null
+  };
+}
+
+function getVocabularyStoryForLesson(grade, lessonIndex, lessonWords, earlierWords) {
+  const words = (Array.isArray(lessonWords) ? lessonWords : []).filter((word) => word && word.latin);
+  const earlier = new Set((earlierWords || []).map((word) => storyFold(word.latin || word)));
+  const fresh = words.filter((word) => !earlier.has(storyFold(word.latin)));
+  const featured = fresh.length >= 3 ? fresh : words;
+  const sequence = getUniqueStorySequenceForGrade(grade);
+  let bestId = sequence[Math.max(0, lessonIndex) % sequence.length];
+  let bestScore = -1;
+  sequence.forEach((storyId) => {
+    const found = wordsHeardInStory(featured, storyId);
+    const targets = (LATIN_SEEK_FIND_SCENES[storyId]?.targets || []).filter((target) => (
+      featured.some((word) => storyFold(word.latin) === storyFold(target.latin))
+    ));
+    const score = found.length * 2 + targets.length * 5;
+    if (score > bestScore) {
+      bestScore = score;
+      bestId = storyId;
+    }
+  });
+  const story = cloneStoryScene(bestId);
+  if (!story) return null;
+  const heard = wordsHeardInStory(featured, bestId);
+  let listenFor = heard.slice(0, 5).map((word) => word.latin);
+  if (listenFor.length < 2) {
+    const line = lessonListeningLine(featured);
+    if (line) {
+      story.latinCue = line.latin;
+      story.englishCue = line.english;
+      story.fullStory = [{ latin: line.latin, english: line.english }, ...story.fullStory];
+      listenFor = line.listenFor;
+    }
+  }
+  const countWords = ['', 'unam', 'duas', 'tres', 'quattuor', 'quinque', 'sex'];
+  const targets = (story.seekFind?.targets || []).filter((target) => (
+    featured.some((word) => storyFold(word.latin) === storyFold(target.latin))
+  ));
+  if (targets.length > 0) {
+    const count = countWords[targets.length] || String(targets.length);
+    story.seekFind = {
+      ...story.seekFind,
+      targets,
+      mission: `In pictura ${count} ${targets.length === 1 ? 'rem' : 'res'} reperi.`,
+      missionEnglish: `Find ${targets.length} ${targets.length === 1 ? 'word' : 'words'} from this lesson.`
+    };
+  } else {
+    story.seekFind = null;
+  }
+  story.listenFor = listenFor;
+  return story;
+}

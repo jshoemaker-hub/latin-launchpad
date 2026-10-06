@@ -455,6 +455,11 @@ function renderCard() {
   document.getElementById('cardEmojiBack').textContent = word.emoji||'🏛️';
   document.getElementById('cardFront').textContent     = word.latin;
   document.getElementById('cardBack').textContent      = word.english;
+  const dictionary = document.getElementById('cardDictionary');
+  if (dictionary) {
+    const entry = word.dictionaryEntry || '';
+    dictionary.textContent = entry && entry !== word.latin ? entry : '';
+  }
   document.getElementById('cardCounter').textContent   = `${state.index+1} / ${total}`;
   document.getElementById('progressFill').style.width  = `${(state.index/total)*100}%`;
   const row = document.getElementById('answerRow');

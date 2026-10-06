@@ -91,11 +91,17 @@ const VOCAB_LESSONS = Object.entries(GRADE_WORDS).flatMap(([grade, words]) => {
     const phraseQuestions = typeof getPhraseQuestionsForLesson === 'function'
       ? getPhraseQuestionsForLesson(phrases)
       : [];
+    const level = getCurriculumLevelByGrade(Number(grade));
+    const earlierWords = CURRICULUM_LEVELS
+      .filter((item) => level && item.year < level.year)
+      .flatMap((item) => item.lessonGrades.flatMap((itemGrade) => GRADE_WORDS[itemGrade] || []));
     return {
       id: `grade${grade}-${index + 1}`,
       grade: Number(grade),
       kind: 'vocabulary',
-      story: typeof getStorySceneForLesson === 'function' ? getStorySceneForLesson(Number(grade), index) : null,
+      story: typeof getVocabularyStoryForLesson === 'function'
+        ? getVocabularyStoryForLesson(Number(grade), index, lessonWords, earlierWords)
+        : (typeof getStorySceneForLesson === 'function' ? getStorySceneForLesson(Number(grade), index) : null),
       culture: typeof getCultureCardForLesson === 'function'
         ? getCultureCardForLesson(Number(grade), lessonWords, index)
         : null,
@@ -2140,18 +2146,29 @@ function getCompletionActions(missedCount) {
   `;
 }
 
+function dictionaryDisplay(word) {
+  if (!word) return '';
+  return word.dictionaryEntry || word.principalParts || word.latin || '';
+}
+
+function formBookLabel(word) {
+  const books = Array.isArray(word?.formBooks) ? word.formBooks : [];
+  return books.map((book) => `In ${book}`).join(' · ');
+}
+
 function renderWordIntroduction(lesson) {
   const words = getLessonIntroWords(lesson);
   const introTitle = lesson.kind === 'grammar' ? 'Meet the patterns' : 'Meet the words';
   const cards = words.map((word) => {
-    const label = word.preview || word.principalParts || word.latin;
+    const label = word.preview || dictionaryDisplay(word);
     const answer = word.previewAnswer || word.english;
+    const showHeadword = !word.preview && label !== word.latin;
     return `
       <article class="word-intro-card">
         <span class="word-picture" aria-hidden="true">${escapeHtml(getWordVisual(word))}</span>
         <div>
           <strong>${escapeHtml(label)}</strong>
-          ${word.principalParts ? `<small class="principal-parts-label">Headword: ${escapeHtml(word.latin)}</small>` : ''}
+          ${showHeadword ? `<small class="principal-parts-label">Headword: ${escapeHtml(word.latin)}</small>` : ''}
           <span>${escapeHtml(answer)}</span>
         </div>
         <div class="intro-sound-controls">
@@ -2434,7 +2451,7 @@ function renderLessonSeekFind(lesson) {
         <div>
           <span class="seek-find-eyebrow">Picture mission</span>
           <h3>Seek &amp; Find: ${escapeHtml(lesson.story.englishTitle)}</h3>
-          <p>Search the original artwork for six story words. Tap each object when you spot it.</p>
+          <p>Search the picture for ${total === 1 ? 'a word from this lesson' : `${total} words from this lesson`}. Tap each object when you spot it.</p>
         </div>
         <div class="seek-find-score" aria-label="${foundCount} of ${total} objects found">
           <strong>${foundCount}/${total}</strong>
@@ -3424,7 +3441,7 @@ function renderLessonSummaryPrint(lesson) {
   const termRows = vocabulary.map((word) => {
     const note = truncateText(word.explanation || word.hint || word.prompt || '', 96);
     const cells = [
-      `<strong>${escapeHtml(word.latin)}</strong>`,
+      `<strong>${escapeHtml(dictionaryDisplay(word))}</strong>`,
       escapeHtml(word.previewAnswer || word.english)
     ];
     return { cells, note };
@@ -4082,10 +4099,39 @@ function getEndingHint(latin) {
   if (THIRD_NOMINATIVE_IS.has(key)) return 'This -is word is a third-declension subject form for one person or thing, not the ending that means “to/for/by/with the ___s.”';
 
   const hints = ENDING_HINTS.slice().sort((left, right) => right.suffix.length - left.suffix.length);
+  let suffixHint = '';
   for (const entry of hints) {
-    if (key.endsWith(entry.suffix)) return entry.hint;
+    if (key.endsWith(entry.suffix)) {
+      suffixHint = entry.hint;
+      break;
+    }
   }
-  return '';
+  const morphologyHint = formEndingHint(latin);
+  if (morphologyHint && suffixHint && endingHintsDisagree(morphologyHint, suffixHint)) return morphologyHint;
+  return suffixHint || morphologyHint;
+}
+
+function formEndingHint(latin) {
+  if (typeof getFormRecord !== 'function') return '';
+  const record = getFormRecord(latin);
+  if (!record || !record.endingHint) return '';
+  if (hintHeadwordKey(record.headword) !== hintHeadwordKey(latin)) return '';
+  return record.endingHint;
+}
+
+function endingHintsDisagree(left, right) {
+  const fourth = /fourth declension/i;
+  const second = /second-declension/i;
+  const third = /third declension|third-declension/i;
+  const preposition = /preposition/i;
+  const declension = /declension/i;
+  if (fourth.test(left) && second.test(right)) return true;
+  if (fourth.test(right) && second.test(left)) return true;
+  if (third.test(left) && second.test(right)) return true;
+  if (third.test(right) && second.test(left)) return true;
+  if (preposition.test(left) && declension.test(right)) return true;
+  if (preposition.test(right) && declension.test(left)) return true;
+  return false;
 }
 
 function getSurfaceEnding(latin) {
@@ -4152,6 +4198,10 @@ function buildChant(question) {
   const latin = typeof question === 'string' ? question : question?.latin;
   const key = hintHeadwordKey(latin);
   if (!key || question?.isPhrase || /\s/.test(String(latin || ''))) return null;
+  if (typeof getFormRecord === 'function') {
+    const record = getFormRecord(latin);
+    if (record && record.reliable) return record.chant || null;
+  }
   if (FIRST_CONJ_CHANTS.has(key)) return firstConjugationChant(key);
   if (SECOND_CONJ_CHANTS.has(key)) return secondConjugationChant(key);
   if (FOURTH_CONJ_CHANTS.has(key)) return fourthConjugationChant(key);
@@ -4811,7 +4861,7 @@ function renderMissedWordReview(missed) {
           <article class="missed-word-card">
             <span class="word-picture" aria-hidden="true">${escapeHtml(getWordVisual(word))}</span>
             <div>
-              <strong>${escapeHtml(word.latin)}</strong>
+              <strong>${escapeHtml(dictionaryDisplay(word))}</strong>
               <span>${escapeHtml(word.previewAnswer || word.english)}</span>
             </div>
             ${renderSpeakButton(word.latin, 'Hear')}
@@ -4953,7 +5003,7 @@ function renderWeakWords() {
     <article class="weak-word-item">
       <span class="word-picture" aria-hidden="true">${escapeHtml(word.emoji || String(word.latin || '?').charAt(0).toUpperCase())}</span>
       <div>
-        <strong>${escapeHtml(word.latin)}</strong>
+        <strong>${escapeHtml(dictionaryDisplay(word))}</strong>
         <span>${escapeHtml(word.english || 'Review this word')}</span>
       </div>
       <small>${word.misses} ${word.misses === 1 ? 'miss' : 'misses'}</small>
@@ -5187,7 +5237,7 @@ function renderVocabularyList() {
   const query = (elements.vocabularySearch?.value || '').trim().toLowerCase();
   const words = StudyState.words
     .filter((word) => {
-      const searchable = `${word.latin} ${word.principalParts || ''} ${word.english} ${word.note || ''}`.toLowerCase();
+      const searchable = `${word.latin} ${dictionaryDisplay(word)} ${formBookLabel(word)} ${word.english} ${word.note || ''}`.toLowerCase();
       return !query || searchable.includes(query);
     })
     .sort((a, b) => a.latin.localeCompare(b.latin));
@@ -5197,8 +5247,9 @@ function renderVocabularyList() {
         <div class="vocabulary-row">
           <span class="vocabulary-mark" aria-hidden="true">${escapeHtml(getWordVisual(word))}</span>
           <div>
-            <strong>${escapeHtml(word.principalParts || word.latin)}</strong>
-            ${word.principalParts ? `<small>Headword: ${escapeHtml(word.latin)}</small>` : ''}
+            <strong>${escapeHtml(dictionaryDisplay(word))}</strong>
+            ${dictionaryDisplay(word) !== word.latin ? `<small>Headword: ${escapeHtml(word.latin)}</small>` : ''}
+            ${formBookLabel(word) ? `<small class="form-book-label">${escapeHtml(formBookLabel(word))}</small>` : ''}
             ${word.isPhrase ? '<small>Phrase card</small>' : ''}
           </div>
           <span>${escapeHtml(word.english)}</span>
@@ -5226,7 +5277,9 @@ function getDictionaryWords() {
       if (!entry.grades.includes(level.grade)) entry.grades.push(level.grade);
       if (!entry.levels.includes(level.year)) entry.levels.push(level.year);
       if (word.english && !entry.meanings.includes(word.english)) entry.meanings.push(word.english);
+      if (!entry.dictionaryEntry && word.dictionaryEntry) entry.dictionaryEntry = word.dictionaryEntry;
       if (!entry.principalParts && word.principalParts) entry.principalParts = word.principalParts;
+      if ((!entry.formBooks || entry.formBooks.length === 0) && word.formBooks) entry.formBooks = word.formBooks.slice();
     });
   });
   return [...entries.values()]
@@ -5239,7 +5292,7 @@ function renderDictionary() {
   const grade = elements.dictionaryGradeFilter.value;
   const words = getDictionaryWords().filter((word) => {
     const matchesGrade = grade === 'all' || word.levels.includes(Number(grade));
-    const searchable = `${word.latin} ${word.principalParts || ''} ${word.english}`.toLowerCase();
+    const searchable = `${word.latin} ${dictionaryDisplay(word)} ${formBookLabel(word)} ${word.english}`.toLowerCase();
     return matchesGrade && (!query || searchable.includes(query));
   });
   elements.dictionaryCount.textContent = `${words.length} ${words.length === 1 ? 'entry' : 'entries'}`;
@@ -5248,8 +5301,9 @@ function renderDictionary() {
         <div class="vocabulary-row dictionary-row">
           <span class="vocabulary-mark" aria-hidden="true">${escapeHtml(getWordVisual(word))}</span>
           <div>
-            <strong>${escapeHtml(word.principalParts || word.latin)}</strong>
-            ${word.principalParts ? `<small>Headword: ${escapeHtml(word.latin)}</small>` : ''}
+            <strong>${escapeHtml(dictionaryDisplay(word))}</strong>
+            ${dictionaryDisplay(word) !== word.latin ? `<small>Headword: ${escapeHtml(word.latin)}</small>` : ''}
+            ${formBookLabel(word) ? `<small class="form-book-label">${escapeHtml(formBookLabel(word))}</small>` : ''}
           </div>
           <span>${escapeHtml(word.english)}</span>
           <span class="dictionary-grades" aria-label="Used in years ${word.levels.join(', ')}">
@@ -5306,8 +5360,9 @@ function renderFlashcard() {
     <div class="flashcard-counter">Card ${StudyState.index + 1} of ${StudyState.words.length}</div>
     <div class="flashcard-face">
       <span class="flashcard-kicker">${StudyState.showingAnswer ? 'Meaning' : (word.isPhrase ? 'Latin phrase' : 'Latin')}</span>
-      <strong>${escapeHtml(StudyState.showingAnswer ? word.english : (word.principalParts || word.latin))}</strong>
-      ${StudyState.showingAnswer && word.principalParts ? `<small>Headword: ${escapeHtml(word.latin)}</small>` : ''}
+      <strong>${escapeHtml(StudyState.showingAnswer ? word.english : word.latin)}</strong>
+      ${StudyState.showingAnswer && dictionaryDisplay(word) !== word.english ? `<small>${escapeHtml(dictionaryDisplay(word))}</small>` : ''}
+      ${StudyState.showingAnswer && formBookLabel(word) ? `<small class="form-book-label">${escapeHtml(formBookLabel(word))}</small>` : ''}
       ${StudyState.showingAnswer && word.isPhrase && word.note ? `<small>${escapeHtml(word.note)}</small>` : ''}
       ${StudyState.showingAnswer ? '' : renderSpeakButton(word.latin, 'Listen', 0.74)}
       ${renderFlashcardRating(word)}
