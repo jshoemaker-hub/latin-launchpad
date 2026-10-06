@@ -550,6 +550,11 @@ const elements = {
   badgeGrid: document.getElementById('badgeGrid'),
   weakWordsList: document.getElementById('weakWordsList'),
   reviewWeakWordsButton: document.getElementById('reviewWeakWordsButton'),
+  printWeeklyReport: document.getElementById('printWeeklyReport'),
+  exportProgress: document.getElementById('exportProgress'),
+  importProgress: document.getElementById('importProgress'),
+  importProgressFile: document.getElementById('importProgressFile'),
+  progressBackupStatus: document.getElementById('progressBackupStatus'),
   progressList: document.getElementById('progressList'),
   studyTitle: document.getElementById('studyTitle'),
   studySummary: document.getElementById('studySummary'),
@@ -660,12 +665,22 @@ function normalizeProgress(progress) {
     lessons: normalizeLessonProgress(safeProgress.lessons),
     wordsMastered: isPlainObject(safeProgress.wordsMastered) ? safeProgress.wordsMastered : {},
     wordStats: normalizeWordStats(safeProgress.wordStats),
+    practiceMs: Number.isFinite(safeProgress.practiceMs) ? Math.max(0, Math.round(safeProgress.practiceMs)) : 0,
+    practiceSessions: normalizePracticeSessions(safeProgress.practiceSessions),
     annualExam: typeof normalizeAnnualExamProgress === 'function'
       ? normalizeAnnualExamProgress(
         (typeof migrateAnnualExamProgress === 'function' ? migrateAnnualExamProgress(safeProgress) : null) || safeProgress.annualExam
       )
       : { levels: {} }
   };
+}
+
+function normalizePracticeSessions(sessions) {
+  if (!Array.isArray(sessions)) return [];
+  return sessions
+    .filter((entry) => isPlainObject(entry) && typeof entry.at === 'string' && Number.isFinite(entry.ms) && entry.ms >= 0)
+    .map((entry) => ({ at: entry.at, ms: Math.min(Math.round(entry.ms), 120000) }))
+    .slice(-80);
 }
 
 function normalizeLessonProgress(lessons) {
@@ -778,7 +793,10 @@ function persistProfileSnapshot(snapshot) {
   saveProfiles(profiles);
 }
 
+let progressLocked = false;
+
 function saveState() {
+  if (progressLocked) return;
   try {
     evaluateBadges();
     const snapshot = createStateSnapshot();
@@ -797,13 +815,28 @@ function loadState() {
     if (!stored) return;
     storedState = JSON.parse(stored);
   } catch (error) {
-    console.warn('Stored Latin Launchpad progress was invalid and has been reset.', error);
-    localStorage.removeItem(STORAGE_KEY);
+    progressLocked = true;
+    console.warn('Stored Latin Launchpad progress could not be read and was left unchanged.', error);
     return;
   }
 
-  if (!isPlainObject(storedState)) return;
+  if (!isPlainObject(storedState)) {
+    progressLocked = true;
+    console.warn('Stored Latin Launchpad progress had an unexpected shape and was left unchanged.');
+    return;
+  }
   applyStoredState(storedState);
+}
+
+function notePracticeTime(ms) {
+  if (progressLocked) return;
+  const amount = Math.max(0, Math.min(Math.round(Number(ms) || 0), 120000));
+  if (!amount) return;
+  const progress = AppState.progress;
+  progress.practiceMs = (Number.isFinite(progress.practiceMs) ? progress.practiceMs : 0) + amount;
+  const sessions = Array.isArray(progress.practiceSessions) ? progress.practiceSessions.slice() : [];
+  sessions.push({ at: new Date().toISOString(), ms: amount });
+  progress.practiceSessions = normalizePracticeSessions(sessions);
 }
 
 // ── Supabase sync ──────────────────────────────────────────────────────────
@@ -3483,6 +3516,123 @@ function renderWordFindPrint(lesson) {
   `;
 }
 
+function formatPracticeTime(ms) {
+  const amount = Number.isFinite(ms) ? Math.max(0, ms) : 0;
+  if (amount <= 0) return 'No practice time recorded this week.';
+  const minutes = Math.round(amount / 60000);
+  if (minutes < 1) return 'Under 1 minute recorded this week.';
+  if (minutes === 1) return '1 minute recorded this week.';
+  return `${minutes} minutes recorded this week.`;
+}
+
+function lessonReportTitle(id) {
+  const lesson = (typeof LESSONS !== 'undefined' ? LESSONS : []).find((item) => item.id === id);
+  return lesson ? (getLessonDisplayTitle(lesson) || id) : id;
+}
+
+function buildWeeklyReport(state = AppState, now = Date.now()) {
+  const progress = normalizeProgress(state.progress);
+  const cutoff = now - (7 * 24 * 60 * 60 * 1000);
+  const completed = getCompletedLessons({ progress });
+  const thisWeek = completed.filter((lesson) => {
+    const at = Date.parse(lesson.completedAt);
+    return Number.isFinite(at) && at >= cutoff && at <= now;
+  });
+  const earlier = completed.filter((lesson) => !thisWeek.includes(lesson));
+  const weekMs = progress.practiceSessions.reduce((total, entry) => {
+    const at = Date.parse(entry.at);
+    return Number.isFinite(at) && at >= cutoff && at <= now ? total + entry.ms : total;
+  }, 0);
+  const review = Object.values(progress.wordStats)
+    .filter((entry) => entry.rating === 'unknown' || entry.rating === 'hesitant' || (entry.misses > 0 && entry.rating !== 'mastered'));
+  return {
+    thisWeek,
+    earlier,
+    weekMs,
+    mastered: Object.keys(progress.wordsMastered),
+    review,
+    nickname: typeof state.studentName === 'string' ? state.studentName : ''
+  };
+}
+
+function weeklyList(items, empty) {
+  if (items.length === 0) return `<p>${escapeHtml(empty)}</p>`;
+  return `<ul>${items.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
+}
+
+function buildWeeklyReportHtml(state = AppState, now = Date.now()) {
+  const report = buildWeeklyReport(state, now);
+  const lessonLine = (lesson) => {
+    const total = lesson.maxScore > 0 ? ` / ${lesson.maxScore}` : '';
+    return `${lessonReportTitle(lesson.id)}: ${lesson.score}${total}`;
+  };
+  return `
+    ${renderPrintHeader({
+      grade: state.grade || 3,
+      kind: 'vocabulary',
+      title: 'Parent summary'
+    }, 'Weekly progress', 'This week')}
+    <section class="weekly-report">
+      ${report.nickname ? `<p>Nickname on this device: ${escapeHtml(report.nickname)}</p>` : ''}
+      <p>${escapeHtml(formatPracticeTime(report.weekMs))}</p>
+      <h2>Lessons this week</h2>
+      ${weeklyList(report.thisWeek.map(lessonLine), 'No lessons were completed in the last 7 days.')}
+      <h2>Earlier saved lessons</h2>
+      ${weeklyList(report.earlier.map(lessonLine), 'No earlier lesson scores are saved.')}
+      <h2>Words mastered</h2>
+      ${weeklyList(report.mastered, 'No words are marked mastered yet.')}
+      <h2>Words needing review</h2>
+      ${weeklyList(report.review.slice(0, 12).map((word) => `${word.latin}${word.english ? ` — ${word.english}` : ''}`), 'No words are marked for review.')}
+    </section>
+  `;
+}
+
+function printWeeklyReport() {
+  openPrintPreview('Weekly progress', buildWeeklyReportHtml());
+}
+
+function setProgressBackupStatus(message) {
+  if (elements.progressBackupStatus) elements.progressBackupStatus.textContent = message;
+}
+
+function exportProgress() {
+  const snapshot = createStateSnapshot();
+  snapshot.kind = 'latin-launchpad-progress';
+  snapshot.exportedAt = new Date().toISOString();
+  const blob = new Blob([JSON.stringify(snapshot, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'latin-launchpad-progress.json';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  setProgressBackupStatus('Progress file saved. It includes the nickname so this device can be restored.');
+}
+
+function importProgressText(text) {
+  let parsed;
+  try {
+    parsed = JSON.parse(String(text || ''));
+  } catch (error) {
+    setProgressBackupStatus('That file could not be read. Saved progress was kept.');
+    return false;
+  }
+  if (!isPlainObject(parsed) || !isPlainObject(parsed.progress)) {
+    setProgressBackupStatus('That file is not a progress backup. Saved progress was kept.');
+    return false;
+  }
+  applyStoredState(parsed);
+  progressLocked = false;
+  saveState();
+  renderHome();
+  renderDashboard();
+  renderAccountControls();
+  setProgressBackupStatus('Progress restored from the file.');
+  return true;
+}
+
 function renderPrintHeader(lesson, sheetTitle, lessonLabel) {
   const lessonNumber = lessonLabel != null && String(lessonLabel) !== ''
     ? String(lessonLabel)
@@ -4127,6 +4277,7 @@ function renderQuestion() {
   elements.nextQuestionButton.disabled = false;
   elements.lessonResult.innerHTML = '';
   elements.lessonResult.removeAttribute('data-tone');
+  AppState.questionShownAt = Date.now();
   saveState();
   if (AppState.speechAutoPlay && !['recall', 'ending'].includes(AppState.practiceMode)) {
     window.setTimeout(() => speakLatin(question.latin), 180);
@@ -4547,6 +4698,10 @@ function checkAnswer() {
     .forEach((control) => { control.disabled = true; });
   elements.lessonResult.dataset.tone = correct ? 'success' : 'error';
   elements.lessonResult.innerHTML = renderQuestionFeedback(question, correct);
+  if (AppState.questionShownAt) {
+    notePracticeTime(Date.now() - AppState.questionShownAt);
+    AppState.questionShownAt = 0;
+  }
   recordWordAttempt(question, correct);
   if (correct) {
     AppState.currentLessonCorrect += 1;
@@ -5228,6 +5383,7 @@ function startFlashcardTimerWhenVisible() {
     if (StudyState.running) return;
     StudyState.running = true;
     StudyState.lastTick = performance.now();
+    StudyState.sessionStartedAt = performance.now();
     StudyState.timerId = window.setInterval(tickFlashcards, 100);
     renderFlashcard();
   }, { threshold: [0.5] });
@@ -5247,11 +5403,17 @@ function toggleFlashcardTimer() {
   if (StudyState.remainingMs <= 0) resetFlashcardClock();
   StudyState.running = true;
   StudyState.lastTick = performance.now();
+  StudyState.sessionStartedAt = performance.now();
   StudyState.timerId = window.setInterval(tickFlashcards, 100);
   renderFlashcard();
 }
 
 function stopFlashcardTimer() {
+  if (StudyState.running && StudyState.sessionStartedAt) {
+    notePracticeTime(performance.now() - StudyState.sessionStartedAt);
+    StudyState.sessionStartedAt = 0;
+    saveState();
+  }
   if (StudyState.timerId) window.clearInterval(StudyState.timerId);
   StudyState.timerId = null;
   StudyState.running = false;
@@ -6478,6 +6640,20 @@ function setupEvents() {
     if (speakButton) speakLatin(speakButton.dataset.speakLatin, Number(speakButton.dataset.speakRate) || 0.82);
   });
   elements.reviewWeakWordsButton?.addEventListener('click', startWeakWordReview);
+  elements.printWeeklyReport?.addEventListener('click', printWeeklyReport);
+  elements.exportProgress?.addEventListener('click', exportProgress);
+  elements.importProgress?.addEventListener('click', () => elements.importProgressFile?.click());
+  elements.importProgressFile?.addEventListener('change', () => {
+    const file = elements.importProgressFile.files && elements.importProgressFile.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      importProgressText(String(reader.result || ''));
+      elements.importProgressFile.value = '';
+    };
+    reader.onerror = () => setProgressBackupStatus('That file could not be read. Saved progress was kept.');
+    reader.readAsText(file);
+  });
   elements.nextQuestionButton.addEventListener('click', nextQuestion);
   pages.lesson?.addEventListener('click', (event) => {
     const target = event.target instanceof Element ? event.target : null;
