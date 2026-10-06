@@ -141,11 +141,11 @@ const ENDING_HINTS = [
   { suffix: 'i', hint: 'In second-declension nouns, -i may mean “of the ___” or “the ___s.”' }
 ];
 
-const THIRD_NEUTER_US = new Set(['tempus', 'opus', 'vulnus', 'pectus', 'munus', 'jus']);
+const THIRD_NEUTER_US = new Set(['tempus', 'opus', 'vulnus', 'pectus', 'munus', 'ius', 'jus']);
 const THIRD_OTHER_US = new Set(['virtus', 'salus']);
 const FOURTH_DECLENSION_US = new Set(['adventus', 'aestus', 'arcus', 'crepitus', 'cursus', 'exercitus', 'gradus', 'habitus', 'motus', 'portus', 'senatus', 'sumptus', 'versus', 'domus']);
 const THIRD_NOMINATIVE_IS = new Set(['civis', 'clavis', 'collis', 'hostis', 'ignis', 'iuvenis', 'martialis', 'navis', 'nobilis', 'panis', 'pelvis', 'vestis', 'vis']);
-const NEUTER_PLURAL_A = new Set(['bona', 'carmina', 'membra', 'opera', 'scripta']);
+const NEUTER_PLURAL_A = new Set(['bona', 'opera']);
 const GENITIVE_HEADWORD_HINTS = {
   temporis: 'Temporis is the genitive of tempus (“of the time”), not the ending that means “to/for/by/with the ___s.”',
   urbis: 'Urbis is the genitive of urbs (“of the city”), not the ending that means “to/for/by/with the ___s.”'
@@ -2758,23 +2758,37 @@ function getPuzzleTermLabel(count) {
   return `${count} ${count === 1 ? 'term' : 'terms'}`;
 }
 
+function isProperNounWord(word) {
+  return /^[A-Z]/.test(String(word.latin || '').trim());
+}
+
+function isPuzzleTermCandidate(word) {
+  if (!word || word.excludeFromPuzzles || word.isPhrase) return false;
+  const answer = normalizePuzzleAnswer(word.puzzleAnswer || word.latin);
+  return answer.length >= 3 && answer.length <= 14;
+}
+
 function getLessonPuzzleTerms(lesson) {
   const seen = new Set();
-  return lesson.words
-    .filter((word) => !word.excludeFromPuzzles && !word.isPhrase)
-    .map((word, index) => {
-      const answer = normalizePuzzleAnswer(word.puzzleAnswer || word.latin);
-      if (answer.length < 3 || answer.length > 14 || seen.has(answer)) return null;
-      seen.add(answer);
-      return {
-        answer,
-        display: word.latin,
-        clue: getPuzzleClue(word, index),
-        english: word.previewAnswer || word.english
-      };
-    })
-    .filter(Boolean)
-    .slice(0, 10);
+  const candidates = lesson.words.filter(isPuzzleTermCandidate);
+  const regular = candidates.filter((word) => !isProperNounWord(word));
+  const names = candidates.filter(isProperNounWord);
+  // A full set of ordinary words is enough for the puzzle, so names stay off
+  // the grid. Otherwise names fill the remaining spaces with natural clues.
+  const pool = regular.length >= 10 ? regular : [...regular, ...names];
+  const terms = [];
+  pool.forEach((word, index) => {
+    const answer = normalizePuzzleAnswer(word.puzzleAnswer || word.latin);
+    if (seen.has(answer)) return;
+    seen.add(answer);
+    terms.push({
+      answer,
+      display: word.latin,
+      clue: getPuzzleClue(word, index),
+      english: word.previewAnswer || word.english
+    });
+  });
+  return terms.slice(0, 10);
 }
 
 function normalizePuzzleAnswer(value) {
@@ -2785,9 +2799,53 @@ function normalizePuzzleAnswer(value) {
     .replace(/[^A-Z]/g, '');
 }
 
+const PROPER_NOUN_PUZZLE_CLUES = {
+  aeschinus: "Name of the older son in a Roman comedy (Adelphoe)",
+  ctesipho: "Name of the younger son in a Roman comedy (Adelphoe)",
+  demea: 'Name of the father in a Roman comedy (Adelphoe)',
+  psyche: "Name of the young woman loved by Cupid",
+  pyramus: 'Name of the young man in the story of two lovers in Babylon',
+  thisbe: 'Name of the young woman in the story of two lovers in Babylon',
+  vesuvius: 'Name of the volcano that buried Pompeii',
+  pythia: 'Name of the priestess of Apollo at Delphi'
+};
+
+function getProperNounPuzzleClue(word, meaning) {
+  const key = String(word.latin || '').toLowerCase().replace(/[^a-z]/g, '');
+  if (PROPER_NOUN_PUZZLE_CLUES[key]) return PROPER_NOUN_PUZZLE_CLUES[key];
+  const answer = normalizePuzzleAnswer(word.puzzleAnswer || word.latin);
+  const raw = String(meaning || '').trim();
+  const comma = raw.indexOf(',');
+  let description = comma > 0 ? raw.slice(comma + 1).trim() : raw;
+  description = description
+    .split(/\s+/)
+    .filter((token) => normalizePuzzleAnswer(token) !== answer)
+    .join(' ')
+    .replace(/\s+\b(and|or)\b\s*$/i, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+  let clue;
+  if (!description) {
+    clue = 'A proper name from Roman history or legend';
+  } else if (comma > 0 && /\bname\b/i.test(description)) {
+    clue = description.charAt(0).toUpperCase() + description.slice(1);
+  } else if (comma > 0 && /^(a|an)\s/i.test(description)) {
+    clue = `Name of ${description}`;
+  } else if (comma > 0) {
+    clue = `Name of the ${description}`;
+  } else {
+    clue = `Latin name for ${description}`;
+  }
+  if (normalizePuzzleAnswer(clue).includes(answer)) {
+    return 'A proper name from Roman history or legend';
+  }
+  return clue;
+}
+
 function getPuzzleClue(word, index) {
   const meaning = word.previewAnswer || word.english || `term ${index + 1}`;
   if (word.context) return `${word.context} ${meaning}`;
+  if (isProperNounWord(word)) return getProperNounPuzzleClue(word, meaning);
   return `Latin for "${meaning}"`;
 }
 
