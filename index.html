@@ -84,6 +84,7 @@
           <button type="button" id="studyButton" class="pill-button">Study</button>
           <button type="button" id="dictionaryButton" class="pill-button">Dictionary</button>
           <button type="button" id="assessmentsButton" class="pill-button">Tests &amp; Quizzes</button>
+          <button type="button" id="nleButton" class="pill-button">NLE Prep</button>
           <button type="button" id="dashboardButton" class="pill-button">Dashboard</button>
           <button type="button" id="accountButton" class="pill-button">Account</button>
           <button type="button" id="contactButton" class="pill-button">Contact</button>
@@ -184,6 +185,10 @@
                 <button id="homePracticeAssessments" type="button" class="practice-link">
                   <strong>Tests &amp; Quizzes</strong>
                   <span>Build a chapter quiz or level test.</span>
+                </button>
+                <button id="homePracticeNle" type="button" class="practice-link">
+                  <strong>NLE Prep</strong>
+                  <span>Unofficial National Latin Exam practice.</span>
                 </button>
                 <button id="homePracticeStudy" type="button" class="practice-link">
                   <strong>Vocabulary Study</strong>
@@ -510,6 +515,16 @@
             </div>
             <button id="backToLessonsFromDashboard" class="secondary-button">Back</button>
           </div>
+          <section class="nle-dashboard" aria-label="NLE practice progress">
+            <div class="weak-review-header">
+              <div>
+                <span class="section-kicker">Unofficial practice</span>
+                <h3>National Latin Exam</h3>
+              </div>
+              <button id="dashboardNleButton" type="button" class="secondary-button">Open NLE prep</button>
+            </div>
+            <div id="nleDashboardSummary"></div>
+          </section>
           <div class="dashboard-grid">
             <div class="stat-card">
               <h3>Points</h3>
@@ -547,6 +562,21 @@
           </div>
         </div>
       </section>
+      <section id="nlePage" class="page">
+        <div class="card nle-card">
+          <div class="page-header">
+            <div>
+              <span class="section-kicker">Unofficial practice</span>
+              <h2>National Latin Exam prep</h2>
+              <p>Choose a level, review what that exam covers, practice by category, or take a timed exam in the NLE's multiple-choice format.</p>
+            </div>
+            <button id="nleBackButton" type="button" class="secondary-button">Home</button>
+          </div>
+          <p class="nle-disclaimer">Unofficial practice. Latin Launchpad is not affiliated with, endorsed by, or sponsored by the National Latin Exam, the American Classical League, or the National Junior Classical League. These questions are original. They are not past NLE questions. For the official syllabus, past exams, and registration, visit <a href="https://www.nle.org/" target="_blank" rel="noopener noreferrer">nle.org</a>.</p>
+          <div id="nleStage"></div>
+        </div>
+      </section>
+
       <section id="contactPage" class="page">
         <div class="card contact-card">
           <div class="page-header">
@@ -618,6 +648,10 @@
   <script defer src="classroom-latin.js"></script>
   <script defer src="learning-objectives.js"></script>
   <script defer src="grammar-lessons.js"></script>
+  <script defer src="nle-questions.js"></script>
+  <script defer src="nle-questions-more.js"></script>
+  <script defer src="nle-questions-upper.js"></script>
+  <script defer src="nle-prep.js"></script>
   <script defer src="analytics.js"></script>
   <script defer src="app.js"></script>
 </body>
