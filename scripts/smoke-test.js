@@ -20,6 +20,8 @@ const nleQuestionPaths = [
   path.join(root, 'nle-questions.js'),
   path.join(root, 'nle-questions-more.js'),
   path.join(root, 'nle-questions-upper.js'),
+  path.join(root, 'nle-questions-exams.js'),
+  path.join(root, 'nle-questions-advanced.js'),
   path.join(root, 'nle-prep.js')
 ];
 const trustPageFiles = [
@@ -424,7 +426,7 @@ function checkNlePrepHooks() {
     assert(html.includes(needle), `Expected NLE prep hook not found: ${needle}`);
   });
   const netlifyConfig = fs.readFileSync(path.join(root, 'netlify.toml'), 'utf8');
-  ['nle-questions.js', 'nle-questions-more.js', 'nle-questions-upper.js', 'nle-prep.js'].forEach((fileName) => {
+  ['nle-questions.js', 'nle-questions-more.js', 'nle-questions-upper.js', 'nle-questions-exams.js', 'nle-questions-advanced.js', 'nle-prep.js'].forEach((fileName) => {
     assert(netlifyConfig.includes(fileName), `Netlify build must copy ${fileName}`);
   });
   assert(app.includes('function showNlePrep()'), 'The app must open the NLE prep page');

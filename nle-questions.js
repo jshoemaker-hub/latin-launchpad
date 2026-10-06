@@ -203,6 +203,10 @@ function addQuestions(items) {
   items.forEach((item) => NLE_QUESTIONS.push(item));
 }
 
+function addPassages(items) {
+  items.forEach((item) => NLE_PASSAGES.push(item));
+}
+
 addQuestions([
   nleQ('intro-canis-01', 'intro', 'grammar', 'What does habitat tell you?', ['Marcus lives in the villa.', 'Marcus used to live in the villa.', 'Marcus will live in the villa.', 'Someone tells Marcus to leave.'], 'Marcus lives in the villa.', 'Habitat is present tense: he lives. The imperfect habitabat would mean he was living.', { storyId: 'intro-canis', order: 1, context: 'Marcus in villa habitat.' }),
   nleQ('intro-canis-02', 'intro', 'vocabulary', 'What is a villa?', ['A country house.', 'A ship.', 'A school.', 'A river.'], 'A country house.', 'Villa means a country house. Marcus lives in one.', { storyId: 'intro-canis', order: 2, context: 'Marcus in villa habitat.' }),

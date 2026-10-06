@@ -11,6 +11,8 @@ function loadNle() {
     'nle-questions.js',
     'nle-questions-more.js',
     'nle-questions-upper.js',
+    'nle-questions-exams.js',
+    'nle-questions-advanced.js',
     'nle-prep.js'
   ].forEach((fileName) => {
     const filePath = path.resolve(__dirname, '..', fileName);
@@ -57,8 +59,20 @@ test('question content is complete and internally consistent', () => {
   assert.ok(summary.intro.total >= 80);
   assert.ok(summary.beginning.total >= 70);
   assert.ok(summary.intermediate.total >= 40);
-  assert.equal(summary.intro.passages, 2);
+  assert.equal(summary.intro.passages, 3);
   assert.equal(summary.beginning.passages, 2);
+  assert.equal(summary['beginning-reading'].passages, 2);
+  assert.equal(summary.intermediate.passages, 2);
+  assert.equal(summary['intermediate-reading'].passages, 2);
+  assert.equal(summary['advanced-prose'].passages, 1);
+  assert.equal(summary['advanced-poetry'].passages, 1);
+  assert.equal(summary['advanced-reading'].passages, 2);
+  assert.ok(summary['advanced-prose'].total >= 40);
+  assert.ok(summary['advanced-poetry'].total >= 40);
+  ['grammar', 'vocabulary', 'derivatives', 'mottoes', 'oral', 'mythology', 'history', 'geography', 'culture', 'reading'].forEach((category) => {
+    assert.ok(summary['advanced-prose'].byCategory[category] > 0, `advanced prose ${category}`);
+    assert.ok(summary['advanced-poetry'].byCategory[category] > 0, `advanced poetry ${category}`);
+  });
   ['grammar', 'vocabulary', 'derivatives', 'mottoes', 'oral', 'mythology', 'history', 'geography', 'culture', 'reading'].forEach((category) => {
     assert.ok(summary.intro.byCategory[category] > 0, `intro ${category}`);
     assert.ok(summary.beginning.byCategory[category] > 0, `beginning ${category}`);
@@ -83,15 +97,39 @@ test('full practice exams match the published lengths', () => {
       assert.ok(question.choices.includes(question.answer));
     });
   });
-  const shortReading = nle.buildNleExam('beginning-reading', nle.createNleRng(2));
-  assert.equal(shortReading.complete, false);
-  assert.ok(shortReading.questions.length > 0);
-  assert.equal(nle.buildNleExam('advanced-prose', nle.createNleRng(2)).questions.length, 0);
+  ['beginning-reading', 'intermediate-reading', 'advanced-reading'].forEach((levelId) => {
+    const exam = nle.buildNleExam(levelId, nle.createNleRng(5));
+    assert.equal(exam.complete, true, levelId);
+    assert.equal(exam.questions.length, 36);
+    const sections = exam.questions.reduce((counts, question) => {
+      counts[question.section] = (counts[question.section] || 0) + 1;
+      return counts;
+    }, {});
+    assert.equal(sections.reading, 33);
+    assert.equal(sections.extension, 3);
+    const passageIds = exam.questions.filter((question) => question.section === 'reading').map((question) => question.passageId);
+    assert.equal(new Set(passageIds).size, 2);
+  });
+  ['advanced-prose', 'advanced-poetry'].forEach((levelId) => {
+    const exam = nle.buildNleExam(levelId, nle.createNleRng(5));
+    assert.equal(exam.complete, true, levelId);
+    assert.equal(exam.questions.length, 40);
+    const sections = exam.questions.reduce((counts, question) => {
+      counts[question.section] = (counts[question.section] || 0) + 1;
+      return counts;
+    }, {});
+    assert.equal(sections.culture, 12);
+    assert.equal(sections.language, 18);
+    assert.equal(sections.reading, 10);
+  });
+  const advancedReading = nle.NLE_PASSAGES.filter((passage) => passage.level === 'advanced-reading').map((passage) => passage.latin).join('\n');
+  assert.match(advancedReading, /ilicis/);
+  assert.match(advancedReading, /Nuntius/);
 });
 
 test('an Introduction exam continues one story into one passage', () => {
   const stories = new Set();
-  for (let seed = 1; seed <= 24; seed += 1) {
+  for (let seed = 1; seed <= 48; seed += 1) {
     const exam = nle.buildNleExam('intro', nle.createNleRng(seed));
     stories.add(exam.storyId);
     assert.equal(exam.passage.storyId, exam.storyId);
@@ -100,7 +138,7 @@ test('an Introduction exam continues one story into one passage', () => {
     const orders = reading.map((question) => question.order);
     assert.deepEqual(orders, orders.slice().sort((left, right) => left - right));
   }
-  assert.equal(stories.size, 2);
+  assert.equal(stories.size, 3);
 });
 
 test('category practice stays on the requested level and topic', () => {
@@ -162,4 +200,9 @@ test('spot-checks Latin meanings used by the question bank', () => {
   assert.equal(byId['beg-gram-01'].answer, 'He or she carried.');
   assert.equal(byId['int-gram-01'].answer, 'He or she is praised.');
   assert.match(byId['int-mot-02'].answer, /through difficulties to the stars/i);
+  assert.equal(byId['ay-gram-01'].answer, 'one long syllable and two short syllables.');
+  assert.equal(byId['ay-gram-02'].answer, 'two long syllables.');
+  assert.equal(byId['ap-gram-10'].answer, 'I fear that the enemy may come.');
+  assert.equal(byId['ap-mot-01'].answer, 'you shall have the body.');
+  assert.equal(byId['ar-poet-12'].answer, 'a dactyl.');
 });
