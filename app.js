@@ -3159,7 +3159,7 @@ function renderCrosswordGrid(crossword, showAnswers) {
   const size = crossword.grid.length;
   const cells = crossword.grid.map((row, rowIndex) => row.map((letter, colIndex) => {
     if (!letter) {
-      return '<div class="crossword-block" aria-hidden="true"><svg viewBox="0 0 10 10"><rect width="10" height="10" fill="#000"/></svg></div>';
+      return '<div class="crossword-block" aria-hidden="true"></div>';
     }
     const number = crossword.cellNumbers.get(`${rowIndex},${colIndex}`);
     const numberHtml = number ? `<span class="cell-number">${number}</span>` : '';
@@ -3175,7 +3175,7 @@ function renderCrosswordClues(title, clues) {
     <section class="clue-list-section">
       <h2>${escapeHtml(title)}</h2>
       <ol class="clue-list">
-        ${clues.map((placement) => `<li value="${placement.number}">${escapeHtml(placement.term.clue)}</li>`).join('')}
+        ${clues.map((placement) => `<li><span class="clue-number">${placement.number}.</span><span class="clue-text">${escapeHtml(placement.term.clue)}</span></li>`).join('')}
       </ol>
     </section>
   `;
