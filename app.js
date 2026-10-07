@@ -70,53 +70,105 @@ function getLessonsForSelection(grade) {
 
 const LESSON_CHUNK_SIZE = 10;
 
+function isCoreFrequencyWord(word) {
+  return Boolean(word && word.coreSet);
+}
+
+function getBaseVocabularyWords(grade) {
+  return (GRADE_WORDS[grade] || []).filter((word) => !isCoreFrequencyWord(word));
+}
+
+function getCoreSetNumber(grade, indexWithinGrade) {
+  const level = getCurriculumLevelByGrade(grade);
+  const grades = level ? level.lessonGrades : [Number(grade)];
+  let offset = 0;
+  for (const earlier of grades) {
+    if (Number(earlier) >= Number(grade)) break;
+    const coreCount = (GRADE_WORDS[earlier] || []).filter(isCoreFrequencyWord).length;
+    offset += Math.ceil(coreCount / LESSON_CHUNK_SIZE);
+  }
+  return offset + Number(indexWithinGrade) + 1;
+}
+
 function getVocabLessonNumber(grade, indexWithinGrade) {
   const level = getCurriculumLevelByGrade(grade);
   const grades = level ? level.lessonGrades : [Number(grade)];
   let offset = 0;
   for (const earlier of grades) {
     if (Number(earlier) >= Number(grade)) break;
-    offset += Math.ceil((GRADE_WORDS[earlier] || []).length / LESSON_CHUNK_SIZE);
+    offset += Math.ceil(getBaseVocabularyWords(earlier).length / LESSON_CHUNK_SIZE);
   }
   return offset + Number(indexWithinGrade) + 1;
 }
 
+function buildVocabularyLesson(grade, lessonWords, index, id, title, description, coreSet) {
+  const phrases = typeof getPhraseFocusForLesson === 'function'
+    ? getPhraseFocusForLesson(Number(grade), lessonWords)
+    : [];
+  const phraseQuestions = typeof getPhraseQuestionsForLesson === 'function'
+    ? getPhraseQuestionsForLesson(phrases)
+    : [];
+  const level = getCurriculumLevelByGrade(Number(grade));
+  const earlierWords = CURRICULUM_LEVELS
+    .filter((item) => level && item.year < level.year)
+    .flatMap((item) => item.lessonGrades.flatMap((itemGrade) => GRADE_WORDS[itemGrade] || []));
+  const phraseDescription = phrases.length > 0
+    ? `Practice Latin vocabulary words ${description}, then connect them to popular Latin phrases.`
+    : `Practice Latin vocabulary words ${description}.`;
+  return {
+    id,
+    grade: Number(grade),
+    kind: 'vocabulary',
+    ...(coreSet ? { coreSet: true } : {}),
+    story: typeof getVocabularyStoryForLesson === 'function'
+      ? getVocabularyStoryForLesson(Number(grade), index, lessonWords, earlierWords)
+      : (typeof getStorySceneForLesson === 'function' ? getStorySceneForLesson(Number(grade), index) : null),
+    culture: typeof getCultureCardForLesson === 'function'
+      ? getCultureCardForLesson(Number(grade), lessonWords, index)
+      : null,
+    classroomPhrases: typeof getClassroomPhrasesForLesson === 'function'
+      ? getClassroomPhrasesForLesson(Number(grade), index)
+      : [],
+    title,
+    description: coreSet
+      ? `Extra high-frequency practice after the main lessons. ${phraseDescription}`
+      : phraseDescription,
+    vocabularyWords: lessonWords,
+    phrases,
+    words: [...lessonWords, ...phraseQuestions]
+  };
+}
+
 const VOCAB_LESSONS = Object.entries(GRADE_WORDS).flatMap(([grade, words]) => {
-  return Array.from({ length: Math.ceil(words.length / LESSON_CHUNK_SIZE) }, (_, index) => {
+  const baseWords = words.filter((word) => !isCoreFrequencyWord(word));
+  const coreWords = words.filter((word) => isCoreFrequencyWord(word));
+  const baseLessons = Array.from({ length: Math.ceil(baseWords.length / LESSON_CHUNK_SIZE) }, (_, index) => {
     const start = index * LESSON_CHUNK_SIZE;
-    const lessonWords = words.slice(start, start + LESSON_CHUNK_SIZE);
-    const phrases = typeof getPhraseFocusForLesson === 'function'
-      ? getPhraseFocusForLesson(Number(grade), lessonWords)
-      : [];
-    const phraseQuestions = typeof getPhraseQuestionsForLesson === 'function'
-      ? getPhraseQuestionsForLesson(phrases)
-      : [];
-    const level = getCurriculumLevelByGrade(Number(grade));
-    const earlierWords = CURRICULUM_LEVELS
-      .filter((item) => level && item.year < level.year)
-      .flatMap((item) => item.lessonGrades.flatMap((itemGrade) => GRADE_WORDS[itemGrade] || []));
-    return {
-      id: `grade${grade}-${index + 1}`,
-      grade: Number(grade),
-      kind: 'vocabulary',
-      story: typeof getVocabularyStoryForLesson === 'function'
-        ? getVocabularyStoryForLesson(Number(grade), index, lessonWords, earlierWords)
-        : (typeof getStorySceneForLesson === 'function' ? getStorySceneForLesson(Number(grade), index) : null),
-      culture: typeof getCultureCardForLesson === 'function'
-        ? getCultureCardForLesson(Number(grade), lessonWords, index)
-        : null,
-      classroomPhrases: typeof getClassroomPhrasesForLesson === 'function'
-        ? getClassroomPhrasesForLesson(Number(grade), index)
-        : [],
-      title: `${getLessonLevelName(Number(grade))}: Lesson ${getVocabLessonNumber(grade, index)}`,
-      description: phrases.length > 0
-        ? `Practice Latin vocabulary words ${start + 1}-${start + lessonWords.length}, then connect them to popular Latin phrases.`
-        : `Practice Latin vocabulary words ${start + 1}-${start + lessonWords.length}.`,
-      vocabularyWords: lessonWords,
-      phrases,
-      words: [...lessonWords, ...phraseQuestions]
-    };
+    const lessonWords = baseWords.slice(start, start + LESSON_CHUNK_SIZE);
+    return buildVocabularyLesson(
+      grade,
+      lessonWords,
+      index,
+      `grade${grade}-${index + 1}`,
+      `${getLessonLevelName(Number(grade))}: Lesson ${getVocabLessonNumber(grade, index)}`,
+      `${start + 1}-${start + lessonWords.length}`,
+      false
+    );
   });
+  const coreLessons = Array.from({ length: Math.ceil(coreWords.length / LESSON_CHUNK_SIZE) }, (_, index) => {
+    const start = index * LESSON_CHUNK_SIZE;
+    const lessonWords = coreWords.slice(start, start + LESSON_CHUNK_SIZE);
+    return buildVocabularyLesson(
+      grade,
+      lessonWords,
+      baseLessons.length + index,
+      `grade${grade}-${baseLessons.length + index + 1}`,
+      `${getLessonLevelName(Number(grade))}: Core words ${getCoreSetNumber(grade, index)}`,
+      `${start + 1}-${start + lessonWords.length}`,
+      true
+    );
+  });
+  return [...baseLessons, ...coreLessons];
 });
 
 const grammarStoryIndexByGrade = {};
@@ -1705,11 +1757,14 @@ function renderLessonList() {
     const grammarTag = lesson.kind === 'grammar'
       ? '<span class="lesson-kind-tag">Grammar</span>'
       : '';
+    const coreTag = lesson.coreSet
+      ? '<span class="lesson-kind-tag">Core words</span>'
+      : '';
     const phraseTag = getLessonPhraseCount(lesson) > 0
       ? `<span class="lesson-phrase-tag">${getLessonPhraseCount(lesson)} ${getLessonPhraseCount(lesson) === 1 ? 'phrase' : 'phrases'}</span>`
       : '';
-    const tagsHtml = grammarTag || storyTag || seekFindTag || phraseTag
-      ? `<div class="lesson-card-tags">${grammarTag}${storyTag}${seekFindTag}${phraseTag}</div>`
+    const tagsHtml = grammarTag || coreTag || storyTag || seekFindTag || phraseTag
+      ? `<div class="lesson-card-tags">${grammarTag}${coreTag}${storyTag}${seekFindTag}${phraseTag}</div>`
       : '';
     const card = document.createElement('div');
     card.className = 'lesson-card-item';
