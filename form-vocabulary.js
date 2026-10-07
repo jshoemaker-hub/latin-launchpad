@@ -18906,6 +18906,9 @@ function getFormRecord(latin) {
 }
 
 function applyFormVocabulary() {
+  if (typeof CORE_FORM_RECORDS !== 'undefined' && typeof FORM_VOCABULARY !== 'undefined') {
+    Object.assign(FORM_VOCABULARY, CORE_FORM_RECORDS);
+  }
   if (typeof GRADE_WORDS === 'undefined') return;
   Object.values(GRADE_WORDS).flat().forEach((word) => {
     const record = getFormRecord(word.latin);

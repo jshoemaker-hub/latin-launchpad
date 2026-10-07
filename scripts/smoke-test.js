@@ -44,7 +44,7 @@ function assert(condition, message) {
 }
 
 function checkJavaScriptSyntax() {
-  [appPath, analyticsPath, contactFormPath, path.join(root, 'assignment-links.js'), wordBanksPath, referenceIndexPath, path.join(root, 'form-vocabulary.js'), phrasesPath, storiesPath, culturePath, classroomPath, grammarPath, path.join(root, 'flashcards.js'), ...annualExamQuestionPaths].forEach((filePath) => {
+  [appPath, analyticsPath, contactFormPath, path.join(root, 'assignment-links.js'), wordBanksPath, referenceIndexPath, path.join(root, 'core-frequency.js'), path.join(root, 'core-forms.js'), path.join(root, 'form-vocabulary.js'), phrasesPath, storiesPath, culturePath, classroomPath, grammarPath, path.join(root, 'flashcards.js'), ...annualExamQuestionPaths].forEach((filePath) => {
     new vm.Script(fs.readFileSync(filePath, 'utf8'), { filename: filePath });
   });
 }
