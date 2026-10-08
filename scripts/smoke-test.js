@@ -23,6 +23,7 @@ const annualExamQuestionPaths = [
   path.join(root, 'annual-exam-questions-exams.js'),
   path.join(root, 'annual-exam-questions-advanced.js'),
   path.join(root, 'annual-exam-passages-long.js'),
+  path.join(root, 'annual-exam-language.js'),
   path.join(root, 'annual-exam.js')
 ];
 const trustPageFiles = [
@@ -45,7 +46,7 @@ function assert(condition, message) {
 }
 
 function checkJavaScriptSyntax() {
-  [appPath, analyticsPath, contactFormPath, path.join(root, 'assignment-links.js'), wordBanksPath, referenceIndexPath, path.join(root, 'core-frequency.js'), path.join(root, 'core-forms.js'), path.join(root, 'form-vocabulary.js'), phrasesPath, storiesPath, culturePath, classroomPath, grammarPath, path.join(root, 'flashcards.js'), ...annualExamQuestionPaths].forEach((filePath) => {
+  [appPath, analyticsPath, contactFormPath, path.join(root, 'assignment-links.js'), wordBanksPath, referenceIndexPath, path.join(root, 'core-frequency.js'), path.join(root, 'core-forms.js'), path.join(root, 'gap-vocabulary.js'), path.join(root, 'form-vocabulary.js'), phrasesPath, storiesPath, culturePath, classroomPath, grammarPath, path.join(root, 'flashcards.js'), ...annualExamQuestionPaths].forEach((filePath) => {
     new vm.Script(fs.readFileSync(filePath, 'utf8'), { filename: filePath });
   });
 }
@@ -427,7 +428,7 @@ function checkAnnualExamHooks() {
     assert(html.includes(needle), `Expected Annual Exam Study hook not found: ${needle}`);
   });
   const netlifyConfig = fs.readFileSync(path.join(root, 'netlify.toml'), 'utf8');
-  ['annual-exam-questions.js', 'annual-exam-questions-more.js', 'annual-exam-questions-upper.js', 'annual-exam-questions-exams.js', 'annual-exam-questions-advanced.js', 'annual-exam-passages-long.js', 'annual-exam.js'].forEach((fileName) => {
+  ['annual-exam-questions.js', 'annual-exam-questions-more.js', 'annual-exam-questions-upper.js', 'annual-exam-questions-exams.js', 'annual-exam-questions-advanced.js', 'annual-exam-passages-long.js', 'annual-exam-language.js', 'annual-exam.js'].forEach((fileName) => {
     assert(netlifyConfig.includes(fileName), `Netlify build must copy ${fileName}`);
   });
   assert(app.includes('function showAnnualExam()'), 'The app must open the Annual Exam Study page');

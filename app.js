@@ -74,8 +74,12 @@ function isCoreFrequencyWord(word) {
   return Boolean(word && word.coreSet);
 }
 
+function isGapVocabularyWord(word) {
+  return Boolean(word && word.gapSet);
+}
+
 function getBaseVocabularyWords(grade) {
-  return (GRADE_WORDS[grade] || []).filter((word) => !isCoreFrequencyWord(word));
+  return (GRADE_WORDS[grade] || []).filter((word) => !isCoreFrequencyWord(word) && !isGapVocabularyWord(word));
 }
 
 function getCoreSetNumber(grade, indexWithinGrade) {
@@ -86,6 +90,18 @@ function getCoreSetNumber(grade, indexWithinGrade) {
     if (Number(earlier) >= Number(grade)) break;
     const coreCount = (GRADE_WORDS[earlier] || []).filter(isCoreFrequencyWord).length;
     offset += Math.ceil(coreCount / LESSON_CHUNK_SIZE);
+  }
+  return offset + Number(indexWithinGrade) + 1;
+}
+
+function getGapSetNumber(grade, indexWithinGrade) {
+  const level = getCurriculumLevelByGrade(grade);
+  const grades = level ? level.lessonGrades : [Number(grade)];
+  let offset = 0;
+  for (const earlier of grades) {
+    if (Number(earlier) >= Number(grade)) break;
+    const gapCount = (GRADE_WORDS[earlier] || []).filter(isGapVocabularyWord).length;
+    offset += Math.ceil(gapCount / LESSON_CHUNK_SIZE);
   }
   return offset + Number(indexWithinGrade) + 1;
 }
@@ -140,8 +156,9 @@ function buildVocabularyLesson(grade, lessonWords, index, id, title, description
 }
 
 const VOCAB_LESSONS = Object.entries(GRADE_WORDS).flatMap(([grade, words]) => {
-  const baseWords = words.filter((word) => !isCoreFrequencyWord(word));
+  const baseWords = words.filter((word) => !isCoreFrequencyWord(word) && !isGapVocabularyWord(word));
   const coreWords = words.filter((word) => isCoreFrequencyWord(word));
+  const gapWords = words.filter((word) => isGapVocabularyWord(word));
   const baseLessons = Array.from({ length: Math.ceil(baseWords.length / LESSON_CHUNK_SIZE) }, (_, index) => {
     const start = index * LESSON_CHUNK_SIZE;
     const lessonWords = baseWords.slice(start, start + LESSON_CHUNK_SIZE);
@@ -168,7 +185,23 @@ const VOCAB_LESSONS = Object.entries(GRADE_WORDS).flatMap(([grade, words]) => {
       true
     );
   });
-  return [...baseLessons, ...coreLessons];
+  const gapLessons = Array.from({ length: Math.ceil(gapWords.length / LESSON_CHUNK_SIZE) }, (_, index) => {
+    const start = index * LESSON_CHUNK_SIZE;
+    const lessonWords = gapWords.slice(start, start + LESSON_CHUNK_SIZE);
+    const lesson = buildVocabularyLesson(
+      grade,
+      lessonWords,
+      baseLessons.length + coreLessons.length + index,
+      `grade${grade}-${baseLessons.length + coreLessons.length + index + 1}`,
+      `${getLessonLevelName(Number(grade))}: Extra words ${getGapSetNumber(grade, index)}`,
+      `${start + 1}-${start + lessonWords.length}`,
+      false
+    );
+    lesson.gapSet = true;
+    lesson.description = `Little words and everyday words that turn up often in reading. ${lesson.description}`;
+    return lesson;
+  });
+  return [...baseLessons, ...coreLessons, ...gapLessons];
 });
 
 const grammarStoryIndexByGrade = {};
@@ -1759,7 +1792,9 @@ function renderLessonList() {
       : '';
     const coreTag = lesson.coreSet
       ? '<span class="lesson-kind-tag">Core words</span>'
-      : '';
+      : lesson.gapSet
+        ? '<span class="lesson-kind-tag">Extra words</span>'
+        : '';
     const phraseTag = getLessonPhraseCount(lesson) > 0
       ? `<span class="lesson-phrase-tag">${getLessonPhraseCount(lesson)} ${getLessonPhraseCount(lesson) === 1 ? 'phrase' : 'phrases'}</span>`
       : '';

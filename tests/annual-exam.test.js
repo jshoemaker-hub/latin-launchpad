@@ -14,6 +14,7 @@ function loadNle() {
     'annual-exam-questions-exams.js',
     'annual-exam-questions-advanced.js',
     'annual-exam-passages-long.js',
+    'annual-exam-language.js',
     'annual-exam.js'
   ].forEach((fileName) => {
     const filePath = path.resolve(__dirname, '..', fileName);
@@ -180,7 +181,8 @@ test('an Introduction exam continues one story into one passage', () => {
     const orders = reading.map((question) => question.order);
     assert.deepEqual(orders, orders.slice().sort((left, right) => left - right));
   }
-  assert.equal(stories.size, 3);
+  assert.equal(stories.size, 4);
+  assert.ok(stories.has('intro-stilus'));
 });
 
 test('category practice stays on the requested level and topic', () => {
@@ -232,6 +234,26 @@ test('saved exam progress drops unknown levels and keeps recent exams', () => {
   assert.equal(progress.levels.intro.exams.length, 6);
   assert.equal(progress.levels.intro.exams[0].id, 'exam-2');
   assert.equal(progress.levels.intro.categoryStats.grammar.correct, 3);
+});
+
+test('language banks can fill two full forms, including the new formats', () => {
+  const language = ['grammar', 'vocabulary', 'derivatives', 'mottoes', 'oral'];
+  const count = (levelId) => nle.ANNUAL_EXAM_QUESTIONS.filter((question) => (
+    question.level === levelId && language.includes(question.category) && !question.passageId && !question.storyId
+  )).length;
+  assert.ok(count('beginning') >= 70, `beginning ${count('beginning')}`);
+  assert.ok(count('intermediate') >= 60, `intermediate ${count('intermediate')}`);
+  assert.ok(count('advanced-prose') >= 54, `prose ${count('advanced-prose')}`);
+  assert.ok(count('advanced-poetry') >= 54, `poetry ${count('advanced-poetry')}`);
+  const poetryGrammar = nle.ANNUAL_EXAM_QUESTIONS.filter((question) => question.level === 'advanced-poetry' && question.category === 'grammar');
+  assert.ok(poetryGrammar.length >= 40);
+  assert.ok(poetryGrammar.some((question) => /purpose|ablative absolute|subjunctive/i.test(`${question.prompt} ${question.explanation}`)));
+  const introStory = nle.ANNUAL_EXAM_QUESTIONS.filter((question) => question.storyId === 'intro-stilus');
+  assert.equal(introStory.length, 18);
+  const prompts = nle.ANNUAL_EXAM_QUESTIONS.filter((question) => question.id.startsWith('lang-')).map((question) => question.prompt).join('\n');
+  assert.match(prompts, /Which Latin/);
+  assert.match(prompts, /Which form fits/);
+  assert.match(prompts, /Same word/);
 });
 
 test('spot-checks Latin meanings used by the question bank', () => {
