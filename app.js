@@ -204,8 +204,12 @@ const VOCAB_LESSONS = Object.entries(GRADE_WORDS).flatMap(([grade, words]) => {
   return [...baseLessons, ...coreLessons, ...gapLessons];
 });
 
+const ALL_GRAMMAR_LESSONS = [
+  ...(typeof GRAMMAR_LESSONS !== 'undefined' ? GRAMMAR_LESSONS : []),
+  ...(typeof SYNTAX_GRAMMAR_LESSONS !== 'undefined' ? SYNTAX_GRAMMAR_LESSONS : [])
+];
 const grammarStoryIndexByGrade = {};
-const GRAMMAR_LESSONS_WITH_STORIES = (typeof GRAMMAR_LESSONS !== 'undefined' ? GRAMMAR_LESSONS : []).map((lesson) => {
+const GRAMMAR_LESSONS_WITH_STORIES = ALL_GRAMMAR_LESSONS.map((lesson) => {
   const storyIndex = grammarStoryIndexByGrade[lesson.grade] || 0;
   grammarStoryIndexByGrade[lesson.grade] = storyIndex + 1;
   return {
@@ -1787,9 +1791,11 @@ function renderLessonList() {
     const seekFindTag = getSeekFindConfig(lesson)
       ? '<span class="lesson-seek-find-tag">Seek &amp; Find</span>'
       : '';
-    const grammarTag = lesson.kind === 'grammar'
-      ? '<span class="lesson-kind-tag">Grammar</span>'
-      : '';
+    const grammarTag = lesson.kind !== 'grammar'
+      ? ''
+      : lesson.series === 'syntax'
+        ? '<span class="lesson-kind-tag">Advanced grammar</span>'
+        : '<span class="lesson-kind-tag">Grammar</span>';
     const coreTag = lesson.coreSet
       ? '<span class="lesson-kind-tag">Core words</span>'
       : lesson.gapSet
@@ -2246,6 +2252,27 @@ function formBookLabel(word) {
   return books.map((book) => `In ${book}`).join(' · ');
 }
 
+function grammarTeachingMarkup(lesson, startOpen) {
+  const paragraphs = Array.isArray(lesson?.explain) ? lesson.explain.filter(Boolean) : [];
+  const examples = Array.isArray(lesson?.examples) ? lesson.examples.filter((item) => item && item.latin) : [];
+  if (paragraphs.length === 0 && examples.length === 0) return '';
+  const text = paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join('');
+  const cards = examples.map((example) => `
+    <article class="grammar-example">
+      <strong>${escapeHtml(example.latin)}</strong>
+      <span>${escapeHtml(example.english || '')}</span>
+      ${example.note ? `<small>${escapeHtml(example.note)}</small>` : ''}
+    </article>
+  `).join('');
+  return `
+    <details class="grammar-teaching"${startOpen ? ' open' : ''}>
+      <summary>Explanation and examples</summary>
+      ${text}
+      ${cards ? `<div class="grammar-example-grid">${cards}</div>` : ''}
+    </details>
+  `;
+}
+
 function renderWordIntroduction(lesson) {
   const words = getLessonIntroWords(lesson);
   const introTitle = lesson.kind === 'grammar' ? 'Meet the patterns' : 'Meet the words';
@@ -2273,6 +2300,7 @@ function renderWordIntroduction(lesson) {
   elements.lessonPracticePanel?.classList.remove('is-practice', 'is-complete');
   elements.wordPreview.className = 'word-preview intro-word-preview';
   elements.wordPreview.innerHTML = `
+    ${grammarTeachingMarkup(lesson, true)}
     <section class="word-intro">
       <div class="word-intro-header">
         <div>
@@ -3524,6 +3552,24 @@ function renderRecapTable(columnClass, headers, rows) {
   return `<div class="recap-table ${columnClass}"><div class="recap-row recap-head">${head}</div>${body}</div>`;
 }
 
+function grammarTeachingPrintHtml(lesson) {
+  const paragraphs = Array.isArray(lesson?.explain) ? lesson.explain.filter(Boolean) : [];
+  const examples = Array.isArray(lesson?.examples) ? lesson.examples.filter((item) => item && item.latin) : [];
+  if (paragraphs.length === 0 && examples.length === 0) return '';
+  const exampleRows = examples.map((example) => [
+    `<strong>${escapeHtml(example.latin)}</strong>`,
+    escapeHtml(example.english || ''),
+    escapeHtml(example.note || '')
+  ]);
+  return `
+    <section class="print-section">
+      <h2>Explanation</h2>
+      ${paragraphs.map((paragraph) => `<p>${escapeHtml(paragraph)}</p>`).join('')}
+      ${exampleRows.length ? `<h2>Examples</h2>${renderRecapTable('cols-3 recap-compact', ['Latin', 'English', 'Note'], exampleRows)}` : ''}
+    </section>
+  `;
+}
+
 function renderLessonSummaryPrint(lesson) {
   const focusItems = Array.isArray(lesson.focus) ? lesson.focus.filter(Boolean) : [];
   const phrases = Array.isArray(lesson.phrases) ? lesson.phrases : [];
@@ -3568,6 +3614,7 @@ function renderLessonSummaryPrint(lesson) {
           ${sourceNote}
           ${storyNote}
         </section>
+        ${grammarTeachingPrintHtml(lesson)}
         ${focusLine}
         ${phraseTableRows.length ? `
           <section class="print-section">
@@ -4363,7 +4410,7 @@ function renderQuestion() {
   elements.lessonPracticePanel?.classList.remove('is-intro', 'is-complete');
   elements.lessonPracticePanel?.classList.add('is-practice');
   elements.wordPreview.className = 'word-preview practice-word-preview';
-  elements.wordPreview.innerHTML = renderPracticeToolbar(lesson);
+  elements.wordPreview.innerHTML = `${grammarTeachingMarkup(lesson, false)}${renderPracticeToolbar(lesson)}`;
   const interactionHtml = arrangeMode
     ? renderArrangeInteraction(question)
     : typedMode
