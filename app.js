@@ -4691,7 +4691,7 @@ function quizPrintStyle(count) {
   return '8pt';
 }
 
-function renderPrintableAssessment(questions, lesson, sheetTitle, lessonLabel) {
+function renderPrintableAssessment(questions, lesson, sheetTitle, lessonLabel, prefaceHtml = '') {
   const items = questions.map((question, index) => formatPrintableQuestion(question, index));
   const questionHtml = items.map((item) => `
     <article class="quiz-question">
@@ -4708,7 +4708,7 @@ function renderPrintableAssessment(questions, lesson, sheetTitle, lessonLabel) {
   return `
     <article class="print-sheet quiz-sheet" style="--quiz-size:${quizPrintStyle(items.length)}">
       ${renderPrintHeader(lesson, sheetTitle, lessonLabel)}
-      <div class="print-body quiz-questions">${questionHtml}</div>
+      <div class="print-body quiz-questions">${prefaceHtml}${questionHtml}</div>
     </article>
     <article class="print-sheet quiz-sheet quiz-answer-key" style="--quiz-size:${quizPrintStyle(items.length)}">
       ${renderPrintHeader(lesson, `${sheetTitle} answer key`, lessonLabel)}
@@ -5932,7 +5932,23 @@ function printAnnualExam() {
     kind: 'vocabulary',
     title: level.name
   };
-  openPrintPreview(`Annual Exam Study: ${level.name}`, renderPrintableAssessment(current, lesson, 'Annual Exam Study', level.name));
+  openPrintPreview(`Annual Exam Study: ${level.name}`, renderPrintableAssessment(current, lesson, 'Annual Exam Study', level.name, annualExamPassagePrintHtml(current)));
+}
+
+function annualExamPassagePrintHtml(questions) {
+  const ids = [];
+  questions.forEach((question) => {
+    if (question.passageId && !ids.includes(question.passageId)) ids.push(question.passageId);
+  });
+  return ids.map((id) => {
+    const passage = typeof getAnnualExamPassage === 'function' ? getAnnualExamPassage(id) : null;
+    if (!passage) return '';
+    const glossary = Array.isArray(passage.glossary) && passage.glossary.length
+      ? `<ul class="annual-exam-glossary">${passage.glossary.map(([latin, english]) => `<li><strong>${escapeHtml(latin)}</strong> ${escapeHtml(english)}</li>`).join('')}</ul>`
+      : '';
+    const source = passage.source ? `<p class="annual-exam-passage-source">${escapeHtml(passage.source)}</p>` : '';
+    return `<section class="quiz-passage"><h2>${escapeHtml(passage.title)}</h2>${source}<p class="annual-exam-passage">${escapeHtml(passage.latin)}</p>${glossary}</section>`;
+  }).join('');
 }
 
 function startAssessment() {
@@ -6240,9 +6256,11 @@ function passageMarkup(passage) {
   const glossary = Array.isArray(passage.glossary) && passage.glossary.length
     ? `<ul class="annual-exam-glossary">${passage.glossary.map(([latin, english]) => `<li><strong>${escapeHtml(latin)}</strong> ${escapeHtml(english)}</li>`).join('')}</ul>`
     : '';
+  const source = passage.source ? `<p class="annual-exam-passage-source">${escapeHtml(passage.source)}</p>` : '';
   return `
     <section class="annual-exam-passage-card">
       <h3>${escapeHtml(passage.title)}</h3>
+      ${source}
       <p class="annual-exam-passage">${escapeHtml(passage.latin)}</p>
       ${glossary}
     </section>
