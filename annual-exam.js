@@ -67,7 +67,7 @@ const ANNUAL_EXAM_LEVELS = [
     primaryYear: 4,
     suggestedGrade: 6,
     track: 'year4',
-    yearNote: 'Year 4A, with Roman-world practice from Years 1–3. A fit for a first year of Latin in middle school.',
+    yearNote: 'Year 4A reviews the grammar met in Years 2 and 3, then moves on. A fit for a first year of Latin in middle school, and the review year after the elementary foundation.',
     audience: 'Students early in Latin who can read short sentences and a very short story.',
     questionCount: 40,
     readingExam: false,

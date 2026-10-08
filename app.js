@@ -1,7 +1,7 @@
 const CURRICULUM_LEVELS = [
   { grade: 3, year: 1, label: 'Year 1', shortLabel: 'Y1', book: 'Foundation: words, myth, maps, sayings', lessonGrades: [3] },
-  { grade: 4, year: 2, label: 'Year 2', shortLabel: 'Y2', book: 'Foundation: words, myth, maps, sayings', lessonGrades: [4] },
-  { grade: 5, year: 3, label: 'Year 3', shortLabel: 'Y3', book: 'Foundation: words, myth, maps, sayings', lessonGrades: [5] },
+  { grade: 4, year: 2, label: 'Year 2', shortLabel: 'Y2', book: 'Foundation: words, verbs, and little phrases', lessonGrades: [4] },
+  { grade: 5, year: 3, label: 'Year 3', shortLabel: 'Y3', book: 'Foundation: sentences and first case jobs', lessonGrades: [5] },
   { grade: 6, year: 4, label: 'Year 4A', shortLabel: 'Y4A', book: 'Grade 6 · Introduction', lessonGrades: [6], examLevelId: 'intro' },
   { grade: 7, year: 4, label: 'Year 4B', shortLabel: 'Y4B', book: 'Grade 7 · Beginning', lessonGrades: [7], examLevelId: 'beginning' },
   { grade: 8, year: 4, label: 'Year 4C', shortLabel: 'Y4C', book: 'Grade 8 · Intermediate', lessonGrades: [8], examLevelId: 'intermediate' }
@@ -6285,7 +6285,7 @@ function renderAnnualExamLevels() {
     {
       track: 'year4',
       title: 'With Year 4',
-      note: 'Years 1–3 are the foundation: words, myth, maps, mottoes, and spoken Latin. Year 4A aims at Introduction, Year 4B at Beginning and Beginning Reading, and Year 4C at Intermediate.'
+      note: 'Years 2 and 3 introduce the first grammar a little at a time. Year 4A reviews it and aims at Introduction. Year 4B aims at Beginning and Beginning Reading. Year 4C aims at Intermediate.'
     },
     {
       track: 'advanced',

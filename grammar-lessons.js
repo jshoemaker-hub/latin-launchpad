@@ -328,7 +328,7 @@ const GRAMMAR_LESSONS = [
     grade: 6,
     kind: 'grammar',
     title: 'Grade 6 Grammar: The Five Case Jobs',
-    description: 'Match each Latin case to the job it usually performs in a sentence.',
+    description: 'Put the five case jobs together. Years 2 and 3 met some of them one at a time. A class starting here learns all five.',
     sourceNote: "Reference: D'Ooge Lessons III-VII on nominative, genitive, dative, accusative, and ablative.",
     focus: ['case system', 'sentence jobs', 'translation cues'],
     words: [
@@ -384,7 +384,7 @@ const GRAMMAR_LESSONS = [
     grade: 6,
     kind: 'grammar',
     title: 'Grade 6 Grammar: Declension Patterns',
-    description: 'Compare first- and second-declension endings from the reference tables.',
+    description: 'Compare first- and second-declension endings. This reviews the noun patterns from Years 2 and 3.',
     sourceNote: "Reference: D'Ooge Lessons VII and IX on first and second declensions.",
     focus: ['first declension', 'second declension', 'noun endings'],
     words: [
@@ -460,7 +460,7 @@ const GRAMMAR_LESSONS = [
     grade: 6,
     kind: 'grammar',
     title: 'Grade 6 Grammar: Adjectives Agree',
-    description: 'Choose adjective forms that match their nouns in gender, number, and case.',
+    description: 'Match adjectives to their nouns. Year 3 matched a few subject and receiver pairs. This lesson adds the other cases.',
     sourceNote: "Reference: D'Ooge Lesson XI on first- and second-declension adjectives.",
     focus: ['adjective agreement', 'gender', 'case and number'],
     words: [
@@ -818,7 +818,7 @@ const GRAMMAR_LESSONS = [
     grade: 6,
     kind: 'grammar',
     title: 'Grade 6 Grammar: Prepositions Choose a Case',
-    description: 'Sort common prepositions by case and use in and sub for motion or location.',
+    description: 'Sort prepositions by case. Year 2 learned a few phrases as chunks, and Year 3 met with and from. This lesson names the case.',
     sourceNote: 'References: IMG_2455.jpeg-IMG_2456.jpeg on ablative and accusative prepositions.',
     focus: ['ablative prepositions', 'accusative prepositions', 'motion and location'],
     words: [
@@ -954,7 +954,7 @@ const GRAMMAR_LESSONS = [
     grade: 6,
     kind: 'grammar',
     title: 'Grade 6 Grammar: Commands and Infinitives',
-    description: 'Recognize singular and plural commands and distinguish an infinitive from a finite verb.',
+    description: 'Review singular commands and to-forms from Year 3, and add the plural command.',
     sourceNote: 'References: IMG_2510.jpeg-IMG_2515.jpeg on active and passive imperatives and present, perfect, and future infinitives.',
     focus: ['imperatives', 'infinitives', 'verb person'],
     words: [

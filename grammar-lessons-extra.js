@@ -8,7 +8,7 @@ SYNTAX_GRAMMAR_LESSONS.push(
     kind: 'grammar',
     series: 'intermediate',
     title: 'Grade 6 Grammar: Roman Numerals and Number Words',
-    description: 'Read I through M, count to twenty, and match the first ten ordinals.',
+    description: 'Review I through X from Year 3, then read the larger signs through M and count to twenty.',
     sourceNote: 'Original classroom lesson. The number lists were written for this course.',
     focus: ['Roman numerals', 'cardinals', 'ordinals'],
     explain: [

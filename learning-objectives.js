@@ -13,40 +13,40 @@ const LEARNING_OBJECTIVES = {
   },
   4: {
     theme: 'Words in Action',
-    intro: 'Year 2 stays with the foundation: singular and plural, first verbs, and more of the Roman world.',
+    intro: 'Year 2, grade 4. Singular and plural, the verb amo, and a few phrases learned as chunks.',
     goals: [
       'Tell singular from plural endings (-a vs. -ae, -us vs. -i)',
       'Conjugate amo six ways: I, you, he/she, we, you all, they',
-      'Read tiny Latin sentences like "the boys run"',
-      'Know if a word is masculine, feminine, or neuter',
+      'Read ad, in, cum, and ex inside a short phrase',
+      'Use ego, tu, nos, vos, quis, and quid',
       'Spot 25+ English words that come from Latin'
     ]
   },
   5: {
     theme: 'Subjects and Objects',
-    intro: 'Year 3 finishes the foundation: subjects, objects, and short sentences, still before the exam bands.',
+    intro: 'Year 3, grade 5. Subjects, objects, and a first look at the other Introduction grammar, by recognition rather than full charts.',
     goals: [
       'Find the subject and the object in a Latin sentence',
-      'Decline a 1st-declension noun all five ways',
-      'Use both -are and -ere verbs in the present tense',
-      'Use "sum, es, est" to say what something is',
-      'Translate sentences like "the teacher praises the student"'
+      'Recognize of and to, and phrases for with, from, in, and without',
+      'Recognize was and used to (-bat, erat), a command to one person, and the to-form',
+      'Match bonus with puella, puer, and donum, and read rex, miles, pater, and nomen as subject or receiver',
+      'Count from unus to decem and read numerals I through X'
     ]
   },
   6: {
     theme: 'Endings Carry Meaning',
-    intro: 'Year 4A, grade 6. The cases and tenses here are what the Introduction practice exam expects.',
+    intro: 'Year 4A, grade 6. Review the grammar from Years 2 and 3, then add a few new forms. This is the Introduction practice year.',
     goals: [
-      'Use all five cases: nominative, genitive, dative, accusative, ablative',
-      'Conjugate verbs in past (imperfect), present, and future',
-      'Make adjectives match their nouns in gender, number, and case',
-      'Read 3–5 sentence stories about Roman daily life',
-      'Recognize 40+ English derivatives from your vocabulary'
+      'Review all five case jobs, full adjective agreement, and which case follows a preposition',
+      'Review commands and to-forms, including the plural command',
+      'Form the have-done tense of amo, and use possum and noli',
+      'Call someone by name: Marce, puella, fili',
+      'Read 3–5 sentence stories about Roman daily life'
     ]
   },
   7: {
     theme: 'Reading Real Latin',
-    intro: 'Year 4B, grade 7. This band aims at Beginning and Beginning Reading.',
+    intro: 'Year 4B, grade 7. Full third-declension charts and the other verb families continue here. This band aims at Beginning and Beginning Reading.',
     goals: [
       'Use all four verb families (amo, moneo, rego, audio)',
       'Decline 3rd-declension nouns',
