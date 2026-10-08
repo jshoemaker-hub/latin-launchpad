@@ -63,9 +63,11 @@ const ANNUAL_EXAM_LEVELS = [
     id: 'intro',
     name: 'Introduction',
     legacyName: 'Early Latin I',
-    years: [1],
-    primaryYear: 1,
-    yearNote: 'Year 1 (First Form Latin). A fit for introductory or slower-paced Latin I.',
+    years: [4],
+    primaryYear: 4,
+    suggestedGrade: 6,
+    track: 'year4',
+    yearNote: 'Year 4A, with Roman-world practice from Years 1–3. A fit for a first year of Latin in middle school.',
     audience: 'Students early in Latin who can read short sentences and a very short story.',
     questionCount: 40,
     readingExam: false,
@@ -110,9 +112,11 @@ const ANNUAL_EXAM_LEVELS = [
     id: 'beginning',
     name: 'Beginning',
     legacyName: 'Latin I',
-    years: [1, 2],
-    primaryYear: 2,
-    yearNote: 'Years 1–2. Closest to Latin I, or a slower start to Latin II (First Form into Second Form).',
+    years: [4],
+    primaryYear: 4,
+    suggestedGrade: 7,
+    track: 'year4',
+    yearNote: 'Year 4B. Sentence practice for grade 7.',
     audience: 'Students who can read unconnected Latin sentences and one short passage.',
     questionCount: 40,
     readingExam: false,
@@ -152,9 +156,11 @@ const ANNUAL_EXAM_LEVELS = [
     id: 'beginning-reading',
     name: 'Beginning Reading',
     legacyName: 'Latin I reading',
-    years: [2],
-    primaryYear: null,
-    yearNote: 'Year 2. A reading-focused practice exam.',
+    years: [4],
+    primaryYear: 4,
+    suggestedGrade: 7,
+    track: 'year4',
+    yearNote: 'Year 4B. The reading exam that goes with Beginning.',
     audience: 'Students whose class is ready to be tested mainly by reading, not by stand-alone grammar.',
     questionCount: 36,
     readingExam: true,
@@ -180,9 +186,11 @@ const ANNUAL_EXAM_LEVELS = [
     id: 'intermediate',
     name: 'Intermediate',
     legacyName: 'Latin II',
-    years: [2, 3],
-    primaryYear: 3,
-    yearNote: 'Years 2–3. Closest to Latin II (Second Form into Third Form).',
+    years: [4],
+    primaryYear: 4,
+    suggestedGrade: 8,
+    track: 'year4',
+    yearNote: 'Year 4C. Sentence practice for grade 8.',
     audience: 'Students reading longer sentences, comparatives, passives, and a short prose passage.',
     questionCount: 40,
     readingExam: false,
@@ -217,9 +225,11 @@ const ANNUAL_EXAM_LEVELS = [
     id: 'intermediate-reading',
     name: 'Intermediate Reading',
     legacyName: 'Latin II reading',
-    years: [3],
+    years: [4],
     primaryYear: null,
-    yearNote: 'Year 3. A reading exam bridging Latin II and authentic prose.',
+    suggestedGrade: 8,
+    track: 'advanced',
+    yearNote: 'Optional track after Year 4. A stretch beyond Year 4C for students reading longer prose.',
     audience: 'Students who read adapted prose and can answer from the passage.',
     questionCount: 36,
     readingExam: true,
@@ -245,9 +255,11 @@ const ANNUAL_EXAM_LEVELS = [
     id: 'advanced-prose',
     name: 'Advanced Prose',
     legacyName: 'Latin III–IV prose',
-    years: [3, 4],
-    primaryYear: 4,
-    yearNote: 'Years 3–4. For classes reading real Latin prose (Third Form and beyond).',
+    years: [4],
+    primaryYear: null,
+    suggestedGrade: 8,
+    track: 'advanced',
+    yearNote: 'Optional advanced track after Year 4. For classes reading real Latin prose.',
     audience: 'Students reading Caesar, Cicero, or similar prose.',
     questionCount: 40,
     readingExam: false,
@@ -278,7 +290,9 @@ const ANNUAL_EXAM_LEVELS = [
     legacyName: 'Latin III–IV poetry',
     years: [4],
     primaryYear: null,
-    yearNote: 'Year 4. For classes reading Latin poetry.',
+    suggestedGrade: 8,
+    track: 'advanced',
+    yearNote: 'Optional advanced track after Year 4. For classes reading Latin poetry.',
     audience: 'Students reading Vergil, Ovid, Catullus, or Horace.',
     questionCount: 40,
     readingExam: false,
@@ -308,7 +322,9 @@ const ANNUAL_EXAM_LEVELS = [
     legacyName: 'Latin III–IV reading',
     years: [4],
     primaryYear: null,
-    yearNote: 'Year 4. One prose passage and one poetry passage.',
+    suggestedGrade: 8,
+    track: 'advanced',
+    yearNote: 'Optional advanced track after Year 4. One prose passage and one poetry passage.',
     audience: 'Advanced readers, including students approaching authentic prose and verse.',
     questionCount: 36,
     readingExam: true,
@@ -336,10 +352,13 @@ function getAnnualExamCategory(categoryId) {
   return ANNUAL_EXAM_CATEGORIES.find((category) => category.id === categoryId) || null;
 }
 
-function getSuggestedAnnualExamLevelId(year) {
-  const numericYear = Number(year);
-  const match = ANNUAL_EXAM_LEVELS.find((level) => level.primaryYear === numericYear);
-  return match ? match.id : null;
+function getSuggestedAnnualExamLevelId(year, grade) {
+  const numericGrade = Number(grade);
+  if (numericGrade === 6) return 'intro';
+  if (numericGrade === 7) return 'beginning';
+  if (numericGrade === 8) return 'intermediate';
+  if (Number(year) === 4 && !Number.isFinite(numericGrade)) return 'intro';
+  return null;
 }
 
 function createAnnualExamRng(seed) {

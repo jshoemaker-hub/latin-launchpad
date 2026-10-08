@@ -609,7 +609,7 @@ input {
 }
 
 .home-hero-flashcards div {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .account-layout {
@@ -4830,6 +4830,17 @@ body.print-preview-open .app-shell {
 .annual-exam-links {
   margin: 18px 0;
   font-weight: 800;
+}
+
+.annual-exam-level-group {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+.annual-exam-level-group h3,
+.annual-exam-level-group p {
+  margin: 0;
 }
 
 .annual-exam-level-grid,

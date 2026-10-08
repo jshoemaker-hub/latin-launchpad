@@ -3,8 +3,9 @@
 Scope and sequence for grades 3–8, grounded in classical Latin pedagogy as presented in D'Ooge's *Latin for Beginners* and Mueller's *Latin 101: Learning a Classical Language*. Objectives spiral: each grade reinforces the prior year and adds one or two new structural ideas.
 
 ## Design principles
-- Lower elementary (3–5) focuses on recognition, pronunciation, and vocabulary — no formal grammar drills.
-- Upper middle (6–8) introduces morphology (endings), then syntax (case use), then short authentic reading.
+- Years 1–3 (grades 3–5) are the foundation: vocabulary, myth, maps, derivatives, mottoes, and spoken Latin. Formal exam practice starts in Year 4.
+- Year 4 splits by grade. Year 4A (grade 6) aims at Introduction, Year 4B (grade 7) at Beginning and Beginning Reading, and Year 4C (grade 8) at Intermediate. Intermediate Reading and the Advanced levels are an optional track after Year 4.
+- The grammar pace stays where it is: lower elementary focuses on recognition, pronunciation, and vocabulary, and grades 6–8 still introduce morphology, then syntax, then short reading.
 - Every grade includes a culture/derivatives strand so students see Latin in the world around them.
 - Mastery is measured by what a student can do, not what they can recite.
 

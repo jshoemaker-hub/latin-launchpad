@@ -96,7 +96,9 @@ function foldHeadword(value) {
 
 function derivativePoolForGrade(grade) {
   const level = typeof getCurriculumLevelByGrade === 'function' ? getCurriculumLevelByGrade(grade) : null;
-  const grades = level ? level.lessonGrades : [Number(grade)];
+  const grades = level && typeof CURRICULUM_LEVELS !== 'undefined'
+    ? CURRICULUM_LEVELS.filter((item) => item.year === level.year).flatMap((item) => item.lessonGrades)
+    : (level ? level.lessonGrades : [Number(grade)]);
   const known = new Set(grades.flatMap((item) => (GRADE_WORDS[item] || []).map((word) => foldHeadword(word.latin))));
   return DERIVATIVE_PAIRS.filter((pair) => known.has(foldHeadword(pair.latin)));
 }

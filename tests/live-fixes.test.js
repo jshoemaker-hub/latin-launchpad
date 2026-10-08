@@ -162,12 +162,15 @@ test('Year 4 lesson numbers continue across grades 6, 7, and 8', () => {
       return `${helpers.getLessonLevelName(grade)}: Lesson ${number}`;
     });
   });
-  assert.equal(numbers[0], 'Year 4: Lesson 1');
+  assert.equal(numbers[0], 'Year 4A: Lesson 1');
   assert.equal(new Set(numbers).size, numbers.length);
-  assert.deepEqual(
-    numbers.map((title) => Number(title.slice(title.lastIndexOf(' ') + 1))),
-    Array.from({ length: numbers.length }, (_, index) => index + 1)
-  );
+  ['Year 4A', 'Year 4B', 'Year 4C'].forEach((label) => {
+    const bandNumbers = numbers
+      .filter((title) => title.startsWith(`${label}:`))
+      .map((title) => Number(title.slice(title.lastIndexOf(' ') + 1)));
+    assert.ok(bandNumbers.length > 0, label);
+    assert.deepEqual(bandNumbers, Array.from({ length: bandNumbers.length }, (_, index) => index + 1));
+  });
 });
 
 test('Year 1 copy, greeting, and picture matching follow the data', () => {
