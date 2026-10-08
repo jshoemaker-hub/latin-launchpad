@@ -312,7 +312,7 @@ const ANNUAL_EXAM_LEVELS = [
       { heading: 'Authors and stories', items: [
         'Vergil, Horace, Ovid, Catullus, and the comic poets Plautus and Terence.',
         'Trojan War stories and transformations such as Orpheus and Eurydice or Pyramus and Thisbe.',
-        'Ideas such as pietas, and places poets name, such as Ithaca and Delphi.'
+        'Ideas such as pietas, gravitas, virtus, fides, dignitas, auctoritas, mos maiorum, and humanitas, a first look at Stoic and Epicurean thought, and places poets name, such as Ithaca and Delphi.'
       ] }
     ]
   },

@@ -17,6 +17,7 @@ const storiesPath = path.join(root, 'latin-stories.js');
 const culturePath = path.join(root, 'latin-culture.js');
 const romanWorldPath = path.join(root, 'roman-world.js');
 const authorsPath = path.join(root, 'latin-authors.js');
+const valuesPath = path.join(root, 'latin-values.js');
 const classroomPath = path.join(root, 'classroom-latin.js');
 const grammarPath = path.join(root, 'grammar-lessons.js');
 const syntaxGrammarPath = path.join(root, 'grammar-lessons-syntax.js');
@@ -31,6 +32,7 @@ const annualExamQuestionPaths = [
   path.join(root, 'annual-exam-passages-long.js'),
   path.join(root, 'annual-exam-language.js'),
   path.join(root, 'annual-exam-culture.js'),
+  path.join(root, 'annual-exam-values.js'),
   path.join(root, 'annual-exam.js')
 ];
 const trustPageFiles = [
@@ -53,7 +55,7 @@ function assert(condition, message) {
 }
 
 function checkJavaScriptSyntax() {
-  [appPath, analyticsPath, contactFormPath, path.join(root, 'assignment-links.js'), wordBanksPath, referenceIndexPath, path.join(root, 'core-frequency.js'), path.join(root, 'core-forms.js'), path.join(root, 'gap-vocabulary.js'), path.join(root, 'form-vocabulary.js'), phrasesPath, morePhrasesPath, storiesPath, culturePath, romanWorldPath, authorsPath, classroomPath, grammarPath, syntaxGrammarPath, extraGrammarPath, wordBuildingPath, path.join(root, 'flashcards.js'), ...annualExamQuestionPaths].forEach((filePath) => {
+  [appPath, analyticsPath, contactFormPath, path.join(root, 'assignment-links.js'), wordBanksPath, referenceIndexPath, path.join(root, 'core-frequency.js'), path.join(root, 'core-forms.js'), path.join(root, 'gap-vocabulary.js'), path.join(root, 'form-vocabulary.js'), phrasesPath, morePhrasesPath, storiesPath, culturePath, romanWorldPath, authorsPath, valuesPath, classroomPath, grammarPath, syntaxGrammarPath, extraGrammarPath, wordBuildingPath, path.join(root, 'flashcards.js'), ...annualExamQuestionPaths].forEach((filePath) => {
     new vm.Script(fs.readFileSync(filePath, 'utf8'), { filename: filePath });
   });
 }
@@ -61,7 +63,7 @@ function checkJavaScriptSyntax() {
 function loadContentData() {
   const context = {};
   vm.createContext(context);
-  [wordBanksPath, referenceIndexPath, phrasesPath, morePhrasesPath, culturePath, romanWorldPath, authorsPath, classroomPath, grammarPath, syntaxGrammarPath, extraGrammarPath].forEach((filePath) => {
+  [wordBanksPath, referenceIndexPath, phrasesPath, morePhrasesPath, culturePath, romanWorldPath, authorsPath, valuesPath, classroomPath, grammarPath, syntaxGrammarPath, extraGrammarPath].forEach((filePath) => {
     const source = fs.readFileSync(filePath, 'utf8');
     vm.runInContext(source, context, { filename: filePath });
   });
@@ -98,7 +100,7 @@ function checkContentData() {
   assertUniqueIds([...GRAMMAR_LESSONS, ...SYNTAX_GRAMMAR_LESSONS], 'grammar lesson');
 
   assert(LATIN_PHRASES.length === 144, `Expected 144 phrases, found ${LATIN_PHRASES.length}`);
-  assert(LATIN_CULTURE_CARDS.length === 135, `Expected 135 culture cards, found ${LATIN_CULTURE_CARDS.length}`);
+  assert(LATIN_CULTURE_CARDS.length === 145, `Expected 145 culture cards, found ${LATIN_CULTURE_CARDS.length}`);
   assert(CLASSROOM_LATIN_PHRASES.length === 40, `Expected 40 classroom phrases, found ${CLASSROOM_LATIN_PHRASES.length}`);
   assert(GRAMMAR_LESSONS.length === 23, `Expected 23 grammar lessons, found ${GRAMMAR_LESSONS.length}`);
   assert(SYNTAX_GRAMMAR_LESSONS.length === 17, `Expected 17 syntax grammar lessons, found ${SYNTAX_GRAMMAR_LESSONS.length}`);
@@ -450,7 +452,7 @@ function checkAnnualExamHooks() {
     assert(html.includes(needle), `Expected Annual Exam Study hook not found: ${needle}`);
   });
   const netlifyConfig = fs.readFileSync(path.join(root, 'netlify.toml'), 'utf8');
-  ['annual-exam-questions.js', 'annual-exam-questions-more.js', 'annual-exam-questions-upper.js', 'annual-exam-questions-exams.js', 'annual-exam-questions-advanced.js', 'annual-exam-passages-long.js', 'annual-exam-language.js', 'annual-exam-culture.js', 'annual-exam.js'].forEach((fileName) => {
+  ['annual-exam-questions.js', 'annual-exam-questions-more.js', 'annual-exam-questions-upper.js', 'annual-exam-questions-exams.js', 'annual-exam-questions-advanced.js', 'annual-exam-passages-long.js', 'annual-exam-language.js', 'annual-exam-culture.js', 'annual-exam-values.js', 'annual-exam.js'].forEach((fileName) => {
     assert(netlifyConfig.includes(fileName), `Netlify build must copy ${fileName}`);
   });
   assert(app.includes('function showAnnualExam()'), 'The app must open the Annual Exam Study page');

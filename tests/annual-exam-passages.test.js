@@ -16,6 +16,7 @@ function loadNle() {
     'annual-exam-passages-long.js',
     'annual-exam-language.js',
     'annual-exam-culture.js',
+    'annual-exam-values.js',
     'annual-exam.js'
   ].forEach((fileName) => {
     const filePath = path.resolve(__dirname, '..', fileName);
@@ -72,8 +73,9 @@ test('every exam-length passage is glossed and stays inside its form', () => {
     const ids = new Set(bySet[setId].map((passage) => passage.id));
     const reading = nle.ANNUAL_EXAM_QUESTIONS.filter((question) => ids.has(question.passageId) && question.category === 'reading');
     const extension = nle.ANNUAL_EXAM_QUESTIONS.filter((question) => ids.has(question.passageId) && question.section === 'extension');
+    const expectedExtension = setId === 'arc-long' ? 5 : 3;
     assert.equal(reading.length, 33, setId);
-    assert.equal(extension.length, 3, setId);
+    assert.equal(extension.length, expectedExtension, setId);
   });
 });
 
