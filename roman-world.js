@@ -224,6 +224,32 @@ const ROMAN_MAP_GEOMETRY = {
 };
 /* roman-map-geometry:end */
 
+// Close views. Italy replaces the sheet with a sharper crop. The Mediterranean
+// view keeps the full map, zoomed to Greece, with a sharper overlay on that window.
+const ROMAN_MAP_DETAIL = {
+  italy: {
+    minX: 352,
+    minY: 228,
+    maxX: 508,
+    maxY: 424,
+    image: 'assets/roman-map-italy.webp',
+    imageWidth: 2028,
+    imageHeight: 2548,
+    replace: true,
+    labels: ['roma', 'italia', 'sicilia', 'ostia', 'pompeii', 'brundisium', 'capua', 'cannae', 'rubico', 'tiberis', 'latium', 'campania', 'etruria', 'vesuvius', 'aetna', 'cumae', 'apenninus', 'corsica', 'sardinia', 'mantua', 'cisalpina', 'alpes']
+  },
+  mediterranean: {
+    minX: 490,
+    minY: 308,
+    maxX: 632,
+    maxY: 456,
+    image: 'assets/roman-map-greece.webp',
+    imageWidth: 1846,
+    imageHeight: 1924,
+    replace: false
+  }
+};
+
 function romanMapProject(lon, lat) {
   const geometry = ROMAN_MAP_GEOMETRY;
   const radian = Math.PI / 180;
@@ -511,24 +537,94 @@ function mapRectsOverlap(a, b, pad) {
   return a.left < b.right + pad && a.right > b.left - pad && a.top < b.bottom + pad && a.bottom > b.top - pad;
 }
 
-function italyMapBounds() {
-  const places = ROMAN_MAP_PLACES.filter((place) => place.group === 'italy');
-  let minX = 1000;
-  let maxX = 0;
-  let minY = 640;
-  let maxY = 0;
-  places.forEach((place) => {
-    minX = Math.min(minX, place.x, place.tapX);
-    maxX = Math.max(maxX, place.x, place.tapX);
-    minY = Math.min(minY, place.y, place.tapY);
-    maxY = Math.max(maxY, place.y, place.tapY);
+function mapDetail() {
+  return ROMAN_MAP_DETAIL[RomanWorldState.mapGroup] || null;
+}
+
+function mapDetailAnchors() {
+  const anchors = [
+    { x: 12, y: -14, align: 'left' },
+    { x: -12, y: -14, align: 'right' },
+    { x: 0, y: -18, align: 'center' },
+    { x: 0, y: 10, align: 'center' },
+    { x: 14, y: 2, align: 'left' },
+    { x: -14, y: 2, align: 'right' },
+    { x: 16, y: -6, align: 'left' },
+    { x: -16, y: 8, align: 'right' }
+  ];
+  [24, 36, 48, 64].forEach((radius) => {
+    for (let step = 0; step < 8; step += 1) {
+      const angle = -Math.PI / 2 + step * (Math.PI / 4);
+      const cos = Math.cos(angle);
+      anchors.push({
+        x: Math.round(Math.cos(angle) * radius),
+        y: Math.round(Math.sin(angle) * radius),
+        align: cos > 0.35 ? 'left' : cos < -0.35 ? 'right' : 'center'
+      });
+    }
   });
-  return {
-    minX: Math.max(0, minX - 64),
-    maxX: Math.min(1000, maxX + 90),
-    minY: Math.max(0, minY - 52),
-    maxY: Math.min(640, maxY + 58)
-  };
+  return anchors;
+}
+
+function settleDetailDots(stage, view) {
+  const spanX = view.maxX - view.minX;
+  const spanY = view.maxY - view.minY;
+  const pxPer = stage.clientWidth / spanX;
+  if (!(pxPer > 0)) return;
+  const minSep = 16 / pxPer;
+  const maxDrift = 8 / pxPer;
+  const points = [...stage.querySelectorAll('.roman-map-dot:not(.is-offview)')].map((dot) => {
+    const place = ROMAN_MAP_PLACES.find((item) => item.id === dot.getAttribute('data-map-place'));
+    if (!place) return null;
+    return { dot, place, x: place.x, y: place.y };
+  }).filter(Boolean);
+  for (let pass = 0; pass < 18; pass += 1) {
+    for (let left = 0; left < points.length; left += 1) {
+      for (let right = left + 1; right < points.length; right += 1) {
+        const a = points[left];
+        const b = points[right];
+        let dx = b.x - a.x;
+        let dy = b.y - a.y;
+        let distance = Math.hypot(dx, dy);
+        if (distance >= minSep) continue;
+        if (distance < 0.05) {
+          dx = 1;
+          dy = 0;
+          distance = 1;
+        }
+        const push = (minSep - distance) / 2;
+        a.x -= dx / distance * push;
+        a.y -= dy / distance * push;
+        b.x += dx / distance * push;
+        b.y += dy / distance * push;
+      }
+    }
+    points.forEach((point) => {
+      const dx = point.x - point.place.x;
+      const dy = point.y - point.place.y;
+      const drift = Math.hypot(dx, dy);
+      if (drift > maxDrift) {
+        point.x = point.place.x + dx / drift * maxDrift;
+        point.y = point.place.y + dy / drift * maxDrift;
+      }
+    });
+  }
+  const leaders = stage.querySelector('.roman-map-pin-leaders');
+  if (leaders) {
+    while (leaders.firstChild) leaders.removeChild(leaders.firstChild);
+  }
+  points.forEach((point) => {
+    point.dot.style.left = `${((point.x - view.minX) / spanX * 100).toFixed(2)}%`;
+    point.dot.style.top = `${((point.y - view.minY) / spanY * 100).toFixed(2)}%`;
+    const drift = Math.hypot(point.x - point.place.x, point.y - point.place.y);
+    if (!leaders || drift * pxPer < 14) return;
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', point.place.x.toFixed(1));
+    line.setAttribute('y1', point.place.y.toFixed(1));
+    line.setAttribute('x2', point.x.toFixed(1));
+    line.setAttribute('y2', point.y.toFixed(1));
+    leaders.appendChild(line);
+  });
 }
 
 function fitMapLabels() {
@@ -553,6 +649,8 @@ function fitMapLabels() {
   const frame = stage.closest('.roman-map-frame');
   const frameRect = frame ? frame.getBoundingClientRect() : stageRect;
   const extended = stage.classList.contains('is-zoomed');
+  const detail = mapDetail();
+  const replacing = Boolean(detail && detail.replace);
   const limit = extended ? frameRect : stageRect;
   const taken = [];
   stage.querySelectorAll('.roman-map-dot').forEach((dot) => {
@@ -590,9 +688,10 @@ function fitMapLabels() {
     }
   });
   const rank = { mediterranean: 0, waters: 1, lands: 2, italy: 3, poetry: 4 };
-  const boost = { italia: 0, graecia: 1, roma: 2, athenae: 3, macedonia: 4, carthago: 5, sicilia: 6, brundisium: 7 };
+  const boost = { roma: 0, italia: 1, graecia: 2, athenae: 3, macedonia: 4, sicilia: 5, carthago: 6, brundisium: 7 };
   const nearAnchors = mapLabelAnchors(false);
   const farAnchors = mapLabelAnchors(true);
+  const detailAnchors = mapDetailAnchors();
   const labels = [...stage.querySelectorAll('.roman-map-dot')].filter((dot) => {
     return !dot.classList.contains('is-dim') && !dot.classList.contains('is-sea-named') && dot.querySelector('span');
   }).map((dot) => {
@@ -601,19 +700,25 @@ function fitMapLabels() {
   }).filter((item) => item.place).sort((a, b) => {
     const boostGap = (boost[a.place.id] ?? 20) - (boost[b.place.id] ?? 20);
     if (boostGap) return boostGap;
+    if (replacing) {
+      const italyGap = (a.place.group === 'italy' ? 0 : 1) - (b.place.group === 'italy' ? 0 : 1);
+      if (italyGap) return italyGap;
+    }
     const groupGap = rank[a.place.group] - rank[b.place.group];
     if (groupGap) return groupGap;
-    const lengthGap = extended
+    const lengthGap = extended && !replacing
       ? b.place.latin.length - a.place.latin.length
       : a.place.latin.length - b.place.latin.length;
     return lengthGap || a.place.id.localeCompare(b.place.id);
   });
-  const scaleX = stageRect.width / 1000;
-  const scaleY = stageRect.height / 640;
+  const originX = replacing ? detail.minX : 0;
+  const originY = replacing ? detail.minY : 0;
+  const spanX = replacing ? detail.maxX - detail.minX : 1000;
+  const spanY = replacing ? detail.maxY - detail.minY : 640;
   labels.forEach((item) => {
     let chosen = null;
     let chosenAnchor = null;
-    const anchors = extended || Object.prototype.hasOwnProperty.call(boost, item.place.id) ? farAnchors : nearAnchors;
+    const anchors = extended ? detailAnchors : Object.prototype.hasOwnProperty.call(boost, item.place.id) ? farAnchors : nearAnchors;
     anchors.forEach((anchor) => {
       if (chosen) return;
       applyMapLabelAnchor(item.span, anchor);
@@ -621,7 +726,8 @@ function fitMapLabels() {
       const box = { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
       const inside = box.left >= limit.left - 2 && box.top >= limit.top - 2
         && box.right <= limit.right + 2 && box.bottom <= limit.bottom + 2;
-      if (!inside || taken.some((other) => mapRectsOverlap(box, other, 3))) return;
+      const pad = stageRect.width < 520 ? 1 : 3;
+      if (!inside || taken.some((other) => mapRectsOverlap(box, other, pad))) return;
       chosen = box;
       chosenAnchor = anchor;
     });
@@ -631,30 +737,50 @@ function fitMapLabels() {
     }
     item.dot.classList.add('is-labeled');
     taken.push(chosen);
-    if (!leaderGroup || Math.hypot(chosenAnchor.x, chosenAnchor.y) < 24) return;
-    const left = (chosen.left - stageRect.left) / scaleX;
-    const top = (chosen.top - stageRect.top) / scaleY;
-    const right = (chosen.right - stageRect.left) / scaleX;
-    const bottom = (chosen.bottom - stageRect.top) / scaleY;
-    const x2 = Math.min(Math.max(item.place.tapX, left), right);
-    const y2 = Math.min(Math.max(item.place.tapY, top), bottom);
-    if (Math.hypot(x2 - item.place.tapX, y2 - item.place.tapY) < 3) return;
+    const leaderLimit = extended ? 72 : 22;
+    if (!leaderGroup || Math.hypot(chosenAnchor.x, chosenAnchor.y) < leaderLimit) return;
+    const toLogicalX = (px) => originX + (px - stageRect.left) / stageRect.width * spanX;
+    const toLogicalY = (py) => originY + (py - stageRect.top) / stageRect.height * spanY;
+    const dotRect = item.dot.getBoundingClientRect();
+    const x1 = toLogicalX((dotRect.left + dotRect.right) / 2);
+    const y1 = toLogicalY((dotRect.top + dotRect.bottom) / 2);
+    const left = toLogicalX(chosen.left);
+    const top = toLogicalY(chosen.top);
+    const right = toLogicalX(chosen.right);
+    const bottom = toLogicalY(chosen.bottom);
+    const x2 = Math.min(Math.max(x1, left), right);
+    const y2 = Math.min(Math.max(y1, top), bottom);
+    if (Math.hypot(x2 - x1, y2 - y1) < 2.5) return;
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
     line.setAttribute('class', 'is-label-leader');
-    line.setAttribute('x1', item.place.tapX.toFixed(1));
-    line.setAttribute('y1', item.place.tapY.toFixed(1));
+    line.setAttribute('x1', x1.toFixed(1));
+    line.setAttribute('y1', y1.toFixed(1));
     line.setAttribute('x2', x2.toFixed(1));
     line.setAttribute('y2', y2.toFixed(1));
     leaderGroup.appendChild(line);
   });
 }
 
-function mapLeaderMarkup() {
+function mapLeaderMarkup(view) {
+  if (view && view.replace) {
+    const spanX = view.maxX - view.minX;
+    const spanY = view.maxY - view.minY;
+    return `<svg class="roman-map-leaders" viewBox="${view.minX} ${view.minY} ${spanX} ${spanY}" aria-hidden="true"><g class="roman-map-pin-leaders"></g><g class="roman-map-label-leaders"></g></svg>`;
+  }
   const marks = ROMAN_MAP_PLACES.map((place) => {
     if (Math.hypot(place.tapX - place.x, place.tapY - place.y) < 8) return '';
     return `<line x1="${place.x.toFixed(1)}" y1="${place.y.toFixed(1)}" x2="${place.tapX.toFixed(1)}" y2="${place.tapY.toFixed(1)}"></line><circle cx="${place.x.toFixed(1)}" cy="${place.y.toFixed(1)}" r="2.4"></circle>`;
   }).join('');
   return `<svg class="roman-map-leaders" viewBox="0 0 1000 640" aria-hidden="true">${marks}<g class="roman-map-label-leaders"></g></svg>`;
+}
+
+function mapSharpMarkup(view) {
+  if (!view || view.replace) return '';
+  const left = (view.minX / 10).toFixed(2);
+  const top = (view.minY / 6.4).toFixed(2);
+  const width = ((view.maxX - view.minX) / 10).toFixed(2);
+  const height = ((view.maxY - view.minY) / 6.4).toFixed(2);
+  return `<img class="roman-map-sharp" alt="" width="${view.imageWidth}" height="${view.imageHeight}" data-sharp="${view.image}" style="left:${left}%;top:${top}%;width:${width}%;height:${height}%" hidden>`;
 }
 
 function renderRomanMap() {
@@ -668,25 +794,41 @@ function renderRomanMap() {
     ['lands', 'Lands and mountains'],
     ['poetry', 'Poetry places']
   ];
+  const view = mapDetail();
+  const labelSet = view && view.labels ? new Set(view.labels) : null;
   const dots = ROMAN_MAP_PLACES.map((place) => {
-    const hidden = RomanWorldState.mapGroup !== 'all' && place.group !== RomanWorldState.mapGroup;
+    const hidden = labelSet
+      ? !labelSet.has(place.id)
+      : RomanWorldState.mapGroup !== 'all' && place.group !== RomanWorldState.mapGroup;
     const classes = ['roman-map-dot'];
     if (hidden) classes.push('is-dim');
+    const pointX = view && view.replace ? place.x : place.tapX;
+    const pointY = view && view.replace ? place.y : place.tapY;
+    if (view && view.replace && (place.x < view.minX || place.x > view.maxX || place.y < view.minY || place.y > view.maxY)) {
+      classes.push('is-offview');
+    }
     if (place.group === 'waters') classes.push('is-water');
     if (ROMAN_MAP_SEA_LABEL_IDS.has(place.id)) classes.push('is-sea-named');
-    if (Math.hypot(place.tapX - place.x, place.tapY - place.y) >= 8) classes.push('has-leader');
+    if (!(view && view.replace) && Math.hypot(place.tapX - place.x, place.tapY - place.y) >= 8) classes.push('has-leader');
     const label = RomanWorldState.mapLabels ? `<span>${escapeHtml(place.latin)}</span>` : '';
+    const left = view && view.replace
+      ? ((pointX - view.minX) / (view.maxX - view.minX) * 100).toFixed(2)
+      : (pointX / 10).toFixed(2);
+    const top = view && view.replace
+      ? ((pointY - view.minY) / (view.maxY - view.minY) * 100).toFixed(2)
+      : (pointY / 6.4).toFixed(2);
     return `
       <button
         type="button"
         class="${classes.join(' ')}"
-        style="left:${(place.tapX / 10).toFixed(2)}%;top:${(place.tapY / 6.4).toFixed(2)}%"
+        style="left:${left}%;top:${top}%"
         data-map-place="${escapeHtml(place.id)}"
         aria-label="${escapeHtml(place.english)}"
         title="${escapeHtml(place.latin)}"
       >${label}</button>
     `;
   }).join('');
+  const sheet = view && view.replace ? view : ROMAN_MAP_GEOMETRY;
   return `
     <section class="roman-map-panel">
       <div class="roman-map-toolbar">
@@ -697,13 +839,14 @@ function renderRomanMap() {
       <p class="roman-map-note">${escapeHtml(RomanWorldState.mapNote)} Score ${RomanWorldState.mapCorrect}/${RomanWorldState.mapAsked}.</p>
       <div class="roman-map-frame" tabindex="0">
         <div class="roman-map-stage">
-          <img class="roman-map-image" src="${ROMAN_MAP_GEOMETRY.image}" width="${ROMAN_MAP_GEOMETRY.imageWidth}" height="${ROMAN_MAP_GEOMETRY.imageHeight}" alt="Parchment map of the lands around the Mediterranean, from the Atlantic to Mesopotamia, with coastlines, rivers, lakes, and shaded relief.">
-          ${mapLeaderMarkup()}
+          <img class="roman-map-image" src="${sheet.image}" width="${sheet.imageWidth}" height="${sheet.imageHeight}" alt="Parchment map of the lands around the Mediterranean, from the Atlantic to Mesopotamia, with coastlines, rivers, lakes, and shaded relief.">
+          ${mapSharpMarkup(view)}
+          ${mapLeaderMarkup(view)}
           ${mapSeaTitleMarkup()}
           ${dots}
         </div>
       </div>
-      <p class="roman-map-pan">Slide the map to look around Italy and the rest of the sea.</p>
+      <p class="roman-map-pan"${view && view.replace ? ' hidden' : ''}>Slide the map to look around Italy and the rest of the sea.</p>
       <p class="roman-map-credit">Coastlines, rivers, and lakes from Natural Earth, public domain. Relief from NOAA ETOPO5, public domain. Each place is drawn at its latitude and longitude.</p>
     </section>
   `;
@@ -715,6 +858,17 @@ function captureMapScroll() {
   RomanWorldState.mapScroll = { left: frame.scrollLeft, top: frame.scrollTop };
 }
 
+function showSharpOverlay(stage, view) {
+  const sharp = stage.querySelector('.roman-map-sharp');
+  if (!sharp) return;
+  if (!view || view.replace) {
+    sharp.hidden = true;
+    return;
+  }
+  if (!sharp.getAttribute('src')) sharp.src = sharp.getAttribute('data-sharp');
+  sharp.hidden = false;
+}
+
 function applyMapFrame() {
   const frame = document.querySelector('#romanWorldStage .roman-map-frame');
   const stage = frame && frame.querySelector('.roman-map-stage');
@@ -722,31 +876,44 @@ function applyMapFrame() {
   const mobile = window.matchMedia('(max-width: 760px)').matches;
   const column = frame.clientWidth;
   const saved = RomanWorldState.mapScroll && typeof RomanWorldState.mapScroll.left === 'number';
-  if (RomanWorldState.mapGroup === 'italy' && column > 0) {
-    const height = mobile
-      ? Math.max(220, Math.round(window.innerHeight * 0.68))
-      : Math.round(column * 640 / 1000);
-    frame.style.height = `${height}px`;
-    frame.style.maxHeight = `${height}px`;
-    const bounds = italyMapBounds();
-    const spanX = Math.max(0.08, (bounds.maxX - bounds.minX) / 1000);
-    const spanY = Math.max(0.08, (bounds.maxY - bounds.minY) / 640);
-    const stageWidth = Math.min(column * 0.9 / spanX, height * 0.9 / spanY);
-    stage.style.width = `${Math.round(stageWidth)}px`;
+  const view = mapDetail();
+  if (view && view.replace && column > 0) {
+    frame.classList.add('is-fit');
+    frame.style.height = '';
+    frame.style.maxHeight = '';
+    stage.style.width = '100%';
+    stage.style.aspectRatio = `${view.maxX - view.minX} / ${view.maxY - view.minY}`;
     stage.classList.add('is-zoomed');
+    frame.scrollLeft = 0;
+    frame.scrollTop = 0;
+    settleDetailDots(stage, view);
+  } else if (view && column > 0) {
+    frame.classList.remove('is-fit');
+    const spanX = view.maxX - view.minX;
+    const spanY = view.maxY - view.minY;
+    const height = Math.round(column * spanY / spanX);
+    const capped = mobile ? Math.min(height, Math.max(280, Math.round(window.innerHeight * 0.72))) : height;
+    frame.style.height = `${capped}px`;
+    frame.style.maxHeight = `${capped}px`;
+    const stageWidth = column / spanX * 1000;
+    stage.style.width = `${Math.round(stageWidth)}px`;
+    stage.style.aspectRatio = '';
+    stage.classList.add('is-zoomed');
+    showSharpOverlay(stage, view);
     if (saved) {
       frame.scrollLeft = RomanWorldState.mapScroll.left;
       frame.scrollTop = RomanWorldState.mapScroll.top;
     } else {
-      const centerX = (bounds.minX + bounds.maxX) / 2 / 1000 * stageWidth;
-      const centerY = (bounds.minY + bounds.maxY) / 2 / 640 * (stageWidth * 640 / 1000);
-      frame.scrollLeft = Math.max(0, centerX - column / 2);
-      frame.scrollTop = Math.max(0, centerY - height / 2);
+      const stageHeight = stageWidth * 640 / 1000;
+      frame.scrollLeft = Math.max(0, view.minX / 1000 * stageWidth);
+      frame.scrollTop = Math.max(0, view.minY / 640 * stageHeight);
     }
   } else {
+    frame.classList.remove('is-fit');
     frame.style.height = '';
     frame.style.maxHeight = '';
     stage.style.width = '';
+    stage.style.aspectRatio = '';
     stage.classList.remove('is-zoomed');
     if (saved) {
       frame.scrollLeft = RomanWorldState.mapScroll.left;

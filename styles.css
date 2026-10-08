@@ -1139,9 +1139,16 @@ input {
   height: 100%;
 }
 
-.roman-map-image {
+.roman-map-image,
+.roman-map-sharp {
   display: block;
   object-fit: fill;
+}
+
+.roman-map-sharp {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .roman-map-leaders {
@@ -1290,9 +1297,21 @@ input {
   }
 }
 
+.roman-map-dot.is-offview {
+  display: none;
+}
+
+.roman-map-frame.is-fit {
+  max-height: none;
+}
+
 @media (max-width: 760px) {
   .roman-map-frame {
     max-height: 68vh;
+  }
+
+  .roman-map-frame.is-fit {
+    max-height: none;
   }
 
   .roman-map-stage {
@@ -1300,8 +1319,8 @@ input {
   }
 
   .roman-map-stage.is-zoomed .roman-map-dot span {
-    font-size: 12px;
-    padding: 0 3px;
+    font-size: 11px;
+    padding: 0 2px;
   }
 }
 

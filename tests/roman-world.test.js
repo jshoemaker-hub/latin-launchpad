@@ -13,14 +13,14 @@ function loadWorld() {
     vm.runInContext(fs.readFileSync(path.join(root, name), 'utf8'), context, { filename: name });
   });
   vm.runInContext(
-    'globalThis.__OUT = { cards: LATIN_CULTURE_CARDS, timeline: ROMAN_TIMELINE, places: ROMAN_MAP_PLACES, geometry: ROMAN_MAP_GEOMETRY, seas: ROMAN_MAP_SEA_TITLES.map((title) => { const point = romanMapProject(title.lon, title.lat); return { latin: title.latin, note: title.note || "", placeId: title.placeId || "", x: point.x, y: point.y, hits: ROMAN_MAP_PLACES.filter((place) => Math.abs(place.tapX - point.x) < title.spreadX && Math.abs(place.tapY - point.y) < title.spreadY).map((place) => place.id) }; }), questions: ANNUAL_EXAM_QUESTIONS.filter((item) => String(item.id).startsWith("cult-")) };',
+    'globalThis.__OUT = { cards: LATIN_CULTURE_CARDS, timeline: ROMAN_TIMELINE, places: ROMAN_MAP_PLACES, geometry: ROMAN_MAP_GEOMETRY, detail: ROMAN_MAP_DETAIL, seas: ROMAN_MAP_SEA_TITLES.map((title) => { const point = romanMapProject(title.lon, title.lat); return { latin: title.latin, note: title.note || "", placeId: title.placeId || "", x: point.x, y: point.y, hits: ROMAN_MAP_PLACES.filter((place) => Math.abs(place.tapX - point.x) < title.spreadX && Math.abs(place.tapY - point.y) < title.spreadY).map((place) => place.id) }; }), questions: ANNUAL_EXAM_QUESTIONS.filter((item) => String(item.id).startsWith("cult-")) };',
     context
   );
   return context.__OUT;
 }
 
 test('Roman-world units have cards, a timeline, a map, and bank questions', () => {
-  const { cards, timeline, places, questions, seas } = loadWorld();
+  const { cards, timeline, places, questions, seas, detail } = loadWorld();
   const units = cards.filter((card) => card.original);
   const myth = units.filter((card) => card.unit === 'myth');
   const life = units.filter((card) => card.unit === 'life');
@@ -109,6 +109,32 @@ test('Roman-world units have cards, a timeline, a map, and bank questions', () =
   assert.equal(fs.existsSync(webp), true);
   const bytes = fs.statSync(webp).size;
   assert.ok(bytes > 20000 && bytes < 400000, `roman-map.webp is ${bytes} bytes`);
+  ['italy', 'mediterranean'].forEach((key) => {
+    const view = detail[key];
+    const file = path.join(root, view.image);
+    assert.equal(fs.existsSync(file), true, view.image);
+    const detailBytes = fs.statSync(file).size;
+    assert.ok(detailBytes > 20000 && detailBytes < 400000, `${view.image} is ${detailBytes} bytes`);
+  });
+  const italy = detail.italy;
+  const italySpanX = italy.maxX - italy.minX;
+  assert.ok(italy.labels.includes('roma'));
+  ['roma', 'ostia', 'pompeii', 'brundisium', 'sicilia', 'corsica', 'sardinia', 'alpes'].forEach((id) => {
+    const place = byId[id];
+    assert.ok(place.x > italy.minX && place.x < italy.maxX, id);
+    assert.ok(place.y > italy.minY && place.y < italy.maxY, id);
+  });
+  assert.ok((byId.sardinia.x - italy.minX) / italySpanX < 0.2, 'Sardinia sits near the western edge');
+  assert.ok((byId.corsica.x - italy.minX) / italySpanX < 0.22, 'Corsica sits near the western edge');
+  assert.ok((byId.alpes.y - italy.minY) / (italy.maxY - italy.minY) < 0.2, 'the Alps sit near the northern edge');
+  assert.ok((italy.maxY - byId.sicilia.y) / (italy.maxY - italy.minY) < 0.25, 'Sicily sits near the southern edge');
+  assert.ok(byId.graecia.x > italy.maxX, 'Greece stays outside the Italy crop');
+  const greece = detail.mediterranean;
+  ['graecia', 'athenae', 'macedonia', 'creta', 'delos', 'lesbos', 'ithaca'].forEach((id) => {
+    const place = byId[id];
+    assert.ok(place.x > greece.minX && place.x < greece.maxX, id);
+    assert.ok(place.y > greece.minY && place.y < greece.maxY, id);
+  });
 
   const cultureSource = fs.readFileSync(path.join(root, 'latin-culture.js'), 'utf8');
   assert.equal(/Third Form/.test(cultureSource), false);

@@ -110,10 +110,29 @@ def projected_bounds():
 PROJ_MIN_X, PROJ_MAX_X, PROJ_MIN_Y, PROJ_MAX_Y = projected_bounds()
 
 
+# ox, oy, sx, sy are the logical window. pw, ph are output pixels.
+# decor draws the compass and cartouche used on the full sheet.
+ACTIVE_SHEET = {
+    'ox': 0.0,
+    'oy': 0.0,
+    'sx': LOGICAL_W,
+    'sy': LOGICAL_H,
+    'pw': WIDTH,
+    'ph': HEIGHT,
+    'decor': True,
+}
+
+
 def to_pixel(x, y, scale=SCALE):
     lx = PAD_X + (x - PROJ_MIN_X) / (PROJ_MAX_X - PROJ_MIN_X) * CONTENT_W
     ly = PAD_Y + (PROJ_MAX_Y - y) / (PROJ_MAX_Y - PROJ_MIN_Y) * CONTENT_H
-    return lx * scale, ly * scale
+    if scale == 1:
+        return lx, ly
+    sheet = ACTIVE_SHEET
+    return (
+        (lx - sheet['ox']) / sheet['sx'] * sheet['pw'],
+        (ly - sheet['oy']) / sheet['sy'] * sheet['ph'],
+    )
 
 
 def clip_ring(points):
@@ -296,13 +315,18 @@ def blend(base, tint, amount):
     return tuple(int(base[channel] + (tint[channel] - base[channel]) * amount) for channel in range(3))
 
 
-def build(land_path, rivers_path, lakes_path, etopo_path):
-    grid = load_etopo(etopo_path)
-    columns = np.arange(WIDTH)
-    rows = np.arange(HEIGHT)
-    logical_x = columns / SCALE
-    logical_y = rows / SCALE
-    gx = np.broadcast_to(logical_x, (HEIGHT, WIDTH))
+def render_sheet(grid, land_path, rivers_path, lakes_path, sheet, out_path):
+    global ACTIVE_SHEET
+    ACTIVE_SHEET = sheet
+    width = int(sheet['pw'])
+    height = int(sheet['ph'])
+    pixels_per_logical = width / sheet['sx']
+    stroke = max(1, int(round(pixels_per_logical / SCALE)))
+    columns = np.arange(width)
+    rows = np.arange(height)
+    logical_x = sheet['ox'] + (columns + 0.5) / width * sheet['sx']
+    logical_y = sheet['oy'] + (rows + 0.5) / height * sheet['sy']
+    gx = np.broadcast_to(logical_x, (height, width))
     gy = logical_y[:, None]
     proj_x = PROJ_MIN_X + (gx - PAD_X) / CONTENT_W * (PROJ_MAX_X - PROJ_MIN_X)
     proj_y = PROJ_MAX_Y - (gy - PAD_Y) / CONTENT_H * (PROJ_MAX_Y - PROJ_MIN_Y)
@@ -311,7 +335,7 @@ def build(land_path, rivers_path, lakes_path, etopo_path):
         & (gy >= PAD_Y) & (gy <= LOGICAL_H - PAD_Y)
     )
     lon, lat = inverse_project(proj_x, proj_y)
-    elevation = np.zeros((HEIGHT, WIDTH), dtype=np.float32)
+    elevation = np.zeros((height, width), dtype=np.float32)
     elevation[inside] = sample_etopo(grid, lat[inside], lon[inside])
     shade = hillshade(elevation)
 
@@ -322,7 +346,7 @@ def build(land_path, rivers_path, lakes_path, etopo_path):
     sea = shallow * (1 - depth[..., None]) + deep * depth[..., None]
     sea *= (0.94 + 0.06 * shade)[..., None]
 
-    image = np.empty((HEIGHT, WIDTH, 3), dtype=np.float32)
+    image = np.empty((height, width, 3), dtype=np.float32)
     image[:] = paper
     image[inside] = sea[inside]
     raster = Image.fromarray(np.clip(image, 0, 255).astype(np.uint8), 'RGB')
@@ -352,8 +376,8 @@ def build(land_path, rivers_path, lakes_path, etopo_path):
                 land_holes.append(projected)
     print(f'land shells {len(land_shells)}, holes {len(land_holes)}')
 
-    land_mask = np.zeros((HEIGHT, WIDTH), dtype=bool)
-    mask_image = Image.new('L', (WIDTH, HEIGHT), 0)
+    land_mask = np.zeros((height, width), dtype=bool)
+    mask_image = Image.new('L', (width, height), 0)
     mask_draw = ImageDraw.Draw(mask_image)
     for ring in land_shells:
         mask_draw.polygon(ring, fill=255)
@@ -376,7 +400,7 @@ def build(land_path, rivers_path, lakes_path, etopo_path):
     draw = ImageDraw.Draw(raster)
 
     hole_sea = sea.copy()
-    hole_mask_image = Image.new('L', (WIDTH, HEIGHT), 0)
+    hole_mask_image = Image.new('L', (width, height), 0)
     hole_draw = ImageDraw.Draw(hole_mask_image)
     for ring in land_holes:
         hole_draw.polygon(ring, fill=255)
@@ -400,9 +424,10 @@ def build(land_path, rivers_path, lakes_path, etopo_path):
                 continue
             xs = [point[0] for point in projected]
             ys = [point[1] for point in projected]
-            if max(xs) - min(xs) < 4 and max(ys) - min(ys) < 4:
+            min_span = 4 if sheet['decor'] else 4 * stroke
+            if max(xs) - min(xs) < min_span and max(ys) - min(ys) < min_span:
                 continue
-            draw_ring(draw, projected, fill=lake_color, outline=lake_edge, width=1)
+            draw_ring(draw, projected, fill=lake_color, outline=lake_edge, width=1 if sheet['decor'] else stroke)
             lakes_drawn += 1
     print(f'lakes drawn: {lakes_drawn}')
 
@@ -423,7 +448,7 @@ def build(land_path, rivers_path, lakes_path, etopo_path):
             x, y = project(lon, lat)
             px, py = to_pixel(x, y)
             line = list(zip(px.tolist(), py.tolist()))
-            draw.line(line, fill=river_color, width=2)
+            draw.line(line, fill=river_color, width=2 if sheet['decor'] else max(2, stroke * 2))
             rivers_drawn += 1
     print(f'river parts drawn: {rivers_drawn}')
 
@@ -431,31 +456,66 @@ def build(land_path, rivers_path, lakes_path, etopo_path):
     halo = (196, 164, 116)
     for ring in land_shells + land_holes:
         closed = ring + [ring[0]]
-        draw.line(closed, fill=halo, width=4)
+        draw.line(closed, fill=halo, width=4 if sheet['decor'] else max(2, stroke * 3))
     for ring in land_shells + land_holes:
-        draw.line(ring + [ring[0]], fill=coast, width=1)
+        draw.line(ring + [ring[0]], fill=coast, width=1 if sheet['decor'] else max(1, stroke))
 
     vignette = np.array(raster).astype(np.float32)
-    yy = np.linspace(-1, 1, HEIGHT)[:, None]
-    xx = np.linspace(-1, 1, WIDTH)[None, :]
-    falloff = np.clip(1 - (xx * xx * 0.06 + yy * yy * 0.08), 0.92, 1)
+    yy = np.linspace(-1, 1, height)[:, None]
+    xx = np.linspace(-1, 1, width)[None, :]
+    falloff = np.clip(1 - (xx * xx * 0.06 + yy * yy * 0.08), 0.94 if not sheet['decor'] else 0.92, 1)
     vignette *= falloff[..., None]
     raster = Image.fromarray(np.clip(vignette, 0, 255).astype(np.uint8), 'RGB')
     draw = ImageDraw.Draw(raster)
 
     outer = (110, 72, 40)
     inner = (232, 206, 160)
-    draw.rectangle((8, 8, WIDTH - 9, HEIGHT - 9), outline=outer, width=3)
-    draw.rectangle((14, 14, WIDTH - 15, HEIGHT - 15), outline=inner, width=2)
-    draw.rectangle((18, 18, WIDTH - 19, HEIGHT - 19), outline=outer, width=1)
+    if sheet['decor']:
+        draw.rectangle((8, 8, width - 9, height - 9), outline=outer, width=3)
+        draw.rectangle((14, 14, width - 15, height - 15), outline=inner, width=2)
+        draw.rectangle((18, 18, width - 19, height - 19), outline=outer, width=1)
+        draw_compass(draw)
+        draw_cartouche(draw)
+    else:
+        margin = max(8, stroke * 2)
+        draw.rectangle((margin, margin, width - margin - 1, height - margin - 1), outline=outer, width=max(2, stroke))
+        draw.rectangle((margin + stroke * 2, margin + stroke * 2, width - margin - stroke * 2 - 1, height - margin - stroke * 2 - 1), outline=inner, width=max(1, stroke))
 
-    draw_compass(draw)
-    draw_cartouche(draw)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    raster.save(out_path, 'WEBP', quality=72 if sheet['decor'] else 68, method=6)
+    print(f'wrote {out_path} ({out_path.stat().st_size} bytes, {width}x{height})')
 
-    WEBP_PATH.parent.mkdir(parents=True, exist_ok=True)
-    raster.save(WEBP_PATH, 'WEBP', quality=72, method=6)
-    print(f'wrote {WEBP_PATH} ({WEBP_PATH.stat().st_size} bytes)')
+
+def build(land_path, rivers_path, lakes_path, etopo_path):
+    grid = load_etopo(etopo_path)
+    render_sheet(grid, land_path, rivers_path, lakes_path, {
+        'ox': 0.0,
+        'oy': 0.0,
+        'sx': LOGICAL_W,
+        'sy': LOGICAL_H,
+        'pw': WIDTH,
+        'ph': HEIGHT,
+        'decor': True,
+    }, WEBP_PATH)
     write_geometry()
+    # Alps to Sicily, with Corsica and Sardinia at the western edge.
+    render_sheet(grid, land_path, rivers_path, lakes_path, detail_sheet(352, 228, 508, 424), ROOT / 'assets' / 'roman-map-italy.webp')
+    # Ionian islands through the Aegean, Macedonia to Crete.
+    render_sheet(grid, land_path, rivers_path, lakes_path, detail_sheet(490, 308, 632, 456), ROOT / 'assets' / 'roman-map-greece.webp')
+
+
+def detail_sheet(min_x, min_y, max_x, max_y, pixels_per_logical=13):
+    span_x = max_x - min_x
+    span_y = max_y - min_y
+    return {
+        'ox': float(min_x),
+        'oy': float(min_y),
+        'sx': float(span_x),
+        'sy': float(span_y),
+        'pw': int(round(span_x * pixels_per_logical)),
+        'ph': int(round(span_y * pixels_per_logical)),
+        'decor': False,
+    }
 
 
 def draw_compass(draw):
