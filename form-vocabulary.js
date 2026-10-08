@@ -1,6 +1,6 @@
 // Dictionary forms for the site headwords.
 // Macrons: Lewis & Short quantities via the Morpheus Latin stem lexicon.
-// Book tags, gender, and declension/conjugation: owner Form glossary crosswalk.
+// Gender and declension/conjugation stay with each headword.
 // Uncertain glossary rows are included only when Morpheus confirms the headword.
 // Stored progress keys stay on the unmacronized latin field.
 const FORM_VOCABULARY = {
@@ -11,10 +11,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "a / ab is a preposition. The final letters are not a noun or verb ending.",
@@ -71,11 +68,7 @@ const FORM_VOCABULARY = {
     "principalParts": "accūsō, accūsāre, accūsāvī, accūsātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -106,10 +99,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "ad is a preposition. The final letters are not a noun or verb ending.",
@@ -153,11 +143,7 @@ const FORM_VOCABULARY = {
     "principalParts": "adōrō, adōrāre, adōrāvī, adōrātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -217,11 +203,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "4",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -us noun is fourth declension. The subject form ends in -us, and the genitive singular is also -us.",
@@ -281,10 +263,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -310,9 +289,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -399,11 +376,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -416,10 +389,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -448,11 +418,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -481,11 +447,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -543,10 +505,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -559,11 +518,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -576,11 +531,7 @@ const FORM_VOCABULARY = {
     "principalParts": "ambulō, ambulāre, ambulāvī, ambulātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -611,11 +562,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -644,11 +591,7 @@ const FORM_VOCABULARY = {
     "principalParts": "amō, amāre, amāvī, amātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -679,10 +622,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -737,9 +677,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -752,10 +690,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -784,11 +719,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -817,10 +748,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "ante is a preposition. The final letters are not a noun or verb ending.",
@@ -875,11 +803,7 @@ const FORM_VOCABULARY = {
     "principalParts": "appāreō, appārēre, appāruī, appāritum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -910,11 +834,7 @@ const FORM_VOCABULARY = {
     "principalParts": "adpellō, adpellāre, appellāvī, adpellātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -976,10 +896,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "apud is a preposition. The final letters are not a noun or verb ending.",
@@ -992,10 +909,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -1024,10 +938,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -1056,10 +967,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -1088,10 +996,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -1120,9 +1025,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "4",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -us noun is fourth declension. The subject form ends in -us, and the genitive singular is also -us.",
@@ -1151,11 +1054,7 @@ const FORM_VOCABULARY = {
     "principalParts": "ārdeō, ārdēre, ārsī, ārsum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -1186,10 +1085,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -1231,11 +1127,7 @@ const FORM_VOCABULARY = {
     "principalParts": "arō, arāre, arātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -1295,10 +1187,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -1311,10 +1200,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -1358,9 +1244,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -1415,9 +1299,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -1475,10 +1357,7 @@ const FORM_VOCABULARY = {
     "principalParts": "audiō, audīre, audīvī, audītum",
     "partOfSpeech": "verb",
     "declension": "4",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -1538,10 +1417,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -1570,10 +1446,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -1631,10 +1504,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -1663,11 +1533,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -1767,11 +1633,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -1784,10 +1646,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -1816,10 +1675,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -1832,10 +1688,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -1848,11 +1701,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -1894,9 +1743,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -1922,10 +1769,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -1954,11 +1798,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -is word is a third-declension subject form for one person or thing, not the ending that means “to/for/by/with the ___s.”",
@@ -2015,10 +1855,7 @@ const FORM_VOCABULARY = {
     "principalParts": "capiō, capere, cēpī, captum",
     "partOfSpeech": "verb",
     "declension": "3io",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -2049,11 +1886,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -2082,9 +1915,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -2113,9 +1944,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -2273,11 +2102,7 @@ const FORM_VOCABULARY = {
     "principalParts": "caveō, cavēre, cāvī, cautum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -2368,11 +2193,7 @@ const FORM_VOCABULARY = {
     "principalParts": "cēlō, cēlāre, cēlāvī, cēlātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -2403,10 +2224,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -2435,10 +2253,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -2451,10 +2266,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -2467,10 +2279,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -2499,11 +2308,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -2532,10 +2337,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -2606,10 +2408,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "circum is a preposition. The final letters are not a noun or verb ending.",
@@ -2635,10 +2434,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -is word is a third-declension subject form for one person or thing, not the ending that means “to/for/by/with the ___s.”",
@@ -2651,9 +2447,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -2695,11 +2489,7 @@ const FORM_VOCABULARY = {
     "principalParts": "clāmō, clāmāre, clāmāvī, clāmātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -2730,10 +2520,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -2762,9 +2549,7 @@ const FORM_VOCABULARY = {
     "principalParts": "claudō, claudere, clausī, clausum",
     "partOfSpeech": "verb",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -2954,10 +2739,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -is word is a third-declension subject form for one person or thing, not the ending that means “to/for/by/with the ___s.”",
@@ -2970,10 +2752,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -3120,10 +2899,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "contra is a preposition. The final letters are not a noun or verb ending.",
@@ -3136,11 +2912,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -3169,10 +2941,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "coram is a preposition. The final letters are not a noun or verb ending.",
@@ -3185,9 +2954,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "4",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -3200,10 +2967,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -3232,11 +2996,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -3249,11 +3009,7 @@ const FORM_VOCABULARY = {
     "principalParts": "creō, creāre, creāvī, crātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -3344,11 +3100,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -3390,10 +3142,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -3422,10 +3171,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -3454,11 +3200,7 @@ const FORM_VOCABULARY = {
     "principalParts": "culpō, culpāre, culpāvī, culpātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -3489,10 +3231,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -3550,10 +3289,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "cum is a preposition. The final letters are not a noun or verb ending.",
@@ -3595,10 +3331,7 @@ const FORM_VOCABULARY = {
     "principalParts": "cupiō, cupere, cupīvī, cupītum",
     "partOfSpeech": "verb",
     "declension": "3io",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -3629,10 +3362,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -3736,9 +3466,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "4",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -us noun is fourth declension. The subject form ends in -us, and the genitive singular is also -us.",
@@ -3767,10 +3495,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "de is a preposition. The final letters are not a noun or verb ending.",
@@ -3783,11 +3508,7 @@ const FORM_VOCABULARY = {
     "principalParts": "dēbeō, dēbēre, dēbuī, dēbitum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -3818,11 +3539,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -3851,11 +3568,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -3868,11 +3581,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -3914,11 +3623,7 @@ const FORM_VOCABULARY = {
     "principalParts": "dēlectō, dēlectāre, dēlectātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -4004,11 +3709,7 @@ const FORM_VOCABULARY = {
     "principalParts": "dēmōnstrō, dēmōnstrāre, dēmōnstrāvī, dēmōnstrātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -4039,11 +3740,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -4072,10 +3769,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -4088,10 +3782,7 @@ const FORM_VOCABULARY = {
     "principalParts": "dicō, dicāre, dicāvī, dicātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -4151,11 +3842,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "5",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -4184,10 +3871,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -4200,10 +3884,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -4287,10 +3968,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -4376,11 +4054,7 @@ const FORM_VOCABULARY = {
     "principalParts": "dō, dare, dedī, datum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -4393,11 +4067,7 @@ const FORM_VOCABULARY = {
     "principalParts": "doceō, docēre, docuī, doctum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -4457,10 +4127,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -4489,11 +4156,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -4522,11 +4185,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "4",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -us noun is fourth declension. The subject form ends in -us, and the genitive singular is also -us.",
@@ -4570,11 +4229,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -4603,10 +4258,7 @@ const FORM_VOCABULARY = {
     "principalParts": "dormiō, dormīre, dormīvī, dormītum",
     "partOfSpeech": "verb",
     "declension": "4",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -4637,11 +4289,7 @@ const FORM_VOCABULARY = {
     "principalParts": "dubitō, dubitāre, dubitāvī, dubitātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -4672,10 +4320,7 @@ const FORM_VOCABULARY = {
     "principalParts": "dūcō, dūcere, dūxī, ductum",
     "partOfSpeech": "verb",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -4706,10 +4351,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -4722,11 +4364,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -4739,11 +4377,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -4772,10 +4406,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "e / ex is a preposition. The final letters are not a noun or verb ending.",
@@ -4875,10 +4506,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -4922,10 +4550,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -5041,11 +4666,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -5074,11 +4695,7 @@ const FORM_VOCABULARY = {
     "principalParts": "errō, errāre, errāvī, errātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -5109,9 +4726,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "conjunction",
     "declension": "",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -5212,11 +4827,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "4",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -us noun is fourth declension. The subject form ends in -us, and the genitive singular is also -us.",
@@ -5276,11 +4887,7 @@ const FORM_VOCABULARY = {
     "principalParts": "explōrō, explōrāre, explōrāvī, explōrātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -5311,11 +4918,7 @@ const FORM_VOCABULARY = {
     "principalParts": "expectō, expectāre, expectāvī, exspectātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -5388,10 +4991,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -5420,11 +5020,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "5",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -5453,10 +5049,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -5469,10 +5062,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -5485,10 +5075,7 @@ const FORM_VOCABULARY = {
     "principalParts": "faciō, facere, fēcī, factum",
     "partOfSpeech": "verb",
     "declension": "3io",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -5590,10 +5177,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -5651,10 +5235,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -5696,10 +5277,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -5728,9 +5306,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -5774,10 +5350,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -5790,10 +5363,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -5806,11 +5376,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "5",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -5839,10 +5405,7 @@ const FORM_VOCABULARY = {
     "principalParts": "fīgō, fīgere, fīxī, fīxum",
     "partOfSpeech": "verb",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -5873,10 +5436,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -5905,11 +5465,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -5938,10 +5494,7 @@ const FORM_VOCABULARY = {
     "principalParts": "fīniō, fīnīre, fīnītum",
     "partOfSpeech": "verb",
     "declension": "4",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -6030,9 +5583,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -6061,11 +5612,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -6107,10 +5654,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -6139,10 +5683,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -6155,10 +5696,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -6171,10 +5709,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -6203,11 +5738,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -6236,9 +5767,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -6267,11 +5796,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -6300,11 +5825,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "4",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -us noun is fourth declension. The subject form ends in -us, and the genitive singular is also -us.",
@@ -6333,10 +5854,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -6365,10 +5883,7 @@ const FORM_VOCABULARY = {
     "principalParts": "fugiō, fugere, fūgī, fugitum",
     "partOfSpeech": "verb",
     "declension": "3io",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -6412,10 +5927,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -6444,10 +5956,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -6476,11 +5985,7 @@ const FORM_VOCABULARY = {
     "principalParts": "gaudeō, gaudēre, gāvīsum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -6511,10 +6016,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -6543,10 +6045,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -6575,10 +6074,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -6665,9 +6161,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -6709,10 +6203,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -6741,10 +6232,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -6757,10 +6245,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -6828,11 +6313,7 @@ const FORM_VOCABULARY = {
     "principalParts": "habeō, habēre, habuī, habitum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -6863,11 +6344,7 @@ const FORM_VOCABULARY = {
     "principalParts": "habitō, habitāre, habitāvī, habitātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -6956,10 +6433,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -6988,11 +6462,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -7018,9 +6488,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -7049,10 +6517,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -7081,11 +6546,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -7098,9 +6559,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -7258,10 +6717,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -7290,10 +6746,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -is word is a third-declension subject form for one person or thing, not the ending that means “to/for/by/with the ___s.”",
@@ -7345,10 +6798,7 @@ const FORM_VOCABULARY = {
     "principalParts": "iciō, icere, īcī, ictum",
     "partOfSpeech": "verb",
     "declension": "3io",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -7379,10 +6829,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -7453,9 +6900,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -is word is a third-declension subject form for one person or thing, not the ending that means “to/for/by/with the ___s.”",
@@ -7494,10 +6939,7 @@ const FORM_VOCABULARY = {
     "principalParts": "impediō, impedīre, impedīvī, impedītum",
     "partOfSpeech": "verb",
     "declension": "4",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -7528,10 +6970,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -7641,9 +7080,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -7685,10 +7122,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -7717,10 +7151,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -7733,10 +7164,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "inter is a preposition. The final letters are not a noun or verb ending.",
@@ -7775,10 +7203,7 @@ const FORM_VOCABULARY = {
     "principalParts": "inveniō, invenīre, invēnī, inventum",
     "partOfSpeech": "verb",
     "declension": "4",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -7853,9 +7278,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -7868,10 +7291,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -7900,11 +7320,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -7933,9 +7349,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -7964,11 +7378,7 @@ const FORM_VOCABULARY = {
     "principalParts": "iubeo, jubēre, jussī, jussum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -8041,11 +7451,7 @@ const FORM_VOCABULARY = {
     "principalParts": "iudico, jūdicāre, jūdicāvī, jūdicātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -8102,10 +7508,7 @@ const FORM_VOCABULARY = {
     "principalParts": "iungo, jungere, jūnxī, jūnctum",
     "partOfSpeech": "verb",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -8207,9 +7610,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -is word is a third-declension subject form for one person or thing, not the ending that means “to/for/by/with the ___s.”",
@@ -8222,11 +7623,7 @@ const FORM_VOCABULARY = {
     "principalParts": "iuvo, juvāre, jūvī, jūtum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -8270,10 +7667,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -8302,11 +7696,7 @@ const FORM_VOCABULARY = {
     "principalParts": "labōrō, labōrāre, labōrāvī, labōrātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -8366,11 +7756,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "4",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -us noun is fourth declension. The subject form ends in -us, and the genitive singular is also -us.",
@@ -8399,10 +7785,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -8428,10 +7811,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -8444,11 +7824,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -8461,11 +7837,7 @@ const FORM_VOCABULARY = {
     "principalParts": "laudō, laudāre, laudāvī, laudātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -8496,11 +7868,7 @@ const FORM_VOCABULARY = {
     "principalParts": "lavō, lavāre, lāvī, lautum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -8573,10 +7941,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -8605,9 +7970,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -8667,10 +8030,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -8683,10 +8043,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -8699,11 +8056,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -8745,10 +8098,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -8777,10 +8127,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -8793,10 +8140,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -8809,11 +8153,7 @@ const FORM_VOCABULARY = {
     "principalParts": "līberō, līberāre, līberāvī, līberātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -8870,10 +8210,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -8944,10 +8281,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -8976,10 +8310,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -8992,10 +8323,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -9037,10 +8365,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -9113,10 +8438,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -9145,11 +8467,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -9178,10 +8496,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -9239,10 +8554,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -9271,11 +8583,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -9333,10 +8641,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -9378,10 +8683,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -9439,11 +8741,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -9485,11 +8783,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -9502,11 +8796,7 @@ const FORM_VOCABULARY = {
     "principalParts": "maneō, manēre, mānsī, mānsum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -9537,11 +8827,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "4",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -us noun is fourth declension. The subject form ends in -us, and the genitive singular is also -us.",
@@ -9570,10 +8856,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -9602,10 +8885,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -9634,11 +8914,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -9722,11 +8998,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -9852,9 +9124,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -9883,11 +9153,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -9971,11 +9237,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "4",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -us noun is fourth declension. The subject form ends in -us, and the genitive singular is also -us.",
@@ -10004,10 +9266,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -10020,11 +9279,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -10066,10 +9321,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -10082,10 +9334,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -10098,9 +9347,7 @@ const FORM_VOCABULARY = {
     "principalParts": "mittō, mittere, mīsī, missum",
     "partOfSpeech": "verb",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -10131,11 +9378,7 @@ const FORM_VOCABULARY = {
     "principalParts": "moneō, monēre, monuī, monitum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -10166,10 +9409,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -10273,11 +9513,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -10335,11 +9571,7 @@ const FORM_VOCABULARY = {
     "principalParts": "moveō, movēre, mōvī, mōtum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -10399,11 +9631,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -10416,11 +9644,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -10462,10 +9686,7 @@ const FORM_VOCABULARY = {
     "principalParts": "mūniō, mūnīre, mūnīvī, mūnītum",
     "partOfSpeech": "verb",
     "declension": "4",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -10496,9 +9717,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -us noun is third-declension neuter. Here -us is the subject form for one thing, not the usual second-declension masculine ending.",
@@ -10598,11 +9817,7 @@ const FORM_VOCABULARY = {
     "principalParts": "mūtō, mūtāre, mūtāvī, mūtātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -10646,11 +9861,7 @@ const FORM_VOCABULARY = {
     "principalParts": "nārrō, nārrāre, nārrāvī, nārrātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -10681,11 +9892,7 @@ const FORM_VOCABULARY = {
     "principalParts": "natō, natāre, natāvī, natātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -10745,11 +9952,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -10807,11 +10010,7 @@ const FORM_VOCABULARY = {
     "principalParts": "nāvigō, nāvigāre, nāvigāvī, nāvigātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -10842,10 +10041,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -is word is a third-declension subject form for one person or thing, not the ending that means “to/for/by/with the ___s.”",
@@ -10920,11 +10116,7 @@ const FORM_VOCABULARY = {
     "principalParts": "negō, negāre, negāvī, negātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -10984,10 +10176,7 @@ const FORM_VOCABULARY = {
     "principalParts": "nesciō, nescīre, nescīvī",
     "partOfSpeech": "verb",
     "declension": "4",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11018,10 +10207,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -11063,10 +10249,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11121,11 +10304,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11154,11 +10333,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11184,11 +10359,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11201,10 +10372,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11217,10 +10385,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11275,11 +10440,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -11292,11 +10453,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11309,9 +10466,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11379,11 +10534,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11396,11 +10547,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11413,11 +10560,7 @@ const FORM_VOCABULARY = {
     "principalParts": "nūntiō, nūntiāre, nūntiāvī, nūntiātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11461,10 +10604,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "ob is a preposition. The final letters are not a noun or verb ending.",
@@ -11506,11 +10646,7 @@ const FORM_VOCABULARY = {
     "principalParts": "occupō, occupāre, occupāvī, occupātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11541,11 +10677,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11558,11 +10690,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -11575,10 +10703,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -11633,10 +10758,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11678,11 +10800,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -11711,11 +10829,7 @@ const FORM_VOCABULARY = {
     "principalParts": "oppugnō, oppugnāre, oppugnāvī, oppugnātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11746,11 +10860,7 @@ const FORM_VOCABULARY = {
     "principalParts": "optō, optāre, optāvī, optātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11810,9 +10920,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -us noun is third-declension neuter. Here -us is the subject form for one thing, not the usual second-declension masculine ending.",
@@ -11841,10 +10949,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11904,9 +11009,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -11935,11 +11038,7 @@ const FORM_VOCABULARY = {
     "principalParts": "ōrō, ōrāre, ōrāvī, ōrātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -12014,11 +11113,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -is word is a third-declension subject form for one person or thing, not the ending that means “to/for/by/with the ___s.”",
@@ -12044,9 +11139,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -12088,11 +11181,7 @@ const FORM_VOCABULARY = {
     "principalParts": "parō, parāre, parāvī, parātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -12123,10 +11212,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -12155,11 +11241,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -12172,10 +11254,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -12204,11 +11283,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -12237,10 +11312,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -12282,11 +11354,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -12315,10 +11383,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -12376,10 +11441,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -12481,10 +11543,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "per is a preposition. The final letters are not a noun or verb ending.",
@@ -12541,11 +11600,7 @@ const FORM_VOCABULARY = {
     "principalParts": "perturbō, perturbāre, perturbāvī, perturbātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -12576,11 +11631,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -12638,10 +11689,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -12693,10 +11741,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -12825,11 +11870,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -12871,9 +11912,7 @@ const FORM_VOCABULARY = {
     "principalParts": "pōnō, pōnere, posuī, positum",
     "partOfSpeech": "verb",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -12904,10 +11943,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -12936,10 +11972,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -12981,10 +12014,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -13013,11 +12043,7 @@ const FORM_VOCABULARY = {
     "principalParts": "portō, portāre, portāvī, portātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -13048,11 +12074,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "4",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -us noun is fourth declension. The subject form ends in -us, and the genitive singular is also -us.",
@@ -13081,10 +12103,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "post is a preposition. The final letters are not a noun or verb ending.",
@@ -13126,10 +12145,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "prae is a preposition. The final letters are not a noun or verb ending.",
@@ -13155,10 +12171,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -13200,11 +12213,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -13217,10 +12226,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "pro is a preposition. The final letters are not a noun or verb ending.",
@@ -13233,10 +12239,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -13323,11 +12326,7 @@ const FORM_VOCABULARY = {
     "principalParts": "prohibeō, prohibēre, prohibuī, prohibitum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -13358,10 +12357,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "propter is a preposition. The final letters are not a noun or verb ending.",
@@ -13374,10 +12370,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -13419,11 +12412,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -13452,10 +12441,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -13542,11 +12528,7 @@ const FORM_VOCABULARY = {
     "principalParts": "pugnō, pugnāre, pugnāvī, pugnātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -13577,10 +12559,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -13593,10 +12572,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -13651,11 +12627,7 @@ const FORM_VOCABULARY = {
     "principalParts": "putō, putāre, putāvī, putātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -13799,10 +12771,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -13815,10 +12784,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -13831,11 +12797,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -13848,11 +12810,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -13865,9 +12823,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "conjunction",
     "declension": "",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -13880,10 +12836,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -13896,11 +12849,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -13913,11 +12862,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -13930,10 +12875,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -13946,10 +12888,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -13975,10 +12914,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -14091,11 +13027,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -14124,11 +13056,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -14157,10 +13085,7 @@ const FORM_VOCABULARY = {
     "principalParts": "regō, regere, rēxī, rēctum",
     "partOfSpeech": "verb",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -14235,11 +13160,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "5",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -14268,11 +13189,7 @@ const FORM_VOCABULARY = {
     "principalParts": "respondeō, respondēre, respondī, respōnsum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -14363,11 +13280,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -14458,11 +13371,7 @@ const FORM_VOCABULARY = {
     "principalParts": "rogō, rogāre, rogāvī, rogātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -14493,11 +13402,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -14526,10 +13431,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -14629,10 +13531,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -14674,10 +13573,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -14706,11 +13602,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -14723,9 +13615,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -14783,11 +13673,7 @@ const FORM_VOCABULARY = {
     "principalParts": "salūtō, salūtāre, salūtāvī, salūtātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -14849,11 +13735,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -14866,9 +13748,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -14881,9 +13761,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -14912,11 +13790,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -14974,9 +13848,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -15005,10 +13877,7 @@ const FORM_VOCABULARY = {
     "principalParts": "sciō, scīre, scīvī, scītum",
     "partOfSpeech": "verb",
     "declension": "4",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -15068,9 +13937,7 @@ const FORM_VOCABULARY = {
     "principalParts": "scrībō, scrībere, scrīpsī, scrīptum",
     "partOfSpeech": "verb",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -15127,10 +13994,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -15159,11 +14023,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -15176,11 +14036,7 @@ const FORM_VOCABULARY = {
     "principalParts": "sedeō, sedēre, sēdī, sessum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -15211,10 +14067,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -15256,11 +14109,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -15273,10 +14122,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -15305,11 +14151,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "4",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -us noun is fourth declension. The subject form ends in -us, and the genitive singular is also -us.",
@@ -15367,9 +14209,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -15411,10 +14251,7 @@ const FORM_VOCABULARY = {
     "principalParts": "sentiō, sentīre, sēnsī, sēnsum",
     "partOfSpeech": "verb",
     "declension": "4",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -15445,11 +14282,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -15462,11 +14295,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -15479,9 +14308,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -15541,11 +14368,7 @@ const FORM_VOCABULARY = {
     "principalParts": "servō, servāre, servāvī, servātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -15576,11 +14399,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -15609,11 +14428,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -15626,11 +14441,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -15643,10 +14454,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -15706,10 +14514,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -15738,10 +14543,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "sine is a preposition. The final letters are not a noun or verb ending.",
@@ -15754,10 +14556,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -15770,10 +14569,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -15802,11 +14598,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -15866,9 +14658,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -15881,11 +14671,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -15943,11 +14729,7 @@ const FORM_VOCABULARY = {
     "principalParts": "spectō, spectāre, spectāvī, spectātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -15978,11 +14760,7 @@ const FORM_VOCABULARY = {
     "principalParts": "spērō, spērāre, spērāvī, spērātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -16013,11 +14791,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "5",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -16046,11 +14820,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "4",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -us noun is fourth declension. The subject form ends in -us, and the genitive singular is also -us.",
@@ -16110,10 +14880,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -16173,11 +14940,7 @@ const FORM_VOCABULARY = {
     "principalParts": "stō, stāre, stetī, statum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -16208,10 +14971,7 @@ const FORM_VOCABULARY = {
     "principalParts": "struō, struere, strūxī, strūctum",
     "partOfSpeech": "verb",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -16286,10 +15046,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -16318,10 +15075,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "sub is a preposition. The final letters are not a noun or verb ending.",
@@ -16365,11 +15119,7 @@ const FORM_VOCABULARY = {
     "principalParts": "sum, esse, fuī",
     "partOfSpeech": "verb",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -16424,11 +15174,7 @@ const FORM_VOCABULARY = {
     "principalParts": "superō, superāre, superāvī, superātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -16472,10 +15218,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -16562,11 +15305,7 @@ const FORM_VOCABULARY = {
     "principalParts": "taceō, tacēre, tacuī, tacitum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -16597,10 +15336,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -16629,9 +15365,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -16660,11 +15394,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -16693,11 +15423,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -16710,9 +15436,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -us noun is third-declension neuter. Here -us is the subject form for one thing, not the usual second-declension masculine ending.",
@@ -16741,11 +15465,7 @@ const FORM_VOCABULARY = {
     "principalParts": "teneō, tenēre, tenuī, tentum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -16807,10 +15527,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "tenus is a preposition. The final letters are not a noun or verb ending.",
@@ -16852,10 +15569,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -16884,11 +15598,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -16917,11 +15627,7 @@ const FORM_VOCABULARY = {
     "principalParts": "terreō, terrēre, terruī, territum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -16952,11 +15658,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -16969,9 +15671,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -17026,11 +15726,7 @@ const FORM_VOCABULARY = {
     "principalParts": "timeō, timēre, timuī",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -17194,9 +15890,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -17209,10 +15903,7 @@ const FORM_VOCABULARY = {
     "principalParts": "trahō, trahere, trāxī, tractum",
     "partOfSpeech": "verb",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -17243,10 +15934,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "preposition",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "trans is a preposition. The final letters are not a noun or verb ending.",
@@ -17259,11 +15947,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -17347,10 +16031,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -17363,11 +16044,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -17380,10 +16057,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -17412,10 +16086,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -17428,10 +16099,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -17444,10 +16112,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -17460,10 +16125,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -17518,10 +16180,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -17550,11 +16209,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adverb",
     "declension": "",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -17567,10 +16222,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -17599,11 +16251,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -17629,10 +16277,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -17661,10 +16306,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -17693,10 +16335,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -17725,11 +16364,7 @@ const FORM_VOCABULARY = {
     "principalParts": "valeō, valēre, valuī, valitum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -17760,10 +16395,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -17792,10 +16424,7 @@ const FORM_VOCABULARY = {
     "principalParts": "vehō, vehere, vēxī, vectum",
     "partOfSpeech": "verb",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -17855,10 +16484,7 @@ const FORM_VOCABULARY = {
     "principalParts": "veniō, venīre, vēnī, ventum",
     "partOfSpeech": "verb",
     "declension": "4",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -17889,10 +16515,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -us is the subject form for one person or thing.",
@@ -17950,9 +16573,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -17981,11 +16602,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -18014,9 +16631,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -18058,10 +16673,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -18119,10 +16731,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "adjective",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -18148,9 +16757,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -is word is a third-declension subject form for one person or thing, not the ending that means “to/for/by/with the ___s.”",
@@ -18176,10 +16783,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -18237,10 +16841,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -18282,11 +16883,7 @@ const FORM_VOCABULARY = {
     "principalParts": "videō, vidēre, vīdī, vīsum",
     "partOfSpeech": "verb",
     "declension": "2",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -18330,10 +16927,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -18362,10 +16956,7 @@ const FORM_VOCABULARY = {
     "principalParts": "vincō, vincere, vīcī, victum",
     "partOfSpeech": "verb",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -18425,10 +17016,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In second-declension nouns, -um can mark the object or a neuter subject.",
@@ -18457,10 +17045,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "2",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -18473,9 +17058,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -18577,10 +17160,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "1",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "In first-declension nouns, -a is the basic subject form: “the ___” performs the action.",
@@ -18638,10 +17218,7 @@ const FORM_VOCABULARY = {
     "principalParts": "vīvō, vīvere, vīxī, vīctum",
     "partOfSpeech": "verb",
     "declension": "3",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -18672,11 +17249,7 @@ const FORM_VOCABULARY = {
     "principalParts": "vocō, vocāre, vocāvī, vocātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -18707,11 +17280,7 @@ const FORM_VOCABULARY = {
     "principalParts": "volō, velle, voluī, volātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -18753,10 +17322,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "",
-    "formBooks": [
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Form glossary; vowel length unmarked",
     "reliable": true,
     "endingHint": "",
@@ -18769,11 +17335,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -18802,11 +17364,7 @@ const FORM_VOCABULARY = {
     "principalParts": "volnerō, volnerāre, vulnerāvī, volnerātum",
     "partOfSpeech": "verb",
     "declension": "1",
-    "formBooks": [
-      "First Form",
-      "Second Form",
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "",
@@ -18837,9 +17395,7 @@ const FORM_VOCABULARY = {
     "principalParts": "",
     "partOfSpeech": "noun",
     "declension": "3",
-    "formBooks": [
-      "Third Form"
-    ],
+    "formBooks": [],
     "macronSource": "Lewis & Short via Morpheus",
     "reliable": true,
     "endingHint": "This -us noun is third-declension neuter. Here -us is the subject form for one thing, not the usual second-declension masculine ending.",

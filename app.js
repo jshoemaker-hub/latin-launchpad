@@ -2266,11 +2266,6 @@ function dictionaryDisplay(word) {
   return word.dictionaryEntry || word.principalParts || word.latin || '';
 }
 
-function formBookLabel(word) {
-  const books = Array.isArray(word?.formBooks) ? word.formBooks : [];
-  return books.map((book) => `In ${book}`).join(' · ');
-}
-
 function grammarTeachingMarkup(lesson, startOpen) {
   const paragraphs = Array.isArray(lesson?.explain) ? lesson.explain.filter(Boolean) : [];
   const examples = Array.isArray(lesson?.examples) ? lesson.examples.filter((item) => item && item.latin) : [];
@@ -5393,7 +5388,7 @@ function renderVocabularyList() {
   const query = (elements.vocabularySearch?.value || '').trim().toLowerCase();
   const words = StudyState.words
     .filter((word) => {
-      const searchable = `${word.latin} ${dictionaryDisplay(word)} ${formBookLabel(word)} ${word.english} ${word.note || ''}`.toLowerCase();
+      const searchable = `${word.latin} ${dictionaryDisplay(word)} ${word.english} ${word.note || ''}`.toLowerCase();
       return !query || searchable.includes(query);
     })
     .sort((a, b) => a.latin.localeCompare(b.latin));
@@ -5405,7 +5400,6 @@ function renderVocabularyList() {
           <div>
             <strong>${escapeHtml(dictionaryDisplay(word))}</strong>
             ${dictionaryDisplay(word) !== word.latin ? `<small>Headword: ${escapeHtml(word.latin)}</small>` : ''}
-            ${formBookLabel(word) ? `<small class="form-book-label">${escapeHtml(formBookLabel(word))}</small>` : ''}
             ${word.isPhrase ? '<small>Phrase card</small>' : ''}
           </div>
           <span>${escapeHtml(word.english)}</span>
@@ -5435,7 +5429,6 @@ function getDictionaryWords() {
       if (word.english && !entry.meanings.includes(word.english)) entry.meanings.push(word.english);
       if (!entry.dictionaryEntry && word.dictionaryEntry) entry.dictionaryEntry = word.dictionaryEntry;
       if (!entry.principalParts && word.principalParts) entry.principalParts = word.principalParts;
-      if ((!entry.formBooks || entry.formBooks.length === 0) && word.formBooks) entry.formBooks = word.formBooks.slice();
     });
   });
   return [...entries.values()]
@@ -5448,7 +5441,7 @@ function renderDictionary() {
   const grade = elements.dictionaryGradeFilter.value;
   const words = getDictionaryWords().filter((word) => {
     const matchesGrade = grade === 'all' || word.levels.includes(Number(grade));
-    const searchable = `${word.latin} ${dictionaryDisplay(word)} ${formBookLabel(word)} ${word.english}`.toLowerCase();
+    const searchable = `${word.latin} ${dictionaryDisplay(word)} ${word.english}`.toLowerCase();
     return matchesGrade && (!query || searchable.includes(query));
   });
   elements.dictionaryCount.textContent = `${words.length} ${words.length === 1 ? 'entry' : 'entries'}`;
@@ -5459,7 +5452,6 @@ function renderDictionary() {
           <div>
             <strong>${escapeHtml(dictionaryDisplay(word))}</strong>
             ${dictionaryDisplay(word) !== word.latin ? `<small>Headword: ${escapeHtml(word.latin)}</small>` : ''}
-            ${formBookLabel(word) ? `<small class="form-book-label">${escapeHtml(formBookLabel(word))}</small>` : ''}
           </div>
           <span>${escapeHtml(word.english)}</span>
           <span class="dictionary-grades" aria-label="Used in years ${word.levels.join(', ')}">
@@ -5518,7 +5510,6 @@ function renderFlashcard() {
       <span class="flashcard-kicker">${StudyState.showingAnswer ? 'Meaning' : (word.isPhrase ? 'Latin phrase' : 'Latin')}</span>
       <strong>${escapeHtml(StudyState.showingAnswer ? word.english : word.latin)}</strong>
       ${StudyState.showingAnswer && dictionaryDisplay(word) !== word.english ? `<small>${escapeHtml(dictionaryDisplay(word))}</small>` : ''}
-      ${StudyState.showingAnswer && formBookLabel(word) ? `<small class="form-book-label">${escapeHtml(formBookLabel(word))}</small>` : ''}
       ${StudyState.showingAnswer && word.isPhrase && word.note ? `<small>${escapeHtml(word.note)}</small>` : ''}
       ${StudyState.showingAnswer ? '' : renderSpeakButton(word.latin, 'Listen', 0.74)}
       ${renderFlashcardRating(word)}
