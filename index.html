@@ -86,6 +86,7 @@
           <button type="button" id="assessmentsButton" class="pill-button">Tests &amp; Quizzes</button>
           <button type="button" id="annualExamButton" class="pill-button">Annual Exam Study</button>
           <button type="button" id="romanWorldButton" class="pill-button">Roman world</button>
+          <button type="button" id="wordBuildingButton" class="pill-button">Word building</button>
           <button type="button" id="dashboardButton" class="pill-button">Dashboard</button>
           <button type="button" id="accountButton" class="pill-button">Account</button>
           <button type="button" id="contactButton" class="pill-button">Contact</button>
@@ -195,6 +196,10 @@
                 <button id="homePracticeRomanWorld" type="button" class="practice-link">
                   <strong>Roman world</strong>
                   <span>Myth, daily life, a history timeline, and a map drill.</span>
+                </button>
+                <button id="homePracticeWordBuilding" type="button" class="practice-link">
+                  <strong>Word building</strong>
+                  <span>Derivatives, prefixes, and suffixes from this year\'s words.</span>
                 </button>
                 <button id="homePracticeStudy" type="button" class="practice-link">
                   <strong>Vocabulary Study</strong>
@@ -620,6 +625,20 @@
         </div>
       </section>
 
+      <section id="wordBuildingPage" class="page">
+        <div class="card">
+          <div class="page-header">
+            <div>
+              <span class="section-kicker">Word building</span>
+              <h2>Derivatives, prefixes, and suffixes</h2>
+              <p>Practice English words that grow from the Latin in the year you choose.</p>
+            </div>
+            <button id="wordBuildingBackButton" type="button" class="secondary-button">Home</button>
+          </div>
+          <div id="wordBuildingStage"></div>
+        </div>
+      </section>
+
       <section id="codeCheckPage" class="page">
         <div class="card">
           <div class="page-header">
@@ -708,13 +727,17 @@
   <script defer src="gap-vocabulary.js"></script>
   <script defer src="form-vocabulary.js"></script>
   <script defer src="latin-phrases.js"></script>
+  <script defer src="latin-phrases-more.js"></script>
   <script defer src="latin-stories.js"></script>
   <script defer src="latin-culture.js"></script>
   <script defer src="roman-world.js"></script>
+  <script defer src="latin-authors.js"></script>
   <script defer src="classroom-latin.js"></script>
   <script defer src="learning-objectives.js"></script>
   <script defer src="grammar-lessons.js"></script>
   <script defer src="grammar-lessons-syntax.js"></script>
+  <script defer src="grammar-lessons-extra.js"></script>
+  <script defer src="word-building.js"></script>
   <script defer src="annual-exam-questions.js"></script>
   <script defer src="annual-exam-questions-more.js"></script>
   <script defer src="annual-exam-questions-upper.js"></script>

@@ -363,6 +363,7 @@ function renderRomanWorld() {
     ['myth', 'Mythology'],
     ['life', 'Daily life'],
     ['history', 'History'],
+    ['authors', 'Authors'],
     ['map', 'Map']
   ];
   const cards = RomanWorldState.tab === 'map'

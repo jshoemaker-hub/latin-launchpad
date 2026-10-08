@@ -1,0 +1,25 @@
+// Original author and genre cards. Biographical details are the familiar public outline, written for students.
+
+const AUTHOR_CARDS = [
+  cultureCard('authors', 'author-caesar', 'Caesar', 'Caesar', 'Julius Caesar wrote the Commentaries on the Gallic War in a plain, fast style. He is both a general and a prose author.', 'Students meet him again when they read about Gaul, the Rubicon, and the end of the Republic.', ['dux', 'bellum'], 6, 'C'),
+  cultureCard('authors', 'author-cicero', 'Cicero', 'Cicero', 'Cicero was Rome\'s most famous orator. His speeches against Catiline and his letters are the usual doorway into his Latin.', 'A speech aims to persuade. That is the genre to pair with his name.', ['orator', 'lex'], 6, 'C'),
+  cultureCard('authors', 'author-livy', 'Livy', 'Livius', 'Livy wrote a history of Rome from the founding, Ab urbe condita. Much of it is lost, and the early books keep the old legends.', 'He is a historian, not a poet of the Trojan War.', ['urbs', 'liber'], 6, 'L'),
+  cultureCard('authors', 'author-nepos', 'Nepos', 'Nepos', 'Cornelius Nepos wrote short lives of famous commanders. The sentences are simpler than Livy or Tacitus, so he is often a first biographer.', 'Biography is the genre: one life, told in brief.', ['dux', 'vita'], 6, 'N'),
+  cultureCard('authors', 'author-pliny', 'Pliny the Younger', 'Plinius', 'Pliny the Younger wrote letters, including the one that describes the eruption of Vesuvius. His uncle, Pliny the Elder, compiled a huge encyclopedia of nature.', 'The two Plinies are easy to mix up: the nephew writes letters, the uncle collects facts.', ['epistula', 'natura'], 7, 'P'),
+  cultureCard('authors', 'author-tacitus', 'Tacitus', 'Tacitus', 'Tacitus wrote sharp history of the early Empire, including the Annals and the Histories. He is harder, and darker in tone, than Livy.', 'He belongs with the emperors, not with the kings of early Rome.', ['imperator', 'liber'], 8, 'T'),
+  cultureCard('authors', 'author-suetonius', 'Suetonius', 'Suetonius', 'Suetonius wrote the Lives of the Caesars, biography arranged by topics such as family, habits, and death.', 'He is a biographer of emperors. Tacitus, writing about the same years, is a historian.', ['imperator', 'vita'], 8, 'S'),
+  cultureCard('authors', 'author-vergil', 'Vergil', 'Vergilius', 'Vergil wrote the Aeneid, Rome\'s epic of Aeneas, and also the Eclogues and the Georgics. The Aeneid is dactylic hexameter.', 'Epic is the long narrative poem. Pastoral and farming poems are his other genres.', ['carmen', 'urbs'], 6, 'V'),
+  cultureCard('authors', 'author-ovid', 'Ovid', 'Ovidius', 'Ovid wrote the Metamorphoses, a hexameter poem of transformations, and love poetry in elegiac couplets. He is lighter in tone than Vergil.', 'Hexameter and elegiac couplet are the two meters to hang on his name.', ['carmen', 'amor'], 6, 'O'),
+  cultureCard('authors', 'author-catullus', 'Catullus', 'Catullus', 'Catullus wrote short personal poems: love, insult, and grief. Many are in lyric meters or elegiac couplets, not in epic hexameter.', 'He is a poet of one person\'s feelings, not a historian.', ['carmen', 'amor'], 7, 'C'),
+  cultureCard('authors', 'author-horace', 'Horace', 'Horatius Flaccus', 'Horace wrote odes, satires, and the letter that says a poem should mix the useful and the sweet. He is not the Horatius who held the bridge.', 'The shared name is a trap. The poet\'s full name is Quintus Horatius Flaccus.', ['carmen', 'poeta'], 7, 'H'),
+  cultureCard('authors', 'author-elegy', 'Elegiac Poets', 'Elegia', 'Tibullus and Propertius wrote elegies, poems of love in couplets. An elegiac couplet is a hexameter line followed by a pentameter line.', 'Ovid uses the same couplet for love poetry. Vergil\'s epic does not.', ['carmen', 'amor'], 7, 'E'),
+  cultureCard('authors', 'author-plautus', 'Plautus and Terence', 'Plautus', 'Plautus and Terence wrote comedies for the stage. The plots are Greek-style households, mistaken identity, and clever enslaved characters who save the day.', 'Comedy is the genre. It is meant to be heard in a theater, not read as history.', ['ludus', 'fabula'], 7, 'P'),
+  cultureCard('authors', 'author-juvenal', 'Juvenal and Martial', 'Iuvenalis', 'Juvenal wrote satires, angry poems about city life. Martial wrote epigrams, very short pointed poems.', 'Satire criticizes. An epigram ends on a sting.', ['urbs', 'carmen'], 8, 'I'),
+  cultureCard('authors', 'author-homer', 'Homer', 'Homerus', 'Homer is the Greek poet of the Iliad and the Odyssey. Roman students met Troy and Ulysses through him, and Vergil answers him in the Aeneid.', 'He writes Greek epic. He is a model, not a Roman author.', ['carmen', 'bellum'], 6, 'H'),
+  cultureCard('authors', 'author-sappho', 'Sappho', 'Sappho', 'Sappho was a Greek poet from Lesbos. Her lyric poems survive mostly in fragments, and later Romans treated her as the great woman poet.', 'Lesbos on the map and Sappho the poet belong together.', ['carmen', 'femina'], 7, 'S')
+];
+
+AUTHOR_CARDS.forEach((card) => {
+  CULTURE_UNIT_CARDS.push(card);
+  LATIN_CULTURE_CARDS.push(card);
+});

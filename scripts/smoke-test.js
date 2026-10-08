@@ -12,12 +12,16 @@ const cssPath = path.join(root, 'styles.css');
 const wordBanksPath = path.join(root, 'word-banks.js');
 const referenceIndexPath = path.join(root, 'reference-vocabulary.js');
 const phrasesPath = path.join(root, 'latin-phrases.js');
+const morePhrasesPath = path.join(root, 'latin-phrases-more.js');
 const storiesPath = path.join(root, 'latin-stories.js');
 const culturePath = path.join(root, 'latin-culture.js');
 const romanWorldPath = path.join(root, 'roman-world.js');
+const authorsPath = path.join(root, 'latin-authors.js');
 const classroomPath = path.join(root, 'classroom-latin.js');
 const grammarPath = path.join(root, 'grammar-lessons.js');
 const syntaxGrammarPath = path.join(root, 'grammar-lessons-syntax.js');
+const extraGrammarPath = path.join(root, 'grammar-lessons-extra.js');
+const wordBuildingPath = path.join(root, 'word-building.js');
 const annualExamQuestionPaths = [
   path.join(root, 'annual-exam-questions.js'),
   path.join(root, 'annual-exam-questions-more.js'),
@@ -49,7 +53,7 @@ function assert(condition, message) {
 }
 
 function checkJavaScriptSyntax() {
-  [appPath, analyticsPath, contactFormPath, path.join(root, 'assignment-links.js'), wordBanksPath, referenceIndexPath, path.join(root, 'core-frequency.js'), path.join(root, 'core-forms.js'), path.join(root, 'gap-vocabulary.js'), path.join(root, 'form-vocabulary.js'), phrasesPath, storiesPath, culturePath, romanWorldPath, classroomPath, grammarPath, syntaxGrammarPath, path.join(root, 'flashcards.js'), ...annualExamQuestionPaths].forEach((filePath) => {
+  [appPath, analyticsPath, contactFormPath, path.join(root, 'assignment-links.js'), wordBanksPath, referenceIndexPath, path.join(root, 'core-frequency.js'), path.join(root, 'core-forms.js'), path.join(root, 'gap-vocabulary.js'), path.join(root, 'form-vocabulary.js'), phrasesPath, morePhrasesPath, storiesPath, culturePath, romanWorldPath, authorsPath, classroomPath, grammarPath, syntaxGrammarPath, extraGrammarPath, wordBuildingPath, path.join(root, 'flashcards.js'), ...annualExamQuestionPaths].forEach((filePath) => {
     new vm.Script(fs.readFileSync(filePath, 'utf8'), { filename: filePath });
   });
 }
@@ -57,7 +61,7 @@ function checkJavaScriptSyntax() {
 function loadContentData() {
   const context = {};
   vm.createContext(context);
-  [wordBanksPath, referenceIndexPath, phrasesPath, culturePath, romanWorldPath, classroomPath, grammarPath, syntaxGrammarPath].forEach((filePath) => {
+  [wordBanksPath, referenceIndexPath, phrasesPath, morePhrasesPath, culturePath, romanWorldPath, authorsPath, classroomPath, grammarPath, syntaxGrammarPath, extraGrammarPath].forEach((filePath) => {
     const source = fs.readFileSync(filePath, 'utf8');
     vm.runInContext(source, context, { filename: filePath });
   });
@@ -93,11 +97,11 @@ function checkContentData() {
   assertUniqueIds(GRAMMAR_LESSONS, 'grammar lesson');
   assertUniqueIds([...GRAMMAR_LESSONS, ...SYNTAX_GRAMMAR_LESSONS], 'grammar lesson');
 
-  assert(LATIN_PHRASES.length === 94, `Expected 94 phrases, found ${LATIN_PHRASES.length}`);
-  assert(LATIN_CULTURE_CARDS.length === 119, `Expected 119 culture cards, found ${LATIN_CULTURE_CARDS.length}`);
+  assert(LATIN_PHRASES.length === 144, `Expected 144 phrases, found ${LATIN_PHRASES.length}`);
+  assert(LATIN_CULTURE_CARDS.length === 135, `Expected 135 culture cards, found ${LATIN_CULTURE_CARDS.length}`);
   assert(CLASSROOM_LATIN_PHRASES.length === 40, `Expected 40 classroom phrases, found ${CLASSROOM_LATIN_PHRASES.length}`);
   assert(GRAMMAR_LESSONS.length === 23, `Expected 23 grammar lessons, found ${GRAMMAR_LESSONS.length}`);
-  assert(SYNTAX_GRAMMAR_LESSONS.length === 15, `Expected 15 syntax grammar lessons, found ${SYNTAX_GRAMMAR_LESSONS.length}`);
+  assert(SYNTAX_GRAMMAR_LESSONS.length === 17, `Expected 17 syntax grammar lessons, found ${SYNTAX_GRAMMAR_LESSONS.length}`);
 
   const referenceWords = Object.values(REFERENCE_VOCABULARY_BY_GRADE).flat();
   assert(referenceWords.length === 76, `Expected 76 reference vocabulary entries, found ${referenceWords.length}`);
