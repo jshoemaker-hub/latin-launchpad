@@ -1298,6 +1298,11 @@ input {
   .roman-map-stage {
     width: 1400px;
   }
+
+  .roman-map-stage.is-zoomed .roman-map-dot span {
+    font-size: 12px;
+    padding: 0 3px;
+  }
 }
 
 @media (min-width: 800px) {

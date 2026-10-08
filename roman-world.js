@@ -479,8 +479,8 @@ function mapLabelAnchors(extended) {
     { x: 20, y: -8, align: 'left' },
     { x: -20, y: 8, align: 'right' }
   ];
-  if (!extended) return anchors;
-  [34, 50, 68, 86].forEach((radius) => {
+  const radii = extended ? [32, 48, 66, 84] : [30, 46, 62];
+  radii.forEach((radius) => {
     for (let step = 0; step < 8; step += 1) {
       const angle = -Math.PI / 2 + step * (Math.PI / 4);
       const cos = Math.cos(angle);
@@ -525,7 +525,7 @@ function italyMapBounds() {
   });
   return {
     minX: Math.max(0, minX - 64),
-    maxX: Math.min(1000, maxX + 72),
+    maxX: Math.min(1000, maxX + 90),
     minY: Math.max(0, minY - 52),
     maxY: Math.min(640, maxY + 58)
   };
@@ -565,7 +565,7 @@ function fitMapLabels() {
     const baseLeft = sea.style.left;
     const baseTop = sea.style.top;
     let placed = false;
-    for (let radius = 0; radius <= 36 && !placed; radius += 12) {
+    for (let radius = 0; radius <= 48 && !placed; radius += 12) {
       const steps = radius === 0 ? 1 : 8;
       for (let step = 0; step < steps && !placed; step += 1) {
         const angle = step * (Math.PI / 4);
@@ -577,7 +577,7 @@ function fitMapLabels() {
         const box = { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
         const inside = box.left >= stageRect.left + 2 && box.top >= stageRect.top + 2
           && box.right <= stageRect.right - 2 && box.bottom <= stageRect.bottom - 2;
-        if (!inside || taken.some((other) => mapRectsOverlap(box, other, 5))) continue;
+        if (!inside || taken.some((other) => mapRectsOverlap(box, other, 8))) continue;
         taken.push(box);
         placed = true;
       }
@@ -590,22 +590,30 @@ function fitMapLabels() {
     }
   });
   const rank = { mediterranean: 0, waters: 1, lands: 2, italy: 3, poetry: 4 };
-  const anchors = mapLabelAnchors(extended);
+  const boost = { italia: 0, graecia: 1, roma: 2, athenae: 3, macedonia: 4, carthago: 5, sicilia: 6, brundisium: 7 };
+  const nearAnchors = mapLabelAnchors(false);
+  const farAnchors = mapLabelAnchors(true);
   const labels = [...stage.querySelectorAll('.roman-map-dot')].filter((dot) => {
     return !dot.classList.contains('is-dim') && !dot.classList.contains('is-sea-named') && dot.querySelector('span');
   }).map((dot) => {
     const place = ROMAN_MAP_PLACES.find((item) => item.id === dot.getAttribute('data-map-place'));
     return { dot, place, span: dot.querySelector('span') };
   }).filter((item) => item.place).sort((a, b) => {
-    return (rank[a.place.group] - rank[b.place.group])
-      || (a.place.latin.length - b.place.latin.length)
-      || a.place.id.localeCompare(b.place.id);
+    const boostGap = (boost[a.place.id] ?? 20) - (boost[b.place.id] ?? 20);
+    if (boostGap) return boostGap;
+    const groupGap = rank[a.place.group] - rank[b.place.group];
+    if (groupGap) return groupGap;
+    const lengthGap = extended
+      ? b.place.latin.length - a.place.latin.length
+      : a.place.latin.length - b.place.latin.length;
+    return lengthGap || a.place.id.localeCompare(b.place.id);
   });
   const scaleX = stageRect.width / 1000;
   const scaleY = stageRect.height / 640;
   labels.forEach((item) => {
     let chosen = null;
     let chosenAnchor = null;
+    const anchors = extended || Object.prototype.hasOwnProperty.call(boost, item.place.id) ? farAnchors : nearAnchors;
     anchors.forEach((anchor) => {
       if (chosen) return;
       applyMapLabelAnchor(item.span, anchor);
@@ -749,10 +757,11 @@ function applyMapFrame() {
         frame.scrollLeft = 0;
         frame.scrollTop = 0;
       } else {
-        const italy = ROMAN_MAP_PLACES.find((place) => place.id === 'italia');
-        if (italy) {
-          frame.scrollLeft = Math.max(0, frame.scrollWidth * (italy.x / 1000) - frame.clientWidth / 2);
-          frame.scrollTop = Math.max(0, frame.scrollHeight * (italy.y / 640) - frame.clientHeight / 2);
+        const focusId = RomanWorldState.mapGroup === 'mediterranean' ? 'graecia' : 'italia';
+        const focus = ROMAN_MAP_PLACES.find((place) => place.id === focusId);
+        if (focus) {
+          frame.scrollLeft = Math.max(0, frame.scrollWidth * (focus.x / 1000) - frame.clientWidth / 2);
+          frame.scrollTop = Math.max(0, frame.scrollHeight * (focus.y / 640) - frame.clientHeight / 2);
         }
       }
     }
