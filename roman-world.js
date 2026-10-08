@@ -202,10 +202,10 @@ const ROMAN_MAP_PLACES = [
 const ROMAN_MAP_GEOMETRY = {
   width: 1000,
   height: 640,
-  padX: 34.0,
-  padY: 28.0,
-  contentW: 932.0,
-  contentH: 584.0,
+  padX: 18.0,
+  padY: 16.0,
+  contentW: 964.0,
+  contentH: 608.0,
   lon0: 20.0,
   lat0: 39.0,
   lat1: 31.0,
@@ -216,8 +216,8 @@ const ROMAN_MAP_GEOMETRY = {
   projMaxY: 0.40238531,
   checkLon: 12.496,
   checkLat: 41.903,
-  checkX: 418.91,
-  checkY: 322.85,
+  checkX: 416.13,
+  checkY: 322.96,
   imageWidth: 2800,
   imageHeight: 1792,
   image: 'assets/roman-map.webp'
@@ -420,6 +420,20 @@ function startMapRound() {
   RomanWorldState.mapNote = 'Click the dot for the place named below.';
 }
 
+const ROMAN_MAP_SEA_TITLES = [
+  { latin: 'Oceanus Atlanticus', lon: -8.4, lat: 42.5 },
+  { latin: 'Mare Nostrum', lon: 16.2, lat: 33.6 },
+  { latin: 'Mare Internum', lon: 27.2, lat: 34.6 }
+];
+
+function mapSeaTitleMarkup() {
+  if (!RomanWorldState.mapLabels) return '';
+  return ROMAN_MAP_SEA_TITLES.map((title) => {
+    const point = romanMapProject(title.lon, title.lat);
+    return `<span class="roman-map-sea" style="left:${(point.x / 10).toFixed(2)}%;top:${(point.y / 6.4).toFixed(2)}%">${escapeHtml(title.latin)}</span>`;
+  }).join('');
+}
+
 function mapLeaderMarkup() {
   const marks = ROMAN_MAP_PLACES.map((place) => {
     if (Math.hypot(place.tapX - place.x, place.tapY - place.y) < 8) return '';
@@ -445,6 +459,7 @@ function renderRomanMap() {
     if (hidden) classes.push('is-dim');
     if (place.tapX > 860) classes.push('is-label-left');
     if (place.tapY < 40) classes.push('is-label-below');
+    if (place.group === 'waters') classes.push('is-water');
     if (Math.hypot(place.tapX - place.x, place.tapY - place.y) >= 8) classes.push('has-leader');
     return `
       <button
@@ -468,10 +483,11 @@ function renderRomanMap() {
         <div class="roman-map-stage">
           <img class="roman-map-image" src="${ROMAN_MAP_GEOMETRY.image}" width="${ROMAN_MAP_GEOMETRY.imageWidth}" height="${ROMAN_MAP_GEOMETRY.imageHeight}" alt="Parchment map of the lands around the Mediterranean, from the Atlantic to Mesopotamia, with coastlines, rivers, lakes, and shaded relief.">
           ${mapLeaderMarkup()}
+          ${mapSeaTitleMarkup()}
           ${dots}
         </div>
       </div>
-      <p class="roman-map-pan">Slide the map to look around the sea.</p>
+      <p class="roman-map-pan">Slide the map to look around Italy and the rest of the sea.</p>
       <p class="roman-map-credit">Coastlines, rivers, and lakes from Natural Earth, public domain. Relief from NOAA ETOPO5, public domain. Each place is drawn at its latitude and longitude.</p>
     </section>
   `;
@@ -479,19 +495,28 @@ function renderRomanMap() {
 
 function captureMapScroll() {
   const frame = document.querySelector('#romanWorldStage .roman-map-frame');
-  if (frame) RomanWorldState.mapScroll = frame.scrollLeft;
+  if (!frame) return;
+  RomanWorldState.mapScroll = { left: frame.scrollLeft, top: frame.scrollTop };
 }
 
 function restoreMapScroll() {
   const frame = document.querySelector('#romanWorldStage .roman-map-frame');
   if (!frame) return;
-  if (typeof RomanWorldState.mapScroll === 'number') {
-    frame.scrollLeft = RomanWorldState.mapScroll;
+  if (RomanWorldState.mapScroll && typeof RomanWorldState.mapScroll.left === 'number') {
+    frame.scrollLeft = RomanWorldState.mapScroll.left;
+    frame.scrollTop = RomanWorldState.mapScroll.top;
     return;
   }
-  const rome = ROMAN_MAP_PLACES.find((place) => place.id === 'roma');
-  if (!rome) return;
-  frame.scrollLeft = Math.max(0, frame.scrollWidth * (rome.x / 1000) - frame.clientWidth / 2);
+  const fits = frame.scrollWidth <= frame.clientWidth + 2 && frame.scrollHeight <= frame.clientHeight + 2;
+  if (fits) {
+    frame.scrollLeft = 0;
+    frame.scrollTop = 0;
+    return;
+  }
+  const italy = ROMAN_MAP_PLACES.find((place) => place.id === 'italia');
+  if (!italy) return;
+  frame.scrollLeft = Math.max(0, frame.scrollWidth * (italy.x / 1000) - frame.clientWidth / 2);
+  frame.scrollTop = Math.max(0, frame.scrollHeight * (italy.y / 640) - frame.clientHeight / 2);
 }
 
 function renderRomanWorld() {

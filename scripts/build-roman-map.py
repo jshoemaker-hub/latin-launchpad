@@ -38,8 +38,8 @@ LOGICAL_H = 640.0
 SCALE = 2.8
 WIDTH = int(LOGICAL_W * SCALE)
 HEIGHT = int(LOGICAL_H * SCALE)
-PAD_X = 34.0
-PAD_Y = 28.0
+PAD_X = 18.0
+PAD_Y = 16.0
 CONTENT_W = LOGICAL_W - PAD_X * 2
 CONTENT_H = LOGICAL_H - PAD_Y * 2
 
@@ -178,10 +178,61 @@ def rings_of(shape):
         yield shape.points[parts[index]:parts[index + 1]]
 
 
+def boundary_edges(point):
+    lon, lat = point
+    edges = set()
+    if abs(lon - LON_MIN) < 1e-4:
+        edges.add('west')
+    if abs(lon - LON_MAX) < 1e-4:
+        edges.add('east')
+    if abs(lat - LAT_MIN) < 1e-4:
+        edges.add('south')
+    if abs(lat - LAT_MAX) < 1e-4:
+        edges.add('north')
+    return edges
+
+
+def densify_boundary(points, step=0.12):
+    """Follow clip edges in lon/lat so a parallel does not become one straight chord.
+
+    The closing edge matters: Sutherland-Hodgman leaves the ring unclosed, and
+    that last segment is often the long edge along the map border.
+    """
+    if len(points) < 2:
+        return points
+    sequence = list(points)
+    if sequence[0] != sequence[-1]:
+        sequence.append(sequence[0])
+    output = [sequence[0]]
+    for current in sequence[1:]:
+        previous = output[-1]
+        shared = boundary_edges(previous) & boundary_edges(current)
+        span = max(abs(current[0] - previous[0]), abs(current[1] - previous[1]))
+        if shared and span > step:
+            pieces = int(span / step)
+            for index in range(1, pieces):
+                t = index / pieces
+                output.append((
+                    previous[0] + t * (current[0] - previous[0]),
+                    previous[1] + t * (current[1] - previous[1])
+                ))
+        output.append(current)
+    if len(output) > 1 and output[-1] == output[0]:
+        output.pop()
+    return output
+
+
+def signed_area(ring):
+    area = 0.0
+    for (x1, y1), (x2, y2) in zip(ring, ring[1:] + ring[:1]):
+        area += x1 * y2 - x2 * y1
+    return area / 2.0
+
+
 def project_ring(ring):
     if len(ring) < 3 or not bbox_hits(ring):
         return []
-    clipped = clip_ring(thin(ring, 0.012))
+    clipped = densify_boundary(clip_ring(thin(ring, 0.012)))
     if len(clipped) < 3:
         return []
     lon = np.array([point[0] for point in clipped])
@@ -264,9 +315,9 @@ def build(land_path, rivers_path, lakes_path, etopo_path):
     elevation[inside] = sample_etopo(grid, lat[inside], lon[inside])
     shade = hillshade(elevation)
 
-    paper = np.array([236, 224, 196], dtype=np.float32)
-    shallow = np.array([198, 206, 190], dtype=np.float32)
-    deep = np.array([118, 142, 140], dtype=np.float32)
+    paper = np.array([244, 224, 186], dtype=np.float32)
+    shallow = np.array([190, 198, 176], dtype=np.float32)
+    deep = np.array([112, 136, 126], dtype=np.float32)
     depth = np.clip(-elevation / 4200.0, 0, 1) ** 0.65
     sea = shallow * (1 - depth[..., None]) + deep * depth[..., None]
     sea *= (0.94 + 0.06 * shade)[..., None]
@@ -277,29 +328,44 @@ def build(land_path, rivers_path, lakes_path, etopo_path):
     raster = Image.fromarray(np.clip(image, 0, 255).astype(np.uint8), 'RGB')
     draw = ImageDraw.Draw(raster)
 
-    land_fill = (214, 186, 132)
-    land_rings = []
+    land_fill = (226, 196, 142)
+    land_shells = []
+    land_holes = []
     land_reader = shapefile.Reader(str(land_path))
     for shape in land_reader.shapes():
-        for ring in rings_of(shape):
+        source_rings = list(rings_of(shape))
+        if not source_rings:
+            continue
+        shell_area = max((signed_area(ring) for ring in source_rings), key=lambda value: abs(value))
+        shell_sign = 1 if shell_area >= 0 else -1
+        for ring in source_rings:
+            area = signed_area(ring)
+            if abs(area) < 0.05:
+                continue
             projected = project_ring(ring)
-            if len(projected) >= 3:
-                land_rings.append(projected)
+            if len(projected) < 3:
+                continue
+            if area == 0 or (area > 0) == (shell_sign > 0):
+                land_shells.append(projected)
                 draw_ring(draw, projected, fill=land_fill)
-    print(f'land rings drawn: {len(land_rings)}')
+            else:
+                land_holes.append(projected)
+    print(f'land shells {len(land_shells)}, holes {len(land_holes)}')
 
     land_mask = np.zeros((HEIGHT, WIDTH), dtype=bool)
     mask_image = Image.new('L', (WIDTH, HEIGHT), 0)
     mask_draw = ImageDraw.Draw(mask_image)
-    for ring in land_rings:
+    for ring in land_shells:
         mask_draw.polygon(ring, fill=255)
+    for ring in land_holes:
+        mask_draw.polygon(ring, fill=0)
     land_mask = np.array(mask_image) > 0
     land_mask &= inside
 
     high = np.clip(elevation / 2800.0, 0, 1)
-    parchment = np.array([236, 214, 168], dtype=np.float32)
-    upland = np.array([154, 112, 68], dtype=np.float32)
-    lowland = np.array([214, 196, 150], dtype=np.float32)
+    parchment = np.array([244, 214, 164], dtype=np.float32)
+    upland = np.array([168, 116, 64], dtype=np.float32)
+    lowland = np.array([228, 202, 148], dtype=np.float32)
     tint = lowland * (1 - high[..., None]) + upland * high[..., None]
     tint = tint * 0.28 + parchment * 0.72
     relief = 0.84 + (shade - 0.5) * 0.28
@@ -309,8 +375,18 @@ def build(land_path, rivers_path, lakes_path, etopo_path):
     raster = Image.fromarray(np.clip(colored, 0, 255).astype(np.uint8), 'RGB')
     draw = ImageDraw.Draw(raster)
 
-    lake_color = (168, 184, 176)
-    lake_edge = (92, 108, 108)
+    hole_sea = sea.copy()
+    hole_mask_image = Image.new('L', (WIDTH, HEIGHT), 0)
+    hole_draw = ImageDraw.Draw(hole_mask_image)
+    for ring in land_holes:
+        hole_draw.polygon(ring, fill=255)
+    hole_mask = (np.array(hole_mask_image) > 0) & inside
+    colored[hole_mask] = hole_sea[hole_mask]
+    raster = Image.fromarray(np.clip(colored, 0, 255).astype(np.uint8), 'RGB')
+    draw = ImageDraw.Draw(raster)
+
+    lake_color = (176, 190, 174)
+    lake_edge = (120, 108, 84)
     lakes_drawn = 0
     lake_reader = shapefile.Reader(str(lakes_path))
     lake_fields = {field[0] for field in lake_reader.fields}
@@ -330,7 +406,7 @@ def build(land_path, rivers_path, lakes_path, etopo_path):
             lakes_drawn += 1
     print(f'lakes drawn: {lakes_drawn}')
 
-    river_color = (78, 108, 116)
+    river_color = (90, 118, 116)
     rivers_drawn = 0
     river_reader = shapefile.Reader(str(rivers_path))
     for shape, record in zip(river_reader.shapes(), river_reader.records()):
@@ -339,7 +415,7 @@ def build(land_path, rivers_path, lakes_path, etopo_path):
         for ring in rings_of(shape):
             if len(ring) < 2 or not bbox_hits(ring):
                 continue
-            clipped = clip_ring(thin(ring, 0.02))
+            clipped = densify_boundary(clip_ring(thin(ring, 0.02)))
             if len(clipped) < 2:
                 continue
             lon = np.array([point[0] for point in clipped])
@@ -347,29 +423,31 @@ def build(land_path, rivers_path, lakes_path, etopo_path):
             x, y = project(lon, lat)
             px, py = to_pixel(x, y)
             line = list(zip(px.tolist(), py.tolist()))
-            draw.line(line, fill=river_color, width=max(2, int(round(SCALE * 0.8))))
+            draw.line(line, fill=river_color, width=2)
             rivers_drawn += 1
     print(f'river parts drawn: {rivers_drawn}')
 
-    coast = (86, 58, 36)
-    for ring in land_rings:
-        draw.line(ring + [ring[0]], fill=coast, width=max(2, int(round(SCALE))))
+    coast = (122, 84, 48)
+    halo = (196, 164, 116)
+    for ring in land_shells + land_holes:
+        closed = ring + [ring[0]]
+        draw.line(closed, fill=halo, width=4)
+    for ring in land_shells + land_holes:
+        draw.line(ring + [ring[0]], fill=coast, width=1)
 
     vignette = np.array(raster).astype(np.float32)
     yy = np.linspace(-1, 1, HEIGHT)[:, None]
     xx = np.linspace(-1, 1, WIDTH)[None, :]
-    falloff = np.clip(1 - (xx * xx * 0.10 + yy * yy * 0.12), 0.86, 1)
+    falloff = np.clip(1 - (xx * xx * 0.06 + yy * yy * 0.08), 0.92, 1)
     vignette *= falloff[..., None]
     raster = Image.fromarray(np.clip(vignette, 0, 255).astype(np.uint8), 'RGB')
-    raster = raster.filter(ImageFilter.SMOOTH)
     draw = ImageDraw.Draw(raster)
 
-    margin = int(10 * SCALE)
-    outer = (92, 58, 32)
-    inner = (232, 214, 176)
-    draw.rectangle((6, 6, WIDTH - 7, HEIGHT - 7), outline=outer, width=max(4, int(3 * SCALE)))
-    draw.rectangle((margin, margin, WIDTH - margin - 1, HEIGHT - margin - 1), outline=inner, width=max(2, int(SCALE)))
-    draw.rectangle((margin + 5, margin + 5, WIDTH - margin - 6, HEIGHT - margin - 6), outline=outer, width=2)
+    outer = (110, 72, 40)
+    inner = (232, 206, 160)
+    draw.rectangle((8, 8, WIDTH - 9, HEIGHT - 9), outline=outer, width=3)
+    draw.rectangle((14, 14, WIDTH - 15, HEIGHT - 15), outline=inner, width=2)
+    draw.rectangle((18, 18, WIDTH - 19, HEIGHT - 19), outline=outer, width=1)
 
     draw_compass(draw)
     draw_cartouche(draw)
