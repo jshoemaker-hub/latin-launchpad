@@ -251,6 +251,7 @@ function renderCultureUnitCard(card) {
         <h3>${escapeHtml(card.title)}</h3>
         <p class="culture-latin">${escapeHtml(card.latinTitle)}</p>
         <p>${escapeHtml(card.summary)}</p>
+        ${card.example && card.example.latin ? `<blockquote class="culture-example"><p lang="la">${escapeHtml(card.example.latin)}</p><p>${escapeHtml(card.example.english || '')}</p><p class="culture-example-source">${escapeHtml(card.example.source || '')}</p></blockquote>` : ''}
         <p class="culture-connection">${escapeHtml(card.connection)}</p>
       </div>
     </article>
@@ -364,6 +365,7 @@ function renderRomanWorld() {
     ['life', 'Daily life'],
     ['history', 'History'],
     ['authors', 'Authors'],
+    ['values', 'Values'],
     ['map', 'Map']
   ];
   const cards = RomanWorldState.tab === 'map'
