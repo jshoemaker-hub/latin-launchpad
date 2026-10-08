@@ -6,8 +6,8 @@ const GRADE_STORE = 'latinLaunchpadGrade';
 const SESSION_LENGTHS = [5, 10, 15];
 const CURRICULUM_LEVELS = [
   { grade: 3, year: 1, label: 'Year 1', book: 'Foundation: words, myth, maps, sayings', lessonGrades: [3] },
-  { grade: 4, year: 2, label: 'Year 2', book: 'Foundation: words, myth, maps, sayings', lessonGrades: [4] },
-  { grade: 5, year: 3, label: 'Year 3', book: 'Foundation: words, myth, maps, sayings', lessonGrades: [5] },
+  { grade: 4, year: 2, label: 'Year 2', book: 'Foundation: words, verbs, and little phrases', lessonGrades: [4] },
+  { grade: 5, year: 3, label: 'Year 3', book: 'Foundation: sentences and first case jobs', lessonGrades: [5] },
   { grade: 6, year: 4, label: 'Year 4A', book: 'Grade 6 · Introduction', lessonGrades: [6] },
   { grade: 7, year: 4, label: 'Year 4B', book: 'Grade 7 · Beginning', lessonGrades: [7] },
   { grade: 8, year: 4, label: 'Year 4C', book: 'Grade 8 · Intermediate', lessonGrades: [8] }

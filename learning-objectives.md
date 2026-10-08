@@ -3,9 +3,9 @@
 Scope and sequence for grades 3–8, grounded in classical Latin pedagogy as presented in D'Ooge's *Latin for Beginners* and Mueller's *Latin 101: Learning a Classical Language*. Objectives spiral: each grade reinforces the prior year and adds one or two new structural ideas.
 
 ## Design principles
-- Years 1–3 (grades 3–5) are the foundation: vocabulary, myth, maps, derivatives, mottoes, and spoken Latin. Formal exam practice starts in Year 4.
-- Year 4 splits by grade. Year 4A (grade 6) aims at Introduction, Year 4B (grade 7) at Beginning and Beginning Reading, and Year 4C (grade 8) at Intermediate. Intermediate Reading and the Advanced levels are an optional track after Year 4.
-- The grammar pace stays where it is: lower elementary focuses on recognition, pronunciation, and vocabulary, and grades 6–8 still introduce morphology, then syntax, then short reading.
+- Years 1–3 (grades 3–5) stay a foundation in vocabulary, myth, maps, and spoken Latin. Years 2 and 3 also introduce the first grammar, one pattern at a time, by recognition. Formal exam practice starts in Year 4.
+- Year 4 splits by grade. Year 4A (grade 6) reviews that first grammar and aims at Introduction. Year 4B (grade 7) aims at Beginning and Beginning Reading. Year 4C (grade 8) aims at Intermediate. Intermediate Reading and the Advanced levels are an optional track after Year 4.
+- Grades 4 and 5 are not asked to produce full charts. Five-case production, every conjugation, the future, the passive, participles, and the subjunctive stay in Years 4A–4C. A class that starts Latin in middle school still meets the full Introduction grammar in Year 4A.
 - Every grade includes a culture/derivatives strand so students see Latin in the world around them.
 - Mastery is measured by what a student can do, not what they can recite.
 
@@ -33,8 +33,8 @@ By the end of grade 3, a student can:
 By the end of grade 4, a student can:
 - distinguish singular and plural endings for 1st-declension (*-a / -ae*) and 2nd-declension (*-us / -i*, *-um / -a*) nouns in the nominative
 - conjugate the present tense of one 1st-conjugation verb (*amo, amas, amat, amamus, amatis, amant*) and recognize the pattern in others
-- read and translate 2–3 word sentences of the form *puella cantat*, *pueri currunt*
-- name the gender (masculine, feminine, neuter) of about 30 studied nouns
+- read *ad*, *in*, *cum*, and *ex* as whole phrases, without naming the case yet
+- use *ego*, *tu*, *nos*, *vos*, *quis*, and *quid*
 - connect at least 25 English derivatives to their Latin roots
 
 **Vocabulary target:** ~75 words cumulative, including ~20 1st-conjugation verbs.
@@ -46,12 +46,16 @@ By the end of grade 4, a student can:
 **Theme:** Who is doing what to whom.
 
 By the end of grade 5, a student can:
-- identify the subject (nominative) and direct object (accusative) in a Latin sentence
-- decline a 1st-declension noun in the singular through nominative, genitive, dative, accusative, ablative
-- conjugate the present tense of 1st- and 2nd-conjugation verbs (*amo, moneo*) and recognize the difference in stem vowel
-- translate simple Latin sentences with subject + verb + object (*magister discipulum laudat*)
-- recognize the irregular verb *sum* in the present (*sum, es, est, sumus, estis, sunt*) and use it in copulative sentences (*puella bona est*)
-- explain how word order in Latin differs from English
+- identify the subject and the direct object in a Latin sentence
+- recognize *of* and *to* on *puella* and *servus*, and read phrases for with, from, in, and without
+- recognize *was* and *used to* on an *amo*-type verb (*-bat*) and on *erat* and *erant*
+- tell a command to one person from the to-form (*ama* and *amare*)
+- match *bonus* to *puella*, *puer*, and *donum* as subject or receiver
+- recognize the subject and receiver forms of *rex*, *miles*, *pater*, and *nomen*
+- count *unus* through *decem* and read the numerals I–X
+- recognize *sum* in the present and use it in a short sentence
+
+Full five-case production, the future, and a complete third-declension chart are not grade 5 goals.
 
 **Vocabulary target:** ~110 words cumulative; first 25 adjectives (1st/2nd declension).
 
@@ -62,13 +66,16 @@ By the end of grade 5, a student can:
 **Theme:** Cases and tenses; reading short stories.
 
 By the end of grade 6, a student can:
-- fully decline 1st- and 2nd-declension nouns in both numbers and identify all five cases by ending
+- review the five case jobs and decline 1st- and 2nd-declension nouns, including endings that Years 2 and 3 only met inside a phrase
 - explain the basic use of each case: nominative (subject), genitive (possession), dative (indirect object), accusative (direct object), ablative (with/by/from)
-- conjugate *amo* and *moneo* in the present, imperfect, and future active indicative
-- conjugate *sum* in the present, imperfect, and future
-- make a 1st/2nd-declension adjective agree with its noun in gender, number, and case
+- review adjective agreement and which case a preposition takes
+- review singular commands and to-forms, and add the plural command
+- form the have-done tense of *amo* only (*amavi*, *amavisti*, *amavit*, *amavimus*, *amavistis*, *amaverunt*)
+- use *possum*, *potes*, *potest*, *noli*, and *nolite*
+- call a person by name (*Marce*, *puella*, *fili*)
 - translate short narrative passages (3–5 sentences) about Roman daily life or simple myth
-- identify ~40 English derivatives across vocabulary studied so far
+
+The future of every conjugation, the passive, and participles are not Year 4A goals. A student who starts Latin in this year still learns the five case jobs here, because the Year 2 and 3 lessons are recognition, not a full chart.
 
 **Vocabulary target:** ~175 words cumulative; introduce 3rd-conjugation verbs (*rego*) in present only.
 
