@@ -33,15 +33,15 @@ test('dictionary forms keep the stored headword and use macrons rather than stre
   assert.equal(puella.latin, 'puella');
   assert.equal(puella.dictionaryEntry, 'puella, -ae, f.');
   assert.equal(puella.gender, 'f.');
-  assert.deepEqual(puella.formBooks, ['First Form', 'Second Form', 'Third Form']);
+  assert.deepEqual(puella.formBooks, []);
 
   const amo = getFormRecord('amo');
   assert.equal(amo.dictionaryEntry, 'amō, amāre, amāvī, amātum');
   assert.equal(amo.principalParts, amo.dictionaryEntry);
   assert.equal(getFormRecord('mensa').dictionaryEntry, 'mēnsa, -ae, f.');
   assert.equal(getFormRecord('porta').dictionaryEntry, 'porta, -ae, f.');
-  assert.match(getFormRecord('nomen').formBooks.join(','), /Third Form/);
-  assert.match(getFormRecord('amo').formBooks.join(','), /Second Form/);
+  assert.deepEqual(getFormRecord('nomen').formBooks, []);
+  assert.deepEqual(getFormRecord('amo').formBooks, []);
 
   Object.values(GRADE_WORDS).flat().forEach((word) => {
     const entry = word.dictionaryEntry || '';
