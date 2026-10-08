@@ -994,6 +994,47 @@ input {
   font-weight: 700;
 }
 
+.grammar-teaching {
+  margin: 0 0 16px;
+  border: 1px solid #fed7aa;
+  border-radius: 16px;
+  background: #fff7ed;
+  padding: 12px 16px 16px;
+}
+
+.grammar-teaching summary {
+  cursor: pointer;
+  font-weight: 800;
+  color: #9a3412;
+}
+
+.grammar-teaching p {
+  margin: 10px 0 0;
+  line-height: 1.45;
+}
+
+.grammar-example-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.grammar-example {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.grammar-example strong {
+  font-size: 1.05rem;
+}
+
+.grammar-example small {
+  color: #9a3412;
+}
+
 .phrase-focus {
   margin-top: 18px;
 }
