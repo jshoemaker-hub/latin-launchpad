@@ -1153,6 +1153,11 @@ input {
   stroke-width: 1.2;
 }
 
+.roman-map-leaders line.is-label-leader {
+  stroke: rgba(92, 58, 32, 0.45);
+  stroke-width: 0.7;
+}
+
 .roman-map-leaders circle {
   fill: #7c2d12;
   stroke: #fffaf0;
@@ -1161,6 +1166,7 @@ input {
 
 .roman-map-dot {
   position: absolute;
+  z-index: 1;
   width: 44px;
   height: 44px;
   margin: -22px 0 0 -22px;
@@ -1200,8 +1206,8 @@ input {
 
 .roman-map-dot span {
   position: absolute;
-  left: 30px;
-  top: 8px;
+  left: calc(50% + 14px);
+  top: calc(50% - 16px);
   padding: 1px 5px;
   border-radius: 6px;
   background: rgba(252, 244, 224, 0.92);
@@ -1213,34 +1219,50 @@ input {
   line-height: 1.2;
   white-space: nowrap;
   pointer-events: none;
+  opacity: 0;
 }
 
-.roman-map-dot.is-label-left span {
-  left: auto;
-  right: 30px;
+.roman-map-dot.is-labeled,
+.roman-map-dot.is-revealed,
+.roman-map-dot:hover,
+.roman-map-dot:focus-visible {
+  z-index: 5;
 }
 
-.roman-map-dot.is-label-below span {
-  top: 32px;
+.roman-map-dot.is-labeled span,
+.roman-map-dot.is-revealed span,
+.roman-map-dot:hover span,
+.roman-map-dot:focus-visible span {
+  opacity: 1;
+}
+
+.roman-map-dot.is-revealed span,
+.roman-map-dot:hover span,
+.roman-map-dot:focus-visible span {
+  background: rgba(252, 244, 224, 0.96);
+  box-shadow: 0 1px 2px rgba(92, 58, 32, 0.28);
 }
 
 .roman-map-dot.is-water span,
 .roman-map-sea {
   background: transparent;
+  box-shadow: none;
   color: #3f534c;
   font-size: 16px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   text-shadow: 0 0 3px rgba(244, 228, 196, 0.95), 0 0 3px rgba(244, 228, 196, 0.95);
 }
 
 .roman-map-sea {
+  z-index: 3;
   position: absolute;
   transform: translate(-50%, -50%);
   font-family: Palatino, "Palatino Linotype", Georgia, "Times New Roman", serif;
   font-style: italic;
   font-weight: 600;
+  line-height: 1.05;
+  text-align: center;
   white-space: nowrap;
-  pointer-events: none;
 }
 
 .roman-map-dot.is-dim {

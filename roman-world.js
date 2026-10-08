@@ -328,7 +328,8 @@ const RomanWorldState = {
   mapAsked: 0,
   mapLabels: false,
   mapNote: '',
-  mapScroll: null
+  mapScroll: null,
+  mapReframe: false
 };
 
 function romanWorldShuffle(items) {
@@ -420,18 +421,224 @@ function startMapRound() {
   RomanWorldState.mapNote = 'Click the dot for the place named below.';
 }
 
+// One painted name for the central sea. Mare Nostrum and Mare Mediterraneum stay in its note.
+// Aegaeum and Pontus Euxinus sit in open water, clear of Delos and Colchis.
+// spreadX/spreadY are the label's half-size in logical units on a fitted desktop map.
 const ROMAN_MAP_SEA_TITLES = [
-  { latin: 'Oceanus Atlanticus', lon: -8.4, lat: 42.5 },
-  { latin: 'Mare Nostrum', lon: 16.2, lat: 33.6 },
-  { latin: 'Mare Internum', lon: 27.2, lat: 34.6 }
+  { latin: 'Oceanus Atlanticus', lon: -8.8, lat: 44.5, spreadX: 68, spreadY: 14 },
+  {
+    latin: 'Mare Internum',
+    lon: 20.0,
+    lat: 33.2,
+    note: 'Also called Mare Nostrum and Mare Mediterraneum.',
+    spreadX: 54,
+    spreadY: 14
+  },
+  {
+    latin: 'Mare Aegaeum',
+    lines: ['Mare', 'Aegaeum'],
+    lon: 29.0,
+    lat: 35.2,
+    placeId: 'aegaeum',
+    spreadX: 38,
+    spreadY: 22
+  },
+  {
+    latin: 'Pontus Euxinus',
+    lines: ['Pontus', 'Euxinus'],
+    lon: 37.6,
+    lat: 42.7,
+    placeId: 'euxinus',
+    spreadX: 34,
+    spreadY: 20
+  }
 ];
 
+const ROMAN_MAP_SEA_LABEL_IDS = new Set(
+  ROMAN_MAP_SEA_TITLES.map((title) => title.placeId).filter(Boolean).concat(['mediterraneum'])
+);
+
 function mapSeaTitleMarkup() {
-  if (!RomanWorldState.mapLabels) return '';
+  if (!RomanWorldState.mapLabels || RomanWorldState.mapGroup === 'italy') return '';
   return ROMAN_MAP_SEA_TITLES.map((title) => {
     const point = romanMapProject(title.lon, title.lat);
-    return `<span class="roman-map-sea" style="left:${(point.x / 10).toFixed(2)}%;top:${(point.y / 6.4).toFixed(2)}%">${escapeHtml(title.latin)}</span>`;
+    const text = (title.lines || [title.latin]).map((line) => escapeHtml(line)).join('<br>');
+    const note = title.note ? ` title="${escapeHtml(title.note)}"` : '';
+    return `<span class="roman-map-sea" style="left:${(point.x / 10).toFixed(2)}%;top:${(point.y / 6.4).toFixed(2)}%"${note}>${text}</span>`;
   }).join('');
+}
+
+function mapLabelAnchors(extended) {
+  const anchors = [
+    { x: 14, y: -16, align: 'left' },
+    { x: -14, y: -16, align: 'right' },
+    { x: 0, y: -20, align: 'center' },
+    { x: 0, y: 12, align: 'center' },
+    { x: 16, y: 4, align: 'left' },
+    { x: -16, y: 4, align: 'right' },
+    { x: 20, y: -8, align: 'left' },
+    { x: -20, y: 8, align: 'right' }
+  ];
+  if (!extended) return anchors;
+  [34, 50, 68, 86].forEach((radius) => {
+    for (let step = 0; step < 8; step += 1) {
+      const angle = -Math.PI / 2 + step * (Math.PI / 4);
+      const cos = Math.cos(angle);
+      anchors.push({
+        x: Math.round(Math.cos(angle) * radius),
+        y: Math.round(Math.sin(angle) * radius),
+        align: cos > 0.35 ? 'left' : cos < -0.35 ? 'right' : 'center'
+      });
+    }
+  });
+  return anchors;
+}
+
+function applyMapLabelAnchor(span, anchor) {
+  span.style.right = 'auto';
+  span.style.transform = 'none';
+  span.style.top = `calc(50% + ${anchor.y}px)`;
+  if (anchor.align === 'right') {
+    span.style.left = 'auto';
+    span.style.right = `calc(50% - ${anchor.x}px)`;
+    return;
+  }
+  span.style.left = `calc(50% + ${anchor.x}px)`;
+  if (anchor.align === 'center') span.style.transform = 'translateX(-50%)';
+}
+
+function mapRectsOverlap(a, b, pad) {
+  return a.left < b.right + pad && a.right > b.left - pad && a.top < b.bottom + pad && a.bottom > b.top - pad;
+}
+
+function italyMapBounds() {
+  const places = ROMAN_MAP_PLACES.filter((place) => place.group === 'italy');
+  let minX = 1000;
+  let maxX = 0;
+  let minY = 640;
+  let maxY = 0;
+  places.forEach((place) => {
+    minX = Math.min(minX, place.x, place.tapX);
+    maxX = Math.max(maxX, place.x, place.tapX);
+    minY = Math.min(minY, place.y, place.tapY);
+    maxY = Math.max(maxY, place.y, place.tapY);
+  });
+  return {
+    minX: Math.max(0, minX - 64),
+    maxX: Math.min(1000, maxX + 72),
+    minY: Math.max(0, minY - 52),
+    maxY: Math.min(640, maxY + 58)
+  };
+}
+
+function fitMapLabels() {
+  const stage = document.querySelector('#romanWorldStage .roman-map-stage');
+  if (!stage) return;
+  const leaderGroup = stage.querySelector('.roman-map-label-leaders');
+  if (leaderGroup) {
+    while (leaderGroup.firstChild) leaderGroup.removeChild(leaderGroup.firstChild);
+  }
+  stage.querySelectorAll('.roman-map-dot').forEach((dot) => {
+    dot.classList.remove('is-labeled');
+    const span = dot.querySelector('span');
+    if (!span) return;
+    span.style.left = '';
+    span.style.right = '';
+    span.style.top = '';
+    span.style.transform = '';
+  });
+  if (!RomanWorldState.mapLabels) return;
+  const stageRect = stage.getBoundingClientRect();
+  if (stageRect.width < 40) return;
+  const frame = stage.closest('.roman-map-frame');
+  const frameRect = frame ? frame.getBoundingClientRect() : stageRect;
+  const extended = stage.classList.contains('is-zoomed');
+  const limit = extended ? frameRect : stageRect;
+  const taken = [];
+  stage.querySelectorAll('.roman-map-dot').forEach((dot) => {
+    const rect = dot.getBoundingClientRect();
+    const cx = (rect.left + rect.right) / 2;
+    const cy = (rect.top + rect.bottom) / 2;
+    taken.push({ left: cx - 9, top: cy - 9, right: cx + 9, bottom: cy + 9 });
+  });
+  stage.querySelectorAll('.roman-map-sea').forEach((sea) => {
+    const baseLeft = sea.style.left;
+    const baseTop = sea.style.top;
+    let placed = false;
+    for (let radius = 0; radius <= 36 && !placed; radius += 12) {
+      const steps = radius === 0 ? 1 : 8;
+      for (let step = 0; step < steps && !placed; step += 1) {
+        const angle = step * (Math.PI / 4);
+        const dx = Math.round(Math.cos(angle) * radius);
+        const dy = Math.round(Math.sin(angle) * radius);
+        sea.style.left = dx ? `calc(${baseLeft} + ${dx}px)` : baseLeft;
+        sea.style.top = dy ? `calc(${baseTop} + ${dy}px)` : baseTop;
+        const rect = sea.getBoundingClientRect();
+        const box = { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
+        const inside = box.left >= stageRect.left + 2 && box.top >= stageRect.top + 2
+          && box.right <= stageRect.right - 2 && box.bottom <= stageRect.bottom - 2;
+        if (!inside || taken.some((other) => mapRectsOverlap(box, other, 5))) continue;
+        taken.push(box);
+        placed = true;
+      }
+    }
+    if (!placed) {
+      sea.style.left = baseLeft;
+      sea.style.top = baseTop;
+      const rect = sea.getBoundingClientRect();
+      taken.push({ left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom });
+    }
+  });
+  const rank = { mediterranean: 0, waters: 1, lands: 2, italy: 3, poetry: 4 };
+  const anchors = mapLabelAnchors(extended);
+  const labels = [...stage.querySelectorAll('.roman-map-dot')].filter((dot) => {
+    return !dot.classList.contains('is-dim') && !dot.classList.contains('is-sea-named') && dot.querySelector('span');
+  }).map((dot) => {
+    const place = ROMAN_MAP_PLACES.find((item) => item.id === dot.getAttribute('data-map-place'));
+    return { dot, place, span: dot.querySelector('span') };
+  }).filter((item) => item.place).sort((a, b) => {
+    return (rank[a.place.group] - rank[b.place.group])
+      || (a.place.latin.length - b.place.latin.length)
+      || a.place.id.localeCompare(b.place.id);
+  });
+  const scaleX = stageRect.width / 1000;
+  const scaleY = stageRect.height / 640;
+  labels.forEach((item) => {
+    let chosen = null;
+    let chosenAnchor = null;
+    anchors.forEach((anchor) => {
+      if (chosen) return;
+      applyMapLabelAnchor(item.span, anchor);
+      const rect = item.span.getBoundingClientRect();
+      const box = { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
+      const inside = box.left >= limit.left - 2 && box.top >= limit.top - 2
+        && box.right <= limit.right + 2 && box.bottom <= limit.bottom + 2;
+      if (!inside || taken.some((other) => mapRectsOverlap(box, other, 3))) return;
+      chosen = box;
+      chosenAnchor = anchor;
+    });
+    if (!chosen) {
+      applyMapLabelAnchor(item.span, anchors[0]);
+      return;
+    }
+    item.dot.classList.add('is-labeled');
+    taken.push(chosen);
+    if (!leaderGroup || Math.hypot(chosenAnchor.x, chosenAnchor.y) < 24) return;
+    const left = (chosen.left - stageRect.left) / scaleX;
+    const top = (chosen.top - stageRect.top) / scaleY;
+    const right = (chosen.right - stageRect.left) / scaleX;
+    const bottom = (chosen.bottom - stageRect.top) / scaleY;
+    const x2 = Math.min(Math.max(item.place.tapX, left), right);
+    const y2 = Math.min(Math.max(item.place.tapY, top), bottom);
+    if (Math.hypot(x2 - item.place.tapX, y2 - item.place.tapY) < 3) return;
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('class', 'is-label-leader');
+    line.setAttribute('x1', item.place.tapX.toFixed(1));
+    line.setAttribute('y1', item.place.tapY.toFixed(1));
+    line.setAttribute('x2', x2.toFixed(1));
+    line.setAttribute('y2', y2.toFixed(1));
+    leaderGroup.appendChild(line);
+  });
 }
 
 function mapLeaderMarkup() {
@@ -439,7 +646,7 @@ function mapLeaderMarkup() {
     if (Math.hypot(place.tapX - place.x, place.tapY - place.y) < 8) return '';
     return `<line x1="${place.x.toFixed(1)}" y1="${place.y.toFixed(1)}" x2="${place.tapX.toFixed(1)}" y2="${place.tapY.toFixed(1)}"></line><circle cx="${place.x.toFixed(1)}" cy="${place.y.toFixed(1)}" r="2.4"></circle>`;
   }).join('');
-  return `<svg class="roman-map-leaders" viewBox="0 0 1000 640" aria-hidden="true">${marks}</svg>`;
+  return `<svg class="roman-map-leaders" viewBox="0 0 1000 640" aria-hidden="true">${marks}<g class="roman-map-label-leaders"></g></svg>`;
 }
 
 function renderRomanMap() {
@@ -457,10 +664,10 @@ function renderRomanMap() {
     const hidden = RomanWorldState.mapGroup !== 'all' && place.group !== RomanWorldState.mapGroup;
     const classes = ['roman-map-dot'];
     if (hidden) classes.push('is-dim');
-    if (place.tapX > 860) classes.push('is-label-left');
-    if (place.tapY < 40) classes.push('is-label-below');
     if (place.group === 'waters') classes.push('is-water');
+    if (ROMAN_MAP_SEA_LABEL_IDS.has(place.id)) classes.push('is-sea-named');
     if (Math.hypot(place.tapX - place.x, place.tapY - place.y) >= 8) classes.push('has-leader');
+    const label = RomanWorldState.mapLabels ? `<span>${escapeHtml(place.latin)}</span>` : '';
     return `
       <button
         type="button"
@@ -468,7 +675,8 @@ function renderRomanMap() {
         style="left:${(place.tapX / 10).toFixed(2)}%;top:${(place.tapY / 6.4).toFixed(2)}%"
         data-map-place="${escapeHtml(place.id)}"
         aria-label="${escapeHtml(place.english)}"
-      >${RomanWorldState.mapLabels ? `<span>${escapeHtml(place.latin)}</span>` : ''}</button>
+        title="${escapeHtml(place.latin)}"
+      >${label}</button>
     `;
   }).join('');
   return `
@@ -499,30 +707,64 @@ function captureMapScroll() {
   RomanWorldState.mapScroll = { left: frame.scrollLeft, top: frame.scrollTop };
 }
 
-function restoreMapScroll() {
+function applyMapFrame() {
   const frame = document.querySelector('#romanWorldStage .roman-map-frame');
-  if (!frame) return;
-  if (RomanWorldState.mapScroll && typeof RomanWorldState.mapScroll.left === 'number') {
-    frame.scrollLeft = RomanWorldState.mapScroll.left;
-    frame.scrollTop = RomanWorldState.mapScroll.top;
-    return;
+  const stage = frame && frame.querySelector('.roman-map-stage');
+  if (!frame || !stage) return;
+  const mobile = window.matchMedia('(max-width: 760px)').matches;
+  const column = frame.clientWidth;
+  const saved = RomanWorldState.mapScroll && typeof RomanWorldState.mapScroll.left === 'number';
+  if (RomanWorldState.mapGroup === 'italy' && column > 0) {
+    const height = mobile
+      ? Math.max(220, Math.round(window.innerHeight * 0.68))
+      : Math.round(column * 640 / 1000);
+    frame.style.height = `${height}px`;
+    frame.style.maxHeight = `${height}px`;
+    const bounds = italyMapBounds();
+    const spanX = Math.max(0.08, (bounds.maxX - bounds.minX) / 1000);
+    const spanY = Math.max(0.08, (bounds.maxY - bounds.minY) / 640);
+    const stageWidth = Math.min(column * 0.9 / spanX, height * 0.9 / spanY);
+    stage.style.width = `${Math.round(stageWidth)}px`;
+    stage.classList.add('is-zoomed');
+    if (saved) {
+      frame.scrollLeft = RomanWorldState.mapScroll.left;
+      frame.scrollTop = RomanWorldState.mapScroll.top;
+    } else {
+      const centerX = (bounds.minX + bounds.maxX) / 2 / 1000 * stageWidth;
+      const centerY = (bounds.minY + bounds.maxY) / 2 / 640 * (stageWidth * 640 / 1000);
+      frame.scrollLeft = Math.max(0, centerX - column / 2);
+      frame.scrollTop = Math.max(0, centerY - height / 2);
+    }
+  } else {
+    frame.style.height = '';
+    frame.style.maxHeight = '';
+    stage.style.width = '';
+    stage.classList.remove('is-zoomed');
+    if (saved) {
+      frame.scrollLeft = RomanWorldState.mapScroll.left;
+      frame.scrollTop = RomanWorldState.mapScroll.top;
+    } else {
+      const fits = frame.scrollWidth <= frame.clientWidth + 2 && frame.scrollHeight <= frame.clientHeight + 2;
+      if (fits) {
+        frame.scrollLeft = 0;
+        frame.scrollTop = 0;
+      } else {
+        const italy = ROMAN_MAP_PLACES.find((place) => place.id === 'italia');
+        if (italy) {
+          frame.scrollLeft = Math.max(0, frame.scrollWidth * (italy.x / 1000) - frame.clientWidth / 2);
+          frame.scrollTop = Math.max(0, frame.scrollHeight * (italy.y / 640) - frame.clientHeight / 2);
+        }
+      }
+    }
   }
-  const fits = frame.scrollWidth <= frame.clientWidth + 2 && frame.scrollHeight <= frame.clientHeight + 2;
-  if (fits) {
-    frame.scrollLeft = 0;
-    frame.scrollTop = 0;
-    return;
-  }
-  const italy = ROMAN_MAP_PLACES.find((place) => place.id === 'italia');
-  if (!italy) return;
-  frame.scrollLeft = Math.max(0, frame.scrollWidth * (italy.x / 1000) - frame.clientWidth / 2);
-  frame.scrollTop = Math.max(0, frame.scrollHeight * (italy.y / 640) - frame.clientHeight / 2);
+  fitMapLabels();
 }
 
 function renderRomanWorld() {
   const stage = document.getElementById('romanWorldStage');
   if (!stage) return;
-  captureMapScroll();
+  if (RomanWorldState.mapReframe) RomanWorldState.mapScroll = null;
+  else captureMapScroll();
   const tabs = [
     ['myth', 'Mythology'],
     ['life', 'Daily life'],
@@ -548,7 +790,7 @@ function renderRomanWorld() {
     ${extra}
     <div class="roman-world-grid">${cards}</div>
   `;
-  restoreMapScroll();
+  applyMapFrame();
 }
 
 function onRomanWorldClick(event) {
@@ -581,8 +823,10 @@ function onRomanWorldClick(event) {
   const group = event.target.closest('[data-map-group]');
   if (group) {
     RomanWorldState.mapGroup = group.getAttribute('data-map-group');
+    RomanWorldState.mapReframe = true;
     startMapRound();
     renderRomanWorld();
+    RomanWorldState.mapReframe = false;
     return;
   }
   const mapAction = event.target.closest('[data-map-action]');
@@ -593,6 +837,17 @@ function onRomanWorldClick(event) {
   }
   const dot = event.target.closest('[data-map-place]');
   if (dot) {
+    const parked = RomanWorldState.mapLabels
+      && !dot.classList.contains('is-dim')
+      && !dot.classList.contains('is-labeled')
+      && !dot.classList.contains('is-sea-named');
+    if (parked && !dot.classList.contains('is-revealed')) {
+      document.querySelectorAll('#romanWorldStage .roman-map-dot.is-revealed').forEach((el) => {
+        el.classList.remove('is-revealed');
+      });
+      dot.classList.add('is-revealed');
+      return;
+    }
     const target = RomanWorldState.mapQueue[RomanWorldState.mapIndex];
     if (!target) return;
     RomanWorldState.mapAsked += 1;
@@ -615,5 +870,14 @@ function bindRomanWorld() {
   if (stage && !stage.dataset.bound) {
     stage.dataset.bound = 'true';
     stage.addEventListener('click', onRomanWorldClick);
+    let mapResizeTimer = 0;
+    window.addEventListener('resize', () => {
+      if (RomanWorldState.tab !== 'map') return;
+      window.clearTimeout(mapResizeTimer);
+      mapResizeTimer = window.setTimeout(() => {
+        if (RomanWorldState.mapGroup === 'italy') RomanWorldState.mapScroll = null;
+        applyMapFrame();
+      }, 120);
+    });
   }
 }

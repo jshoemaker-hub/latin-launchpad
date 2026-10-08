@@ -13,14 +13,14 @@ function loadWorld() {
     vm.runInContext(fs.readFileSync(path.join(root, name), 'utf8'), context, { filename: name });
   });
   vm.runInContext(
-    'globalThis.__OUT = { cards: LATIN_CULTURE_CARDS, timeline: ROMAN_TIMELINE, places: ROMAN_MAP_PLACES, geometry: ROMAN_MAP_GEOMETRY, questions: ANNUAL_EXAM_QUESTIONS.filter((item) => String(item.id).startsWith("cult-")) };',
+    'globalThis.__OUT = { cards: LATIN_CULTURE_CARDS, timeline: ROMAN_TIMELINE, places: ROMAN_MAP_PLACES, geometry: ROMAN_MAP_GEOMETRY, seas: ROMAN_MAP_SEA_TITLES.map((title) => { const point = romanMapProject(title.lon, title.lat); return { latin: title.latin, note: title.note || "", placeId: title.placeId || "", x: point.x, y: point.y, hits: ROMAN_MAP_PLACES.filter((place) => Math.abs(place.tapX - point.x) < title.spreadX && Math.abs(place.tapY - point.y) < title.spreadY).map((place) => place.id) }; }), questions: ANNUAL_EXAM_QUESTIONS.filter((item) => String(item.id).startsWith("cult-")) };',
     context
   );
   return context.__OUT;
 }
 
 test('Roman-world units have cards, a timeline, a map, and bank questions', () => {
-  const { cards, timeline, places, questions } = loadWorld();
+  const { cards, timeline, places, questions, seas } = loadWorld();
   const units = cards.filter((card) => card.original);
   const myth = units.filter((card) => card.unit === 'myth');
   const life = units.filter((card) => card.unit === 'life');
@@ -72,6 +72,21 @@ test('Roman-world units have cards, a timeline, a map, and bank questions', () =
       assert.ok(gap >= 14, `${places[left].id} and ${places[right].id} taps are ${gap.toFixed(1)} apart`);
     }
   }
+
+  assert.equal(seas.length, 4);
+  const internum = seas.find((sea) => sea.latin === 'Mare Internum');
+  assert.ok(internum, 'central sea keeps a single painted name');
+  assert.match(internum.note, /Mare Nostrum/);
+  assert.match(internum.note, /Mare Mediterraneum/);
+  assert.equal(seas.some((sea) => sea.latin === 'Mare Nostrum' || sea.latin === 'Mare Mediterraneum'), false);
+  seas.forEach((sea) => {
+    assert.equal(sea.hits.length, 0, `${sea.latin} overlaps ${sea.hits.join(', ')}`);
+  });
+  const aegaeumSea = seas.find((sea) => sea.placeId === 'aegaeum');
+  const euxinusSea = seas.find((sea) => sea.placeId === 'euxinus');
+  assert.ok(Math.hypot(aegaeumSea.x - byId.delos.tapX, aegaeumSea.y - byId.delos.tapY) > 40);
+  assert.ok(Math.hypot(euxinusSea.x - byId.colchis.tapX, euxinusSea.y - byId.colchis.tapY) > 45);
+  assert.ok(Math.hypot(euxinusSea.x - byId.euxinus.tapX, euxinusSea.y - byId.euxinus.tapY) > 30);
 
   assert.equal(questions.length, 40);
   questions.forEach((question) => {
