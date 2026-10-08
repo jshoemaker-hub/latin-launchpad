@@ -528,6 +528,7 @@ const pages = {
   lesson: document.getElementById('lessonPage'),
   dashboard: document.getElementById('dashboardPage'),
   annualExam: document.getElementById('annualExamPage'),
+  romanWorld: document.getElementById('romanWorldPage'),
   resetPassword: document.getElementById('resetPasswordPage'),
   contact: document.getElementById('contactPage'),
   codeCheck: document.getElementById('codeCheckPage')
@@ -627,6 +628,9 @@ const elements = {
   dictionaryButton: document.getElementById('dictionaryButton'),
   assessmentsButton: document.getElementById('assessmentsButton'),
   annualExamButton: document.getElementById('annualExamButton'),
+  romanWorldButton: document.getElementById('romanWorldButton'),
+  romanWorldBackButton: document.getElementById('romanWorldBackButton'),
+  homePracticeRomanWorld: document.getElementById('homePracticeRomanWorld'),
   annualExamBackButton: document.getElementById('annualExamBackButton'),
   annualExamStage: document.getElementById('annualExamStage'),
   homePracticeAnnualExam: document.getElementById('homePracticeAnnualExam'),
@@ -1085,6 +1089,7 @@ function updateNavState(page) {
     dictionary: 'dictionaryButton',
     assessments: 'assessmentsButton',
     annualExam: 'annualExamButton',
+    romanWorld: 'romanWorldButton',
     dashboard: 'dashboardButton',
     account: 'accountButton',
     resetPassword: 'accountButton',
@@ -1097,6 +1102,7 @@ function updateNavState(page) {
     elements.dictionaryButton,
     elements.assessmentsButton,
     elements.annualExamButton,
+    elements.romanWorldButton,
     elements.dashboardButton,
     elements.accountButton,
     elements.contactButton
@@ -6229,6 +6235,12 @@ function annualExamLevelProgress(levelId) {
   return progress.levels[levelId] || { categoryStats: {}, exams: [] };
 }
 
+function showRomanWorld() {
+  if (typeof bindRomanWorld === 'function') bindRomanWorld();
+  if (typeof renderRomanWorld === 'function') renderRomanWorld();
+  showPage('romanWorld');
+}
+
 function showAnnualExam() {
   assignmentFocus = null;
   AnnualExamState.view = 'levels';
@@ -6805,6 +6817,9 @@ function setupEvents() {
   elements.dictionaryButton.addEventListener('click', showDictionary);
   elements.assessmentsButton.addEventListener('click', showAssessmentsOrOnboarding);
   elements.annualExamButton.addEventListener('click', showAnnualExam);
+  elements.romanWorldButton.addEventListener('click', showRomanWorld);
+  elements.romanWorldBackButton.addEventListener('click', showHomeOrWelcome);
+  elements.homePracticeRomanWorld.addEventListener('click', showRomanWorld);
   elements.annualExamBackButton.addEventListener('click', leaveAnnualExamView);
   elements.annualExamStage.addEventListener('click', handleAnnualExamClick);
   elements.homePracticeAnnualExam.addEventListener('click', showAnnualExam);

@@ -16,6 +16,7 @@ function loadNle() {
     'annual-exam-questions-advanced.js',
     'annual-exam-passages-long.js',
     'annual-exam-language.js',
+    'annual-exam-culture.js',
     'annual-exam.js'
   ].forEach((fileName) => {
     const filePath = path.resolve(__dirname, '..', fileName);
