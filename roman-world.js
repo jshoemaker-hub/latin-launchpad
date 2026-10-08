@@ -1,6 +1,6 @@
 // Original Roman-world units: mythology, daily life, history, and a classroom map.
 // Place dots use real latitudes and longitudes. scripts/build-roman-map.py
-// draws the parchment image from Natural Earth vectors and NOAA ETOPO5 relief.
+// draws the parchment image from Natural Earth vectors and NOAA ETOPO1 relief.
 
 function cultureCard(unit, id, title, latinTitle, summary, connection, linkedWords, minGrade, mark) {
   return {
@@ -566,7 +566,21 @@ function mapDetailAnchors() {
   return anchors;
 }
 
+function adjacentMapAnchors() {
+  return [
+    { x: 11, y: -13, align: 'left' },
+    { x: -11, y: -13, align: 'right' },
+    { x: 0, y: -16, align: 'center' },
+    { x: 0, y: 8, align: 'center' },
+    { x: 12, y: 2, align: 'left' },
+    { x: -12, y: 2, align: 'right' },
+    { x: 14, y: -4, align: 'left' },
+    { x: -14, y: 6, align: 'right' }
+  ];
+}
+
 function settleDetailDots(stage, view) {
+  if (stage.clientWidth < 560) return;
   const spanX = view.maxX - view.minX;
   const spanY = view.maxY - view.minY;
   const pxPer = stage.clientWidth / spanX;
@@ -718,7 +732,11 @@ function fitMapLabels() {
   labels.forEach((item) => {
     let chosen = null;
     let chosenAnchor = null;
-    const anchors = extended ? detailAnchors : Object.prototype.hasOwnProperty.call(boost, item.place.id) ? farAnchors : nearAnchors;
+    const anchors = stageRect.width < 560
+      ? adjacentMapAnchors()
+      : extended
+        ? detailAnchors
+        : Object.prototype.hasOwnProperty.call(boost, item.place.id) ? farAnchors : nearAnchors;
     anchors.forEach((anchor) => {
       if (chosen) return;
       applyMapLabelAnchor(item.span, anchor);
@@ -847,7 +865,7 @@ function renderRomanMap() {
         </div>
       </div>
       <p class="roman-map-pan"${view && view.replace ? ' hidden' : ''}>Slide the map to look around Italy and the rest of the sea.</p>
-      <p class="roman-map-credit">Coastlines, rivers, and lakes from Natural Earth, public domain. Relief from NOAA ETOPO5, public domain. Each place is drawn at its latitude and longitude.</p>
+      <p class="roman-map-credit">Coastlines, rivers, and lakes from Natural Earth, public domain. Relief from NOAA ETOPO1, public domain. Each place is drawn at its latitude and longitude.</p>
     </section>
   `;
 }
@@ -899,6 +917,14 @@ function applyMapFrame() {
     stage.style.width = `${Math.round(stageWidth)}px`;
     stage.style.aspectRatio = '';
     stage.classList.add('is-zoomed');
+    stage.querySelectorAll('.roman-map-dot').forEach((dot) => {
+      const place = ROMAN_MAP_PLACES.find((item) => item.id === dot.getAttribute('data-map-place'));
+      if (!place) return;
+      dot.style.left = `${(place.x / 10).toFixed(2)}%`;
+      dot.style.top = `${(place.y / 6.4).toFixed(2)}%`;
+      dot.classList.remove('has-leader');
+    });
+    stage.classList.add('is-true-dots');
     showSharpOverlay(stage, view);
     if (saved) {
       frame.scrollLeft = RomanWorldState.mapScroll.left;
@@ -1011,8 +1037,18 @@ function onRomanWorldClick(event) {
     renderRomanWorld();
     return;
   }
-  const dot = event.target.closest('[data-map-place]');
+  let dot = event.target.closest('[data-map-place]');
   if (dot) {
+    const candidates = [...document.querySelectorAll('#romanWorldStage .roman-map-dot:not(.is-offview)')];
+    let best = Infinity;
+    candidates.forEach((candidate) => {
+      const rect = candidate.getBoundingClientRect();
+      const distance = Math.hypot((rect.left + rect.right) / 2 - event.clientX, (rect.top + rect.bottom) / 2 - event.clientY);
+      if (distance < best) {
+        best = distance;
+        dot = candidate;
+      }
+    });
     const parked = RomanWorldState.mapLabels
       && !dot.classList.contains('is-dim')
       && !dot.classList.contains('is-labeled')

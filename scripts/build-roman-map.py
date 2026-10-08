@@ -2,20 +2,22 @@
 """Build the classroom map of the Roman world.
 
 Coastlines, rivers, and lakes are Natural Earth 1:10 million vectors.
-Relief is a hillshade of NOAA ETOPO5. Both sources are public domain.
+Relief is a hillshade of NOAA ETOPO1 (1 arc-minute, public domain), bilinearly
+resampled and lightly smoothed so a close view does not show the grid steps.
+ETOPO5 is still accepted if that is the file you pass.
 
   Natural Earth: https://www.naturalearthdata.com/about/terms-of-use/
-  ETOPO5: https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO5/
+  ETOPO1: https://www.ngdc.noaa.gov/mgg/global/global.html
 
 The script downloads nothing by itself. Pass the extracted shapefiles and the
-ETOPO5 grid, then it writes assets/roman-map.webp and refreshes the geometry
-block in roman-world.js.
+elevation grid, then it writes the parchment WebP files and refreshes the
+geometry block in roman-world.js.
 
   python3 scripts/build-roman-map.py \
     --land /tmp/ne-data/land/ne_10m_land.shp \
     --rivers /tmp/ne-data/rivers/ne_10m_rivers_lake_centerlines.shp \
     --lakes /tmp/ne-data/lakes/ne_10m_lakes.shp \
-    --etopo /tmp/ne-data/ETOPO5.DAT
+    --etopo /tmp/ne-data/etopo1_ice_g_i2.bin
 """
 
 from __future__ import annotations
@@ -49,6 +51,11 @@ LON0 = 20.0
 LAT0 = 39.0
 LAT1 = 31.0
 LAT2 = 47.0
+
+# Names drawn on the close Italy sheet. The full map keeps the longer list.
+ITALY_RIVER_NAMES = {
+    'po', 'fiume po', 'tiber', 'tevere', 'arno', 'fiume arno', 'rubicon', 'rubicone'
+}
 
 RIVER_NAMES = {
     'nile', 'rhine', 'rhone', 'rhône', 'danube', 'po', 'ebro', 'tiber',
@@ -248,10 +255,10 @@ def signed_area(ring):
     return area / 2.0
 
 
-def project_ring(ring):
+def project_ring(ring, minimum=0.012):
     if len(ring) < 3 or not bbox_hits(ring):
         return []
-    clipped = densify_boundary(clip_ring(thin(ring, 0.012)))
+    clipped = densify_boundary(clip_ring(thin(ring, minimum)))
     if len(clipped) < 3:
         return []
     lon = np.array([point[0] for point in clipped])
@@ -262,22 +269,81 @@ def project_ring(ring):
 
 
 def load_etopo(path):
-    grid = np.fromfile(path, dtype='>i2')
-    if grid.size != 2160 * 4320:
-        raise SystemExit(f'ETOPO5 grid has {grid.size} values, expected {2160 * 4320}')
-    return grid.reshape(2160, 4320)
+    size = Path(path).stat().st_size
+    etopo1 = 10801 * 21601 * 2
+    etopo5 = 2160 * 4320 * 2
+    if size == etopo1:
+        grid = np.memmap(path, dtype='<i2', mode='r', shape=(10801, 21601))
+        return {
+            'grid': grid,
+            'rows': 10801,
+            'cols': 21601,
+            'lat0': 90.0,
+            'lon0': -180.0,
+            'step': 1.0 / 60.0,
+            'name': 'ETOPO1'
+        }
+    if size == etopo5:
+        raw = np.fromfile(path, dtype='>i2')
+        return {
+            'grid': raw.reshape(2160, 4320),
+            'rows': 2160,
+            'cols': 4320,
+            'lat0': 90.0,
+            'lon0': 0.0,
+            'step': 5.0 / 60.0,
+            'name': 'ETOPO5'
+        }
+    raise SystemExit(f'{path} is {size} bytes, not an ETOPO1 or ETOPO5 grid')
 
 
-def sample_etopo(grid, lat, lon):
-    lon = np.where(lon < 0, lon + 360, lon)
-    col = np.mod(np.rint(lon / (5 / 60)).astype(int), 4320)
-    row = np.clip(np.rint((90 - lat) / (5 / 60)).astype(int), 0, 2159)
-    return grid[row, col].astype(np.float32)
+def sample_etopo(dem, lat, lon):
+    """Bilinear sample. Row 0 is the northern edge of the grid."""
+    if dem['name'] == 'ETOPO5':
+        lon = np.where(lon < 0, lon + 360, lon)
+        col = np.mod(np.rint(lon / dem['step']).astype(int), dem['cols'])
+        row = np.clip(np.rint((90 - lat) / dem['step']).astype(int), 0, dem['rows'] - 1)
+        return dem['grid'][row, col].astype(np.float32)
+    grid = dem['grid']
+    step = dem['step']
+    x = (lon - dem['lon0']) / step
+    y = (dem['lat0'] - lat) / step
+    x0 = np.floor(x).astype(np.int32)
+    y0 = np.floor(y).astype(np.int32)
+    x1 = x0 + 1
+    y1 = y0 + 1
+    max_col = dem['cols'] - 1
+    max_row = dem['rows'] - 1
+    x0c = np.clip(x0, 0, max_col)
+    x1c = np.clip(x1, 0, max_col)
+    y0c = np.clip(y0, 0, max_row)
+    y1c = np.clip(y1, 0, max_row)
+    fx = np.clip(x - x0, 0, 1).astype(np.float32)
+    fy = np.clip(y - y0, 0, 1).astype(np.float32)
+    values = (
+        grid[y0c, x0c].astype(np.float32) * (1 - fx) * (1 - fy)
+        + grid[y0c, x1c].astype(np.float32) * fx * (1 - fy)
+        + grid[y1c, x0c].astype(np.float32) * (1 - fx) * fy
+        + grid[y1c, x1c].astype(np.float32) * fx * fy
+    )
+    return np.where(values < -30000, 0, values).astype(np.float32)
 
 
-def hillshade(elevation):
-    meters_per_pixel = 3_300.0
-    exaggeration = 14.0
+def blur_elevation(elevation, sigma):
+    radius = max(1, int(round(sigma * 3)))
+    axis = np.arange(-radius, radius + 1, dtype=np.float32)
+    kernel = np.exp(-0.5 * (axis / sigma) ** 2)
+    kernel /= kernel.sum()
+    padded = np.pad(elevation, ((0, 0), (radius, radius)), mode='edge')
+    windows = np.lib.stride_tricks.sliding_window_view(padded, kernel.size, axis=1)
+    horizontal = windows @ kernel
+    padded = np.pad(horizontal, ((radius, radius), (0, 0)), mode='edge')
+    windows = np.lib.stride_tricks.sliding_window_view(padded, kernel.size, axis=0)
+    return windows @ kernel
+
+
+def hillshade(elevation, meters_per_pixel):
+    exaggeration = 5.5
     dy, dx = np.gradient(elevation * exaggeration, meters_per_pixel)
     slope = np.arctan(np.hypot(dx, dy))
     aspect = np.arctan2(-dx, dy)
@@ -290,7 +356,7 @@ def hillshade(elevation):
     return np.clip(shaded, 0, 1)
 
 
-def river_wanted(record):
+def river_names(record):
     names = []
     for key in ('name_en', 'name', 'name_alt'):
         try:
@@ -299,7 +365,27 @@ def river_wanted(record):
             continue
         if value:
             names.append(str(value).strip().lower())
-    return any(name in RIVER_NAMES or name.split(' (')[0] in RIVER_NAMES for name in names)
+    return names
+
+
+def river_wanted(record, allowed):
+    names = river_names(record)
+    return any(name in allowed or name.split(' (')[0] in allowed for name in names)
+
+
+def draw_tapered_line(draw, points, color, width_start, width_end):
+    if len(points) < 2:
+        return
+    lengths = [0.0]
+    for start, end in zip(points, points[1:]):
+        lengths.append(lengths[-1] + math.hypot(end[0] - start[0], end[1] - start[1]))
+    total = lengths[-1]
+    if total < 1:
+        return
+    for index, (start, end) in enumerate(zip(points, points[1:])):
+        t = lengths[index] / total
+        width = max(1, int(round(width_start + (width_end - width_start) * t)))
+        draw.line((start, end), fill=color, width=width)
 
 
 def draw_ring(draw, ring, fill=None, outline=None, width=1):
@@ -315,13 +401,17 @@ def blend(base, tint, amount):
     return tuple(int(base[channel] + (tint[channel] - base[channel]) * amount) for channel in range(3))
 
 
-def render_sheet(grid, land_path, rivers_path, lakes_path, sheet, out_path):
+def render_sheet(dem, land_path, rivers_path, lakes_path, sheet, out_path):
     global ACTIVE_SHEET
+    # Draw at twice the saved size, then resample. That antialiases the vectors.
+    oversample = 2
+    saved_sheet = dict(sheet)
+    sheet = dict(sheet)
+    sheet['pw'] = int(sheet['pw']) * oversample
+    sheet['ph'] = int(sheet['ph']) * oversample
     ACTIVE_SHEET = sheet
     width = int(sheet['pw'])
     height = int(sheet['ph'])
-    pixels_per_logical = width / sheet['sx']
-    stroke = max(1, int(round(pixels_per_logical / SCALE)))
     columns = np.arange(width)
     rows = np.arange(height)
     logical_x = sheet['ox'] + (columns + 0.5) / width * sheet['sx']
@@ -336,8 +426,15 @@ def render_sheet(grid, land_path, rivers_path, lakes_path, sheet, out_path):
     )
     lon, lat = inverse_project(proj_x, proj_y)
     elevation = np.zeros((height, width), dtype=np.float32)
-    elevation[inside] = sample_etopo(grid, lat[inside], lon[inside])
-    shade = hillshade(elevation)
+    elevation[inside] = sample_etopo(dem, lat[inside], lon[inside])
+    elevation = blur_elevation(elevation, 1.6)
+    mid = height // 2
+    center = width // 2
+    dlat = abs(float(lat[mid, center] - lat[min(mid + 1, height - 1), center]))
+    dlon = abs(float(lon[mid, min(center + 1, width - 1)] - lon[mid, center]))
+    meters = 111_320.0 * math.hypot(dlat, dlon * math.cos(math.radians(float(lat[mid, center]))))
+    shade = hillshade(elevation, max(meters, 40.0))
+    print(f'relief {dem["name"]} {width}x{height}, {meters:.0f} m/px')
 
     paper = np.array([244, 224, 186], dtype=np.float32)
     shallow = np.array([190, 198, 176], dtype=np.float32)
@@ -352,6 +449,7 @@ def render_sheet(grid, land_path, rivers_path, lakes_path, sheet, out_path):
     raster = Image.fromarray(np.clip(image, 0, 255).astype(np.uint8), 'RGB')
     draw = ImageDraw.Draw(raster)
 
+    coast_step = 0.004 if not sheet['decor'] else 0.012
     land_fill = (226, 196, 142)
     land_shells = []
     land_holes = []
@@ -366,7 +464,7 @@ def render_sheet(grid, land_path, rivers_path, lakes_path, sheet, out_path):
             area = signed_area(ring)
             if abs(area) < 0.05:
                 continue
-            projected = project_ring(ring)
+            projected = project_ring(ring, coast_step)
             if len(projected) < 3:
                 continue
             if area == 0 or (area > 0) == (shell_sign > 0):
@@ -419,46 +517,78 @@ def render_sheet(grid, land_path, rivers_path, lakes_path, sheet, out_path):
         if rank is not None and rank > 4:
             continue
         for ring in rings_of(shape):
-            projected = project_ring(ring)
+            projected = project_ring(ring, coast_step)
             if len(projected) < 3:
                 continue
             xs = [point[0] for point in projected]
             ys = [point[1] for point in projected]
-            min_span = 4 if sheet['decor'] else 4 * stroke
+            min_span = 4 * oversample
             if max(xs) - min(xs) < min_span and max(ys) - min(ys) < min_span:
                 continue
-            draw_ring(draw, projected, fill=lake_color, outline=lake_edge, width=1 if sheet['decor'] else stroke)
+            draw_ring(draw, projected, fill=lake_color, outline=lake_edge, width=oversample)
             lakes_drawn += 1
     print(f'lakes drawn: {lakes_drawn}')
 
-    river_color = (90, 118, 116)
+    river_color = (118, 146, 142) if not sheet['decor'] else (90, 118, 116)
+    river_names_allowed = ITALY_RIVER_NAMES if sheet.get('rivers') == 'italy' else RIVER_NAMES
     rivers_drawn = 0
     river_reader = shapefile.Reader(str(rivers_path))
     for shape, record in zip(river_reader.shapes(), river_reader.records()):
-        if not river_wanted(record):
+        if not river_wanted(record, river_names_allowed):
             continue
         for ring in rings_of(shape):
             if len(ring) < 2 or not bbox_hits(ring):
                 continue
-            clipped = densify_boundary(clip_ring(thin(ring, 0.02)))
+            clipped = densify_boundary(clip_ring(thin(ring, 0.008 if not sheet['decor'] else 0.02)))
             if len(clipped) < 2:
                 continue
-            lon = np.array([point[0] for point in clipped])
-            lat = np.array([point[1] for point in clipped])
-            x, y = project(lon, lat)
+            lon_values = np.array([point[0] for point in clipped])
+            lat_values = np.array([point[1] for point in clipped])
+            x, y = project(lon_values, lat_values)
             px, py = to_pixel(x, y)
             line = list(zip(px.tolist(), py.tolist()))
-            draw.line(line, fill=river_color, width=2 if sheet['decor'] else max(2, stroke * 2))
+            if sheet['decor']:
+                draw.line(line, fill=river_color, width=oversample * 2)
+            else:
+                ends = sample_etopo(dem, lat_values[[0, -1]], lon_values[[0, -1]])
+                mouth = oversample * 1.35
+                source = oversample * 0.5
+                if float(ends[0]) <= float(ends[-1]):
+                    draw_tapered_line(draw, line, river_color, mouth, source)
+                else:
+                    draw_tapered_line(draw, line, river_color, source, mouth)
+            rivers_drawn += 1
+    if sheet.get('rivers') == 'italy':
+        # Natural Earth 10m includes the Po and the Tiber, not the Arno or the Rubicon.
+        extra = [
+            [(11.66, 43.86), (11.71, 43.80), (11.77, 43.72), (11.74, 43.64), (11.55, 43.60), (11.40, 43.68), (11.26, 43.77), (11.08, 43.78), (10.95, 43.72), (10.72, 43.71), (10.48, 43.72), (10.28, 43.68)],
+            [(12.16, 43.96), (12.25, 44.02), (12.34, 44.08), (12.41, 44.13), (12.47, 44.17)]
+        ]
+        for coords in extra:
+            lon_values = np.array([point[0] for point in coords])
+            lat_values = np.array([point[1] for point in coords])
+            x, y = project(lon_values, lat_values)
+            px, py = to_pixel(x, y)
+            line = list(zip(px.tolist(), py.tolist()))
+            ends = sample_etopo(dem, lat_values[[0, -1]], lon_values[[0, -1]])
+            mouth = oversample * 1.35
+            source = oversample * 0.5
+            if float(ends[0]) <= float(ends[-1]):
+                draw_tapered_line(draw, line, river_color, mouth, source)
+            else:
+                draw_tapered_line(draw, line, river_color, source, mouth)
             rivers_drawn += 1
     print(f'river parts drawn: {rivers_drawn}')
 
     coast = (122, 84, 48)
     halo = (196, 164, 116)
+    halo_width = oversample * 4 if sheet['decor'] else oversample * 2
+    coast_width = oversample if sheet['decor'] else oversample
     for ring in land_shells + land_holes:
         closed = ring + [ring[0]]
-        draw.line(closed, fill=halo, width=4 if sheet['decor'] else max(2, stroke * 3))
+        draw.line(closed, fill=halo, width=halo_width)
     for ring in land_shells + land_holes:
-        draw.line(ring + [ring[0]], fill=coast, width=1 if sheet['decor'] else max(1, stroke))
+        draw.line(ring + [ring[0]], fill=coast, width=coast_width)
 
     vignette = np.array(raster).astype(np.float32)
     yy = np.linspace(-1, 1, height)[:, None]
@@ -471,24 +601,29 @@ def render_sheet(grid, land_path, rivers_path, lakes_path, sheet, out_path):
     outer = (110, 72, 40)
     inner = (232, 206, 160)
     if sheet['decor']:
-        draw.rectangle((8, 8, width - 9, height - 9), outline=outer, width=3)
-        draw.rectangle((14, 14, width - 15, height - 15), outline=inner, width=2)
-        draw.rectangle((18, 18, width - 19, height - 19), outline=outer, width=1)
-        draw_compass(draw)
-        draw_cartouche(draw)
+        step = oversample
+        draw.rectangle((8 * step, 8 * step, width - 9 * step, height - 9 * step), outline=outer, width=3 * step)
+        draw.rectangle((14 * step, 14 * step, width - 15 * step, height - 15 * step), outline=inner, width=2 * step)
+        draw.rectangle((18 * step, 18 * step, width - 19 * step, height - 19 * step), outline=outer, width=step)
+        draw_compass(draw, step)
+        draw_cartouche(draw, step)
     else:
-        margin = max(8, stroke * 2)
-        draw.rectangle((margin, margin, width - margin - 1, height - margin - 1), outline=outer, width=max(2, stroke))
-        draw.rectangle((margin + stroke * 2, margin + stroke * 2, width - margin - stroke * 2 - 1, height - margin - stroke * 2 - 1), outline=inner, width=max(1, stroke))
+        margin = oversample * 6
+        draw.rectangle((margin, margin, width - margin - 1, height - margin - 1), outline=outer, width=oversample + 1)
+        draw.rectangle((margin + oversample * 3, margin + oversample * 3, width - margin - oversample * 3 - 1, height - margin - oversample * 3 - 1), outline=inner, width=oversample)
 
+    final_width = int(saved_sheet['pw'])
+    final_height = int(saved_sheet['ph'])
+    raster = raster.resize((final_width, final_height), Image.Resampling.LANCZOS)
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    raster.save(out_path, 'WEBP', quality=72 if sheet['decor'] else 68, method=6)
-    print(f'wrote {out_path} ({out_path.stat().st_size} bytes, {width}x{height})')
+    raster.save(out_path, 'WEBP', quality=82 if saved_sheet['decor'] else 88, method=6)
+    print(f'wrote {out_path} ({out_path.stat().st_size} bytes, {final_width}x{final_height})')
 
 
 def build(land_path, rivers_path, lakes_path, etopo_path):
-    grid = load_etopo(etopo_path)
-    render_sheet(grid, land_path, rivers_path, lakes_path, {
+    dem = load_etopo(etopo_path)
+    print(f'elevation {dem["name"]} {dem["rows"]}x{dem["cols"]}')
+    render_sheet(dem, land_path, rivers_path, lakes_path, {
         'ox': 0.0,
         'oy': 0.0,
         'sx': LOGICAL_W,
@@ -499,9 +634,11 @@ def build(land_path, rivers_path, lakes_path, etopo_path):
     }, WEBP_PATH)
     write_geometry()
     # Alps to Sicily, with Corsica and Sardinia at the western edge.
-    render_sheet(grid, land_path, rivers_path, lakes_path, detail_sheet(352, 228, 508, 424), ROOT / 'assets' / 'roman-map-italy.webp')
+    italy = detail_sheet(352, 228, 508, 424)
+    italy['rivers'] = 'italy'
+    render_sheet(dem, land_path, rivers_path, lakes_path, italy, ROOT / 'assets' / 'roman-map-italy.webp')
     # Ionian islands through the Aegean, Macedonia to Crete.
-    render_sheet(grid, land_path, rivers_path, lakes_path, detail_sheet(490, 308, 632, 456), ROOT / 'assets' / 'roman-map-greece.webp')
+    render_sheet(dem, land_path, rivers_path, lakes_path, detail_sheet(490, 308, 632, 456), ROOT / 'assets' / 'roman-map-greece.webp')
 
 
 def detail_sheet(min_x, min_y, max_x, max_y, pixels_per_logical=13):
@@ -518,49 +655,50 @@ def detail_sheet(min_x, min_y, max_x, max_y, pixels_per_logical=13):
     }
 
 
-def draw_compass(draw):
+def draw_compass(draw, step=1):
     cx, cy = to_pixel(*project(-9.6, 33.4))
-    radius = 34 * SCALE
+    radius = 34 * SCALE * step
     gold = (122, 78, 36)
     pale = (245, 232, 204)
     dark = (74, 48, 28)
-    draw.ellipse((cx - radius - 4, cy - radius - 4, cx + radius + 4, cy + radius + 4), outline=gold, width=2)
+    pad = 4 * step
+    draw.ellipse((cx - radius - pad, cy - radius - pad, cx + radius + pad, cy + radius + pad), outline=gold, width=max(1, 2 * step))
     points = []
-    for step in range(8):
-        angle = -math.pi / 2 + step * math.pi / 4
-        length = radius if step % 2 == 0 else radius * 0.42
+    for spoke in range(8):
+        angle = -math.pi / 2 + spoke * math.pi / 4
+        length = radius if spoke % 2 == 0 else radius * 0.42
         points.append((cx + math.cos(angle) * length, cy + math.sin(angle) * length))
-    for step in range(8):
-        end = points[step]
-        color = dark if step % 2 == 0 else gold
-        draw.polygon(( (cx, cy), points[step - 1], end ), fill=pale if step % 2 else color)
-    draw.polygon(((cx, cy - radius), (cx - 8, cy), (cx, cy - 6), (cx + 8, cy)), fill=dark)
-    font = ImageFont.truetype('/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf', int(16 * SCALE))
-    draw.text((cx - 6, cy - radius - 22 * SCALE), 'N', font=font, fill=dark)
+    for spoke in range(8):
+        end = points[spoke]
+        color = dark if spoke % 2 == 0 else gold
+        draw.polygon(((cx, cy), points[spoke - 1], end), fill=pale if spoke % 2 else color)
+    draw.polygon(((cx, cy - radius), (cx - 8 * step, cy), (cx, cy - 6 * step), (cx + 8 * step, cy)), fill=dark)
+    font = ImageFont.truetype('/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf', max(12, int(16 * SCALE * step)))
+    draw.text((cx - 6 * step, cy - radius - 22 * SCALE * step), 'N', font=font, fill=dark)
 
 
-def draw_cartouche(draw):
+def draw_cartouche(draw, step=1):
     cx, cy = to_pixel(*project(-1.2, 25.4))
-    width = 210 * SCALE
-    height = 78 * SCALE
+    width = 210 * SCALE * step
+    height = 78 * SCALE * step
     box = (cx - width / 2, cy - height / 2, cx + width / 2, cy + height / 2)
     paper = (244, 232, 204)
     ink = (78, 50, 30)
-    draw.rounded_rectangle(box, radius=14, fill=paper, outline=ink, width=3)
+    draw.rounded_rectangle(box, radius=14 * step, fill=paper, outline=ink, width=max(1, 3 * step))
     draw.rounded_rectangle(
-        (box[0] + 6, box[1] + 6, box[2] - 6, box[3] - 6),
-        radius=10,
+        (box[0] + 6 * step, box[1] + 6 * step, box[2] - 6 * step, box[3] - 6 * step),
+        radius=10 * step,
         outline=(168, 124, 72),
-        width=2
+        width=max(1, 2 * step)
     )
-    title_font = ImageFont.truetype('/usr/share/fonts/truetype/liberation/LiberationSerif-Italic.ttf', int(22 * SCALE))
-    sub_font = ImageFont.truetype('/usr/share/fonts/truetype/liberation/LiberationSerif-Italic.ttf', int(13 * SCALE))
+    title_font = ImageFont.truetype('/usr/share/fonts/truetype/liberation/LiberationSerif-Italic.ttf', max(12, int(22 * SCALE * step)))
+    sub_font = ImageFont.truetype('/usr/share/fonts/truetype/liberation/LiberationSerif-Italic.ttf', max(10, int(13 * SCALE * step)))
     title = 'Orbis Romanus'
     subtitle = 'A classroom map'
     title_w = draw.textlength(title, font=title_font)
     sub_w = draw.textlength(subtitle, font=sub_font)
-    draw.text((cx - title_w / 2, cy - 24 * SCALE), title, font=title_font, fill=ink)
-    draw.text((cx - sub_w / 2, cy + 4 * SCALE), subtitle, font=sub_font, fill=ink)
+    draw.text((cx - title_w / 2, cy - 24 * SCALE * step), title, font=title_font, fill=ink)
+    draw.text((cx - sub_w / 2, cy + 4 * SCALE * step), subtitle, font=sub_font, fill=ink)
 
 
 def write_geometry():

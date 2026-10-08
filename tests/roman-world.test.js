@@ -99,11 +99,11 @@ test('Roman-world units have cards, a timeline, a map, and bank questions', () =
   const worldSource = fs.readFileSync(path.join(root, 'roman-world.js'), 'utf8');
   assert.match(worldSource, /Natural Earth/);
   assert.match(worldSource, /public domain/);
-  assert.match(worldSource, /ETOPO5/);
+  assert.match(worldSource, /ETOPO1/);
   assert.equal(/\b(First|Second|Third) Form\b|National Latin Exam|nle\.org/.test(worldSource), false);
   const about = fs.readFileSync(path.join(root, 'about.html'), 'utf8');
   assert.match(about, /Natural Earth/);
-  assert.match(about, /ETOPO5/);
+  assert.match(about, /ETOPO1/);
   assert.match(about, /public domain/);
   const webp = path.join(root, 'assets', 'roman-map.webp');
   assert.equal(fs.existsSync(webp), true);
