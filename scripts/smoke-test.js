@@ -22,6 +22,7 @@ const annualExamQuestionPaths = [
   path.join(root, 'annual-exam-questions-upper.js'),
   path.join(root, 'annual-exam-questions-exams.js'),
   path.join(root, 'annual-exam-questions-advanced.js'),
+  path.join(root, 'annual-exam-passages-long.js'),
   path.join(root, 'annual-exam.js')
 ];
 const trustPageFiles = [
@@ -426,7 +427,7 @@ function checkAnnualExamHooks() {
     assert(html.includes(needle), `Expected Annual Exam Study hook not found: ${needle}`);
   });
   const netlifyConfig = fs.readFileSync(path.join(root, 'netlify.toml'), 'utf8');
-  ['annual-exam-questions.js', 'annual-exam-questions-more.js', 'annual-exam-questions-upper.js', 'annual-exam-questions-exams.js', 'annual-exam-questions-advanced.js', 'annual-exam.js'].forEach((fileName) => {
+  ['annual-exam-questions.js', 'annual-exam-questions-more.js', 'annual-exam-questions-upper.js', 'annual-exam-questions-exams.js', 'annual-exam-questions-advanced.js', 'annual-exam-passages-long.js', 'annual-exam.js'].forEach((fileName) => {
     assert(netlifyConfig.includes(fileName), `Netlify build must copy ${fileName}`);
   });
   assert(app.includes('function showAnnualExam()'), 'The app must open the Annual Exam Study page');

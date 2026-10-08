@@ -394,6 +394,22 @@ function getAnnualExamPassage(passageId) {
   return ANNUAL_EXAM_PASSAGES.find((passage) => passage.id === passageId) || null;
 }
 
+function readingFormsForLevel(levelId, storyId, allPassages) {
+  const passages = ANNUAL_EXAM_PASSAGES.filter((item) => item.level === levelId);
+  if (allPassages) {
+    const groups = new Map();
+    passages.forEach((item) => {
+      const key = item.setId || 'legacy';
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(item);
+    });
+    return [...groups.values()];
+  }
+  return passages
+    .filter((item) => !storyId || !item.storyId || item.storyId === storyId)
+    .map((item) => [item]);
+}
+
 function questionsForPassage(passageId, category) {
   return ANNUAL_EXAM_QUESTIONS
     .filter((question) => question.passageId === passageId && (!category || question.category === category))
@@ -462,12 +478,9 @@ function buildAnnualExam(levelId, random = Math.random) {
 
   level.sections.forEach((section) => {
     if (section.id === 'reading') {
-      let passages = ANNUAL_EXAM_PASSAGES.filter((item) => item.level === levelId);
-      if (storyId) {
-        const matched = passages.filter((item) => item.storyId === storyId);
-        if (matched.length) passages = matched;
-      }
-      const orderedPassages = section.allPassages ? shuffleAnnualExam(passages, random) : [shuffleAnnualExam(passages, random)[0]].filter(Boolean);
+      const forms = readingFormsForLevel(levelId, storyId, section.allPassages);
+      const chosen = forms.length ? shuffleAnnualExam(forms, random)[0] : [];
+      const orderedPassages = section.allPassages ? shuffleAnnualExam(chosen, random) : chosen.slice();
       const reading = [];
       orderedPassages.forEach((item) => {
         if (!item || reading.length >= section.count) return;
@@ -708,7 +721,7 @@ function validateAnnualExamContent() {
         if (reading.length !== 33) errors.push(`${level.id} seed ${seed} has ${reading.length} reading questions`);
         if (extension.length !== 3) errors.push(`${level.id} seed ${seed} has ${extension.length} extension questions`);
       }
-      if (level.id === 'intro' && exam?.storyId && exam.passage && exam.passage.storyId !== exam.storyId) {
+      if (level.id === 'intro' && exam?.storyId && exam.passage?.storyId && exam.passage.storyId !== exam.storyId) {
         errors.push(`${level.id} seed ${seed} passage does not continue the language story`);
       }
     }

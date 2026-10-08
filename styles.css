@@ -4808,8 +4808,22 @@ body.print-preview-open .app-shell {
 }
 
 .annual-exam-passage-card {
-  max-height: 320px;
-  overflow: auto;
+  max-height: none;
+  overflow: visible;
+}
+
+.annual-exam-passage-source {
+  margin: 0 0 8px;
+  font-size: 0.95rem;
+}
+
+.quiz-passage {
+  margin: 0 0 18px;
+}
+
+.quiz-passage .annual-exam-passage {
+  white-space: pre-wrap;
+  font-family: Georgia, "Times New Roman", serif;
 }
 
 .annual-exam-options .option-button {
@@ -4836,7 +4850,7 @@ body.print-preview-open .app-shell {
   }
 
   .annual-exam-passage-card {
-    max-height: 240px;
+    max-height: none;
   }
 
   .annual-exam-results h3:first-of-type {

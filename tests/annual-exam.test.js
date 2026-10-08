@@ -13,6 +13,7 @@ function loadNle() {
     'annual-exam-questions-upper.js',
     'annual-exam-questions-exams.js',
     'annual-exam-questions-advanced.js',
+    'annual-exam-passages-long.js',
     'annual-exam.js'
   ].forEach((fileName) => {
     const filePath = path.resolve(__dirname, '..', fileName);
@@ -99,14 +100,14 @@ test('question content is complete and internally consistent', () => {
   assert.ok(summary.intro.total >= 80);
   assert.ok(summary.beginning.total >= 70);
   assert.ok(summary.intermediate.total >= 40);
-  assert.equal(summary.intro.passages, 3);
-  assert.equal(summary.beginning.passages, 2);
-  assert.equal(summary['beginning-reading'].passages, 2);
-  assert.equal(summary.intermediate.passages, 2);
-  assert.equal(summary['intermediate-reading'].passages, 2);
-  assert.equal(summary['advanced-prose'].passages, 1);
-  assert.equal(summary['advanced-poetry'].passages, 1);
-  assert.equal(summary['advanced-reading'].passages, 2);
+  assert.equal(summary.intro.passages, 4);
+  assert.equal(summary.beginning.passages, 3);
+  assert.equal(summary['beginning-reading'].passages, 4);
+  assert.equal(summary.intermediate.passages, 3);
+  assert.equal(summary['intermediate-reading'].passages, 4);
+  assert.equal(summary['advanced-prose'].passages, 2);
+  assert.equal(summary['advanced-poetry'].passages, 2);
+  assert.equal(summary['advanced-reading'].passages, 4);
   assert.ok(summary['advanced-prose'].total >= 40);
   assert.ok(summary['advanced-poetry'].total >= 40);
   ['grammar', 'vocabulary', 'derivatives', 'mottoes', 'oral', 'mythology', 'history', 'geography', 'culture', 'reading'].forEach((category) => {
@@ -172,7 +173,8 @@ test('an Introduction exam continues one story into one passage', () => {
   for (let seed = 1; seed <= 48; seed += 1) {
     const exam = nle.buildAnnualExam('intro', nle.createAnnualExamRng(seed));
     stories.add(exam.storyId);
-    assert.equal(exam.passage.storyId, exam.storyId);
+    if (exam.passage.setId) assert.equal(exam.passage.storyId, null);
+    else assert.equal(exam.passage.storyId, exam.storyId);
     const reading = exam.questions.filter((question) => question.section === 'reading');
     assert.equal(new Set(reading.map((question) => question.passageId)).size, 1);
     const orders = reading.map((question) => question.order);
