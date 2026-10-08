@@ -1,5 +1,6 @@
 // Original Roman-world units: mythology, daily life, history, and a classroom map.
-// The map is a schematic drawn for this course. It is not a survey, and the dots are approximate.
+// Place dots use real latitudes and longitudes. scripts/build-roman-map.py
+// draws the parchment image from Natural Earth vectors and NOAA ETOPO5 relief.
 
 function cultureCard(unit, id, title, latinTitle, summary, connection, linkedWords, minGrade, mark) {
   return {
@@ -134,85 +135,186 @@ const ROMAN_TIMELINE = [
 ];
 
 const ROMAN_MAP_PLACES = [
-  { id: 'roma', latin: 'Roma', english: 'Rome', group: 'mediterranean', x: 355, y: 310 },
-  { id: 'italia', latin: 'Italia', english: 'Italy', group: 'mediterranean', x: 390, y: 290 },
-  { id: 'sicilia', latin: 'Sicilia', english: 'Sicily', group: 'mediterranean', x: 365, y: 448 },
-  { id: 'graecia', latin: 'Graecia', english: 'Greece', group: 'mediterranean', x: 500, y: 345 },
-  { id: 'aegyptus', latin: 'Aegyptus', english: 'Egypt', group: 'mediterranean', x: 600, y: 500 },
-  { id: 'hispania', latin: 'Hispania', english: 'Spain', group: 'mediterranean', x: 90, y: 300 },
-  { id: 'gallia', latin: 'Gallia', english: 'Gaul', group: 'mediterranean', x: 210, y: 185 },
-  { id: 'britannia', latin: 'Britannia', english: 'Britain', group: 'mediterranean', x: 155, y: 90 },
-  { id: 'africa', latin: 'Africa', english: 'Africa province', group: 'mediterranean', x: 250, y: 455 },
-  { id: 'asia', latin: 'Asia', english: 'Asia province', group: 'mediterranean', x: 680, y: 310 },
-  { id: 'syria', latin: 'Syria', english: 'Syria', group: 'mediterranean', x: 780, y: 390 },
-  { id: 'macedonia', latin: 'Macedonia', english: 'Macedonia', group: 'mediterranean', x: 530, y: 280 },
-  { id: 'creta', latin: 'Creta', english: 'Crete', group: 'mediterranean', x: 575, y: 430 },
-  { id: 'cyprus', latin: 'Cyprus', english: 'Cyprus', group: 'mediterranean', x: 730, y: 410 },
-  { id: 'carthago', latin: 'Carthago', english: 'Carthage', group: 'mediterranean', x: 310, y: 430 },
-  { id: 'alexandria', latin: 'Alexandria', english: 'Alexandria', group: 'mediterranean', x: 610, y: 475 },
-  { id: 'athenae', latin: 'Athenae', english: 'Athens', group: 'mediterranean', x: 505, y: 370 },
-  { id: 'ostia', latin: 'Ostia', english: 'Ostia', group: 'italy', x: 340, y: 325 },
-  { id: 'pompeii', latin: 'Pompeii', english: 'Pompeii', group: 'italy', x: 400, y: 365 },
-  { id: 'brundisium', latin: 'Brundisium', english: 'Brundisium', group: 'italy', x: 445, y: 365 },
-  { id: 'capua', latin: 'Capua', english: 'Capua', group: 'italy', x: 385, y: 340 },
-  { id: 'cannae', latin: 'Cannae', english: 'Cannae', group: 'italy', x: 430, y: 345 },
-  { id: 'rubico', latin: 'Rubico', english: 'the Rubicon', group: 'italy', x: 385, y: 265 },
-  { id: 'tiberis', latin: 'Tiberis', english: 'the Tiber', group: 'italy', x: 348, y: 295 },
-  { id: 'latium', latin: 'Latium', english: 'Latium', group: 'italy', x: 368, y: 325 },
-  { id: 'campania', latin: 'Campania', english: 'Campania', group: 'italy', x: 400, y: 350 },
-  { id: 'etruria', latin: 'Etruria', english: 'Etruria', group: 'italy', x: 345, y: 270 },
-  { id: 'mediterraneum', latin: 'Mare Mediterraneum', english: 'the Mediterranean', group: 'waters', x: 470, y: 410 },
-  { id: 'adriaticum', latin: 'Mare Adriaticum', english: 'the Adriatic Sea', group: 'waters', x: 430, y: 300 },
-  { id: 'tyrrhenum', latin: 'Mare Tyrrhenum', english: 'the Tyrrhenian Sea', group: 'waters', x: 310, y: 370 },
-  { id: 'aegaeum', latin: 'Mare Aegaeum', english: 'the Aegean Sea', group: 'waters', x: 560, y: 360 },
-  { id: 'euxinus', latin: 'Pontus Euxinus', english: 'the Black Sea', group: 'waters', x: 720, y: 200 },
-  { id: 'nilus', latin: 'Nilus', english: 'the Nile', group: 'waters', x: 590, y: 540 },
-  { id: 'rhenus', latin: 'Rhenus', english: 'the Rhine', group: 'waters', x: 250, y: 140 },
-  { id: 'danuvius', latin: 'Danuvius', english: 'the Danube', group: 'waters', x: 500, y: 165 },
-  { id: 'rhodanus', latin: 'Rhodanus', english: 'the Rhone', group: 'waters', x: 195, y: 230 },
-  { id: 'sardinia', latin: 'Sardinia', english: 'Sardinia', group: 'waters', x: 275, y: 385 },
-  { id: 'corsica', latin: 'Corsica', english: 'Corsica', group: 'lands', x: 285, y: 340 },
-  { id: 'alpes', latin: 'Alpes', english: 'the Alps', group: 'lands', x: 300, y: 210 },
-  { id: 'apenninus', latin: 'Apenninus', english: 'the Apennines', group: 'lands', x: 385, y: 305 },
-  { id: 'olympus', latin: 'Olympus', english: 'Mount Olympus', group: 'lands', x: 515, y: 300 },
-  { id: 'vesuvius', latin: 'Vesuvius', english: 'Vesuvius', group: 'lands', x: 405, y: 355 },
-  { id: 'aetna', latin: 'Aetna', english: 'Mount Etna', group: 'lands', x: 385, y: 455 },
-  { id: 'helvetia', latin: 'Helvetia', english: 'Switzerland', group: 'lands', x: 270, y: 200 },
-  { id: 'germania', latin: 'Germania', english: 'Germany', group: 'lands', x: 320, y: 130 },
-  { id: 'dacia', latin: 'Dacia', english: 'Dacia', group: 'lands', x: 580, y: 175 },
-  { id: 'parthia', latin: 'Parthia', english: 'Parthia', group: 'lands', x: 860, y: 340 },
-  { id: 'cisalpina', latin: 'Gallia Cisalpina', english: 'Gaul this side of the Alps', group: 'lands', x: 330, y: 240 },
-  { id: 'troia', latin: 'Troia', english: 'Troy', group: 'poetry', x: 690, y: 325 },
-  { id: 'cumae', latin: 'Cumae', english: 'Cumae', group: 'poetry', x: 378, y: 348 },
-  { id: 'delos', latin: 'Delos', english: 'Delos', group: 'poetry', x: 575, y: 385 },
-  { id: 'lesbos', latin: 'Lesbos', english: 'Lesbos', group: 'poetry', x: 610, y: 330 },
-  { id: 'helicon', latin: 'Helicon', english: 'Mount Helicon', group: 'poetry', x: 490, y: 355 },
-  { id: 'parnassus', latin: 'Parnassus', english: 'Mount Parnassus', group: 'poetry', x: 485, y: 340 },
-  { id: 'ithaca', latin: 'Ithaca', english: 'Ithaca', group: 'poetry', x: 455, y: 355 },
-  { id: 'colchis', latin: 'Colchis', english: 'Colchis', group: 'poetry', x: 830, y: 210 },
-  { id: 'mantua', latin: 'Mantua', english: 'Mantua', group: 'poetry', x: 325, y: 250 },
-  { id: 'actium-place', latin: 'Actium', english: 'Actium', group: 'poetry', x: 470, y: 335 },
-  { id: 'sparta', latin: 'Sparta', english: 'Sparta', group: 'poetry', x: 495, y: 400 },
-  { id: 'byzantium', latin: 'Byzantium', english: 'Byzantium', group: 'poetry', x: 640, y: 255 }
+  { id: 'roma', latin: 'Roma', english: 'Rome', group: 'mediterranean', lat: 41.903, lon: 12.496 },
+  { id: 'italia', latin: 'Italia', english: 'Italy', group: 'mediterranean', lat: 42.8, lon: 12.6 },
+  { id: 'sicilia', latin: 'Sicilia', english: 'Sicily', group: 'mediterranean', lat: 37.5, lon: 14.2 },
+  { id: 'graecia', latin: 'Graecia', english: 'Greece', group: 'mediterranean', lat: 39.0, lon: 22.0 },
+  { id: 'aegyptus', latin: 'Aegyptus', english: 'Egypt', group: 'mediterranean', lat: 27.0, lon: 31.0 },
+  { id: 'hispania', latin: 'Hispania', english: 'Spain', group: 'mediterranean', lat: 40.0, lon: -4.0 },
+  { id: 'gallia', latin: 'Gallia', english: 'Gaul', group: 'mediterranean', lat: 46.5, lon: 2.5 },
+  { id: 'britannia', latin: 'Britannia', english: 'Britain', group: 'mediterranean', lat: 52.5, lon: -1.5 },
+  { id: 'africa', latin: 'Africa', english: 'Africa province', group: 'mediterranean', lat: 36.2, lon: 9.5 },
+  { id: 'asia', latin: 'Asia', english: 'Asia province', group: 'mediterranean', lat: 38.5, lon: 28.0 },
+  { id: 'syria', latin: 'Syria', english: 'Syria', group: 'mediterranean', lat: 35.0, lon: 37.5 },
+  { id: 'macedonia', latin: 'Macedonia', english: 'Macedonia', group: 'mediterranean', lat: 41.2, lon: 22.3 },
+  { id: 'creta', latin: 'Creta', english: 'Crete', group: 'mediterranean', lat: 35.24, lon: 24.8 },
+  { id: 'cyprus', latin: 'Cyprus', english: 'Cyprus', group: 'mediterranean', lat: 35.0, lon: 33.2 },
+  { id: 'carthago', latin: 'Carthago', english: 'Carthage', group: 'mediterranean', lat: 36.85, lon: 10.32 },
+  { id: 'alexandria', latin: 'Alexandria', english: 'Alexandria', group: 'mediterranean', lat: 31.2, lon: 29.92 },
+  { id: 'athenae', latin: 'Athenae', english: 'Athens', group: 'mediterranean', lat: 37.97, lon: 23.73 },
+  { id: 'ostia', latin: 'Ostia', english: 'Ostia', group: 'italy', lat: 41.73, lon: 12.29 },
+  { id: 'pompeii', latin: 'Pompeii', english: 'Pompeii', group: 'italy', lat: 40.75, lon: 14.49 },
+  { id: 'brundisium', latin: 'Brundisium', english: 'Brundisium', group: 'italy', lat: 40.64, lon: 17.94 },
+  { id: 'capua', latin: 'Capua', english: 'Capua', group: 'italy', lat: 41.1, lon: 14.21 },
+  { id: 'cannae', latin: 'Cannae', english: 'Cannae', group: 'italy', lat: 41.3, lon: 16.15 },
+  { id: 'rubico', latin: 'Rubico', english: 'the Rubicon', group: 'italy', lat: 44.1, lon: 12.4 },
+  { id: 'tiberis', latin: 'Tiberis', english: 'the Tiber', group: 'italy', lat: 42.2, lon: 12.4 },
+  { id: 'latium', latin: 'Latium', english: 'Latium', group: 'italy', lat: 41.5, lon: 13.1 },
+  { id: 'campania', latin: 'Campania', english: 'Campania', group: 'italy', lat: 40.95, lon: 15.1 },
+  { id: 'etruria', latin: 'Etruria', english: 'Etruria', group: 'italy', lat: 43.0, lon: 11.6 },
+  { id: 'mediterraneum', latin: 'Mare Mediterraneum', english: 'the Mediterranean', group: 'waters', lat: 35.0, lon: 18.0 },
+  { id: 'adriaticum', latin: 'Mare Adriaticum', english: 'the Adriatic Sea', group: 'waters', lat: 42.5, lon: 16.0 },
+  { id: 'tyrrhenum', latin: 'Mare Tyrrhenum', english: 'the Tyrrhenian Sea', group: 'waters', lat: 39.5, lon: 11.5 },
+  { id: 'aegaeum', latin: 'Mare Aegaeum', english: 'the Aegean Sea', group: 'waters', lat: 38.0, lon: 25.5 },
+  { id: 'euxinus', latin: 'Pontus Euxinus', english: 'the Black Sea', group: 'waters', lat: 43.3, lon: 34.0 },
+  { id: 'nilus', latin: 'Nilus', english: 'the Nile', group: 'waters', lat: 28.5, lon: 30.8 },
+  { id: 'rhenus', latin: 'Rhenus', english: 'the Rhine', group: 'waters', lat: 49.5, lon: 8.0 },
+  { id: 'danuvius', latin: 'Danuvius', english: 'the Danube', group: 'waters', lat: 47.2, lon: 19.0 },
+  { id: 'rhodanus', latin: 'Rhodanus', english: 'the Rhone', group: 'waters', lat: 44.5, lon: 4.7 },
+  { id: 'sardinia', latin: 'Sardinia', english: 'Sardinia', group: 'waters', lat: 40.1, lon: 9.0 },
+  { id: 'corsica', latin: 'Corsica', english: 'Corsica', group: 'lands', lat: 42.1, lon: 9.1 },
+  { id: 'alpes', latin: 'Alpes', english: 'the Alps', group: 'lands', lat: 46.5, lon: 10.0 },
+  { id: 'apenninus', latin: 'Apenninus', english: 'the Apennines', group: 'lands', lat: 42.8, lon: 13.3 },
+  { id: 'olympus', latin: 'Olympus', english: 'Mount Olympus', group: 'lands', lat: 40.09, lon: 22.35 },
+  { id: 'vesuvius', latin: 'Vesuvius', english: 'Vesuvius', group: 'lands', lat: 40.82, lon: 14.43 },
+  { id: 'aetna', latin: 'Aetna', english: 'Mount Etna', group: 'lands', lat: 37.75, lon: 14.99 },
+  { id: 'helvetia', latin: 'Helvetia', english: 'Switzerland', group: 'lands', lat: 46.8, lon: 8.2 },
+  { id: 'germania', latin: 'Germania', english: 'Germany', group: 'lands', lat: 51.0, lon: 10.5 },
+  { id: 'dacia', latin: 'Dacia', english: 'Dacia', group: 'lands', lat: 46.0, lon: 24.5 },
+  { id: 'parthia', latin: 'Parthia', english: 'Parthia', group: 'lands', lat: 34.5, lon: 48.0 },
+  { id: 'cisalpina', latin: 'Gallia Cisalpina', english: 'Gaul this side of the Alps', group: 'lands', lat: 45.0, lon: 11.8 },
+  { id: 'troia', latin: 'Troia', english: 'Troy', group: 'poetry', lat: 39.96, lon: 26.24 },
+  { id: 'cumae', latin: 'Cumae', english: 'Cumae', group: 'poetry', lat: 40.85, lon: 14.06 },
+  { id: 'delos', latin: 'Delos', english: 'Delos', group: 'poetry', lat: 37.4, lon: 25.27 },
+  { id: 'lesbos', latin: 'Lesbos', english: 'Lesbos', group: 'poetry', lat: 39.2, lon: 26.3 },
+  { id: 'helicon', latin: 'Helicon', english: 'Mount Helicon', group: 'poetry', lat: 38.35, lon: 22.82 },
+  { id: 'parnassus', latin: 'Parnassus', english: 'Mount Parnassus', group: 'poetry', lat: 38.53, lon: 22.62 },
+  { id: 'ithaca', latin: 'Ithaca', english: 'Ithaca', group: 'poetry', lat: 38.44, lon: 20.66 },
+  { id: 'colchis', latin: 'Colchis', english: 'Colchis', group: 'poetry', lat: 42.15, lon: 41.65 },
+  { id: 'mantua', latin: 'Mantua', english: 'Mantua', group: 'poetry', lat: 45.16, lon: 10.79 },
+  { id: 'actium-place', latin: 'Actium', english: 'Actium', group: 'poetry', lat: 38.95, lon: 20.77 },
+  { id: 'sparta', latin: 'Sparta', english: 'Sparta', group: 'poetry', lat: 37.08, lon: 22.43 },
+  { id: 'byzantium', latin: 'Byzantium', english: 'Byzantium', group: 'poetry', lat: 41.01, lon: 28.98 }
 ];
 
-const ROMAN_MAP_SVG = `
-<svg class="roman-map-drawing" viewBox="0 0 1000 640" role="img" aria-label="Schematic map of the Mediterranean">
-  <rect width="1000" height="640" fill="#d5eef8"></rect>
-  <path fill="#f4e4c4" d="M30 250 L130 210 L160 280 L100 360 L20 330 Z"></path>
-  <path fill="#f4e4c4" d="M120 55 L185 50 L200 115 L145 140 Z"></path>
-  <path fill="#f4e4c4" d="M145 145 L300 125 L320 230 L160 260 Z"></path>
-  <path fill="#f4e4c4" d="M300 200 L390 215 L400 280 L360 340 L410 400 L360 430 L330 360 L345 270 Z"></path>
-  <path fill="#f4e4c4" d="M345 435 L400 445 L365 475 Z"></path>
-  <path fill="#f4e4c4" d="M255 360 L295 350 L300 400 L265 410 Z"></path>
-  <path fill="#f4e4c4" d="M265 370 L290 365 L295 410 L270 415 Z"></path>
-  <path fill="#f4e4c4" d="M450 290 L530 270 L545 370 L470 400 Z"></path>
-  <path fill="#f4e4c4" d="M555 250 L760 230 L780 360 L560 370 Z"></path>
-  <path fill="#f4e4c4" d="M20 400 L300 385 L430 450 L560 520 L200 580 L20 540 Z"></path>
-  <path fill="#f4e4c4" d="M540 460 L660 450 L680 580 L540 580 Z"></path>
-  <path fill="#f4e4c4" d="M760 300 L900 280 L930 420 L780 430 Z"></path>
-  <path fill="#c5d7a4" d="M560 470 L600 560" stroke="#7aa0b8" stroke-width="3"></path>
-</svg>`;
+// Generated by scripts/build-roman-map.py. Lambert conformal conic, parallels 31N and 47N.
+/* roman-map-geometry:start */
+const ROMAN_MAP_GEOMETRY = {
+  width: 1000,
+  height: 640,
+  padX: 34.0,
+  padY: 28.0,
+  contentW: 932.0,
+  contentH: 584.0,
+  lon0: 20.0,
+  lat0: 39.0,
+  lat1: 31.0,
+  lat2: 47.0,
+  projMinX: -0.53262156,
+  projMaxX: 0.52329495,
+  projMinY: -0.28729057,
+  projMaxY: 0.40238531,
+  checkLon: 12.496,
+  checkLat: 41.903,
+  checkX: 418.91,
+  checkY: 322.85,
+  imageWidth: 2800,
+  imageHeight: 1792,
+  image: 'assets/roman-map.webp'
+};
+/* roman-map-geometry:end */
+
+function romanMapProject(lon, lat) {
+  const geometry = ROMAN_MAP_GEOMETRY;
+  const radian = Math.PI / 180;
+  const phi1 = geometry.lat1 * radian;
+  const phi2 = geometry.lat2 * radian;
+  const phi0 = geometry.lat0 * radian;
+  const cone = Math.log(Math.cos(phi1) / Math.cos(phi2)) / Math.log(
+    Math.tan(Math.PI / 4 + phi2 / 2) / Math.tan(Math.PI / 4 + phi1 / 2)
+  );
+  const scale = Math.cos(phi1) * (Math.tan(Math.PI / 4 + phi1 / 2) ** cone) / cone;
+  const rho0 = scale / (Math.tan(Math.PI / 4 + phi0 / 2) ** cone);
+  const rho = scale / (Math.tan(Math.PI / 4 + lat * radian / 2) ** cone);
+  const theta = cone * (lon - geometry.lon0) * radian;
+  const east = rho * Math.sin(theta);
+  const north = rho0 - rho * Math.cos(theta);
+  return {
+    x: geometry.padX + (east - geometry.projMinX) / (geometry.projMaxX - geometry.projMinX) * geometry.contentW,
+    y: geometry.padY + (geometry.projMaxY - north) / (geometry.projMaxY - geometry.projMinY) * geometry.contentH
+  };
+}
+
+function layoutRomanMapPlaces() {
+  const separation = 17;
+  const clusterDistance = 17;
+  ROMAN_MAP_PLACES.forEach((place) => {
+    const projected = romanMapProject(place.lon, place.lat);
+    place.x = projected.x;
+    place.y = projected.y;
+    place.tapX = projected.x;
+    place.tapY = projected.y;
+  });
+  const parent = ROMAN_MAP_PLACES.map((_, index) => index);
+  const find = (index) => (parent[index] === index ? index : (parent[index] = find(parent[index])));
+  for (let left = 0; left < ROMAN_MAP_PLACES.length; left += 1) {
+    for (let right = left + 1; right < ROMAN_MAP_PLACES.length; right += 1) {
+      const a = ROMAN_MAP_PLACES[left];
+      const b = ROMAN_MAP_PLACES[right];
+      if (Math.hypot(a.x - b.x, a.y - b.y) < clusterDistance) parent[find(left)] = find(right);
+    }
+  }
+  const groups = new Map();
+  ROMAN_MAP_PLACES.forEach((place, index) => {
+    const root = find(index);
+    if (!groups.has(root)) groups.set(root, []);
+    groups.get(root).push(place);
+  });
+  groups.forEach((group) => {
+    if (group.length < 2) return;
+    const centerX = group.reduce((sum, place) => sum + place.x, 0) / group.length;
+    const centerY = group.reduce((sum, place) => sum + place.y, 0) / group.length;
+    group.sort((a, b) => Math.atan2(a.y - centerY, a.x - centerX) - Math.atan2(b.y - centerY, b.x - centerX) || a.id.localeCompare(b.id));
+    const radius = separation / (2 * Math.sin(Math.PI / group.length));
+    const start = Math.atan2(group[0].y - centerY, group[0].x - centerX);
+    group.forEach((place, index) => {
+      const angle = start + index * (2 * Math.PI / group.length);
+      place.tapX = Math.min(976, Math.max(24, centerX + Math.cos(angle) * radius));
+      place.tapY = Math.min(616, Math.max(24, centerY + Math.sin(angle) * radius));
+    });
+  });
+  const home = ROMAN_MAP_PLACES.map((place) => ({ x: place.tapX, y: place.tapY }));
+  for (let pass = 0; pass < 24; pass += 1) {
+    for (let left = 0; left < ROMAN_MAP_PLACES.length; left += 1) {
+      for (let right = left + 1; right < ROMAN_MAP_PLACES.length; right += 1) {
+        const a = ROMAN_MAP_PLACES[left];
+        const b = ROMAN_MAP_PLACES[right];
+        const dx = b.tapX - a.tapX;
+        const dy = b.tapY - a.tapY;
+        const distance = Math.hypot(dx, dy);
+        if (distance >= separation || distance < 0.01) continue;
+        const push = (separation - distance) / 2;
+        a.tapX -= dx / distance * push;
+        a.tapY -= dy / distance * push;
+        b.tapX += dx / distance * push;
+        b.tapY += dy / distance * push;
+      }
+    }
+    ROMAN_MAP_PLACES.forEach((place, index) => {
+      const dx = place.tapX - home[index].x;
+      const dy = place.tapY - home[index].y;
+      const drift = Math.hypot(dx, dy);
+      if (drift > 12) {
+        place.tapX = home[index].x + dx / drift * 12;
+        place.tapY = home[index].y + dy / drift * 12;
+      }
+      place.tapX = Math.min(976, Math.max(24, place.tapX));
+      place.tapY = Math.min(616, Math.max(24, place.tapY));
+    });
+  }
+}
+
+layoutRomanMapPlaces();
 
 const RomanWorldState = {
   tab: 'myth',
@@ -225,7 +327,8 @@ const RomanWorldState = {
   mapCorrect: 0,
   mapAsked: 0,
   mapLabels: false,
-  mapNote: ''
+  mapNote: '',
+  mapScroll: null
 };
 
 function romanWorldShuffle(items) {
@@ -317,6 +420,14 @@ function startMapRound() {
   RomanWorldState.mapNote = 'Click the dot for the place named below.';
 }
 
+function mapLeaderMarkup() {
+  const marks = ROMAN_MAP_PLACES.map((place) => {
+    if (Math.hypot(place.tapX - place.x, place.tapY - place.y) < 8) return '';
+    return `<line x1="${place.x.toFixed(1)}" y1="${place.y.toFixed(1)}" x2="${place.tapX.toFixed(1)}" y2="${place.tapY.toFixed(1)}"></line><circle cx="${place.x.toFixed(1)}" cy="${place.y.toFixed(1)}" r="2.4"></circle>`;
+  }).join('');
+  return `<svg class="roman-map-leaders" viewBox="0 0 1000 640" aria-hidden="true">${marks}</svg>`;
+}
+
 function renderRomanMap() {
   if (RomanWorldState.mapQueue.length === 0) startMapRound();
   const target = RomanWorldState.mapQueue[RomanWorldState.mapIndex] || null;
@@ -330,11 +441,16 @@ function renderRomanMap() {
   ];
   const dots = ROMAN_MAP_PLACES.map((place) => {
     const hidden = RomanWorldState.mapGroup !== 'all' && place.group !== RomanWorldState.mapGroup;
+    const classes = ['roman-map-dot'];
+    if (hidden) classes.push('is-dim');
+    if (place.tapX > 860) classes.push('is-label-left');
+    if (place.tapY < 40) classes.push('is-label-below');
+    if (Math.hypot(place.tapX - place.x, place.tapY - place.y) >= 8) classes.push('has-leader');
     return `
       <button
         type="button"
-        class="roman-map-dot${hidden ? ' is-dim' : ''}"
-        style="left:${(place.x / 10).toFixed(2)}%;top:${(place.y / 6.4).toFixed(2)}%"
+        class="${classes.join(' ')}"
+        style="left:${(place.tapX / 10).toFixed(2)}%;top:${(place.tapY / 6.4).toFixed(2)}%"
         data-map-place="${escapeHtml(place.id)}"
         aria-label="${escapeHtml(place.english)}"
       >${RomanWorldState.mapLabels ? `<span>${escapeHtml(place.latin)}</span>` : ''}</button>
@@ -344,22 +460,44 @@ function renderRomanMap() {
     <section class="roman-map-panel">
       <div class="roman-map-toolbar">
         ${groups.map(([id, label]) => `<button type="button" data-map-group="${id}" class="${RomanWorldState.mapGroup === id ? 'active' : ''}">${escapeHtml(label)}</button>`).join('')}
-        <button type="button" data-map-action="labels">${RomanWorldState.mapLabels ? 'Hide labels' : 'Show labels'}</button>
+        <button type="button" data-map-action="labels" aria-pressed="${RomanWorldState.mapLabels ? 'true' : 'false'}">${RomanWorldState.mapLabels ? 'Hide labels' : 'Show labels'}</button>
       </div>
       <p class="roman-map-prompt">${target ? `Where is <strong>${escapeHtml(target.latin)}</strong>, ${escapeHtml(target.english)}?` : 'Round complete.'}</p>
       <p class="roman-map-note">${escapeHtml(RomanWorldState.mapNote)} Score ${RomanWorldState.mapCorrect}/${RomanWorldState.mapAsked}.</p>
-      <div class="roman-map-frame">
-        ${ROMAN_MAP_SVG}
-        ${dots}
+      <div class="roman-map-frame" tabindex="0">
+        <div class="roman-map-stage">
+          <img class="roman-map-image" src="${ROMAN_MAP_GEOMETRY.image}" width="${ROMAN_MAP_GEOMETRY.imageWidth}" height="${ROMAN_MAP_GEOMETRY.imageHeight}" alt="Parchment map of the lands around the Mediterranean, from the Atlantic to Mesopotamia, with coastlines, rivers, lakes, and shaded relief.">
+          ${mapLeaderMarkup()}
+          ${dots}
+        </div>
       </div>
-      <p class="roman-map-credit">Original classroom map. Coastlines are simplified, and the dots are approximate.</p>
+      <p class="roman-map-pan">Slide the map to look around the sea.</p>
+      <p class="roman-map-credit">Coastlines, rivers, and lakes from Natural Earth, public domain. Relief from NOAA ETOPO5, public domain. Each place is drawn at its latitude and longitude.</p>
     </section>
   `;
+}
+
+function captureMapScroll() {
+  const frame = document.querySelector('#romanWorldStage .roman-map-frame');
+  if (frame) RomanWorldState.mapScroll = frame.scrollLeft;
+}
+
+function restoreMapScroll() {
+  const frame = document.querySelector('#romanWorldStage .roman-map-frame');
+  if (!frame) return;
+  if (typeof RomanWorldState.mapScroll === 'number') {
+    frame.scrollLeft = RomanWorldState.mapScroll;
+    return;
+  }
+  const rome = ROMAN_MAP_PLACES.find((place) => place.id === 'roma');
+  if (!rome) return;
+  frame.scrollLeft = Math.max(0, frame.scrollWidth * (rome.x / 1000) - frame.clientWidth / 2);
 }
 
 function renderRomanWorld() {
   const stage = document.getElementById('romanWorldStage');
   if (!stage) return;
+  captureMapScroll();
   const tabs = [
     ['myth', 'Mythology'],
     ['life', 'Daily life'],
@@ -385,6 +523,7 @@ function renderRomanWorld() {
     ${extra}
     <div class="roman-world-grid">${cards}</div>
   `;
+  restoreMapScroll();
 }
 
 function onRomanWorldClick(event) {

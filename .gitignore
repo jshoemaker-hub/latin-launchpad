@@ -10,6 +10,7 @@ ref/*.jpeg
 .netlify/
 dist/
 node_modules/
+__pycache__/
 npm-debug.log*
 .gstack/
 
