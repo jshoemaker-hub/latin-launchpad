@@ -1113,38 +1113,167 @@ input {
 
 .roman-map-frame {
   position: relative;
-  max-width: 1000px;
+  max-width: 100%;
+  overflow: auto;
+  border-radius: 16px;
+  background: #f3e0ba;
+  box-shadow: inset 0 0 0 1px rgba(110, 72, 40, 0.35);
 }
 
-.roman-map-drawing {
-  display: block;
+.roman-map-frame:focus-visible {
+  outline: 3px solid #9a3412;
+  outline-offset: 3px;
+}
+
+.roman-map-stage {
+  position: relative;
   width: 100%;
-  height: auto;
-  border-radius: 16px;
+  aspect-ratio: 1000 / 640;
+}
+
+.roman-map-image,
+.roman-map-leaders {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.roman-map-image,
+.roman-map-sharp {
+  display: block;
+  object-fit: fill;
+}
+
+.roman-map-sharp {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.roman-map-leaders {
+  pointer-events: none;
+}
+
+.roman-map-stage.is-true-dots .roman-map-leaders line:not(.is-label-leader),
+.roman-map-stage.is-true-dots .roman-map-leaders circle {
+  display: none;
+}
+
+.roman-map-leaders line {
+  stroke: rgba(92, 58, 32, 0.8);
+  stroke-width: 1.2;
+}
+
+.roman-map-leaders line.is-label-leader {
+  stroke: rgba(92, 58, 32, 0.45);
+  stroke-width: 0.7;
+}
+
+.roman-map-leaders circle {
+  fill: #7c2d12;
+  stroke: #fffaf0;
+  stroke-width: 0.7;
 }
 
 .roman-map-dot {
   position: absolute;
-  width: 16px;
-  height: 16px;
-  margin: -8px 0 0 -8px;
+  z-index: 1;
+  width: 44px;
+  height: 44px;
+  margin: -22px 0 0 -22px;
   padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.roman-map-dot::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -9px 0 0 -9px;
   border: 2px solid #7c2d12;
   border-radius: 50%;
+  background: #fffaf0;
+  box-shadow: 0 0 0 2px rgba(255, 250, 240, 0.85);
+}
+
+.roman-map-dot.has-leader::before {
   background: #fff;
-  cursor: pointer;
+}
+
+.roman-map-dot:focus-visible {
+  outline: none;
+}
+
+.roman-map-dot:focus-visible::before {
+  box-shadow: 0 0 0 3px #9a3412, 0 0 0 6px #fffaf0;
 }
 
 .roman-map-dot span {
   position: absolute;
-  left: 18px;
-  top: -4px;
-  padding: 1px 4px;
+  left: calc(50% + 14px);
+  top: calc(50% - 16px);
+  padding: 1px 5px;
   border-radius: 6px;
-  background: rgba(255, 255, 255, 0.88);
-  color: #7c2d12;
-  font-size: 11px;
-  font-weight: 700;
+  background: rgba(252, 244, 224, 0.92);
+  color: #5c3a20;
+  font-family: Palatino, "Palatino Linotype", Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.roman-map-dot.is-labeled,
+.roman-map-dot.is-revealed,
+.roman-map-dot:hover,
+.roman-map-dot:focus-visible {
+  z-index: 5;
+}
+
+.roman-map-dot.is-labeled span,
+.roman-map-dot.is-revealed span,
+.roman-map-dot:hover span,
+.roman-map-dot:focus-visible span {
+  opacity: 1;
+}
+
+.roman-map-dot.is-revealed span,
+.roman-map-dot:hover span,
+.roman-map-dot:focus-visible span {
+  background: rgba(252, 244, 224, 0.96);
+  box-shadow: 0 1px 2px rgba(92, 58, 32, 0.28);
+}
+
+.roman-map-dot.is-water span,
+.roman-map-sea {
+  background: transparent;
+  box-shadow: none;
+  color: #3f534c;
+  font-size: 16px;
+  letter-spacing: 0.03em;
+  text-shadow: 0 0 3px rgba(244, 228, 196, 0.95), 0 0 3px rgba(244, 228, 196, 0.95);
+}
+
+.roman-map-sea {
+  z-index: 3;
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-family: Palatino, "Palatino Linotype", Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 600;
+  line-height: 1.05;
+  text-align: center;
   white-space: nowrap;
 }
 
@@ -1156,9 +1285,48 @@ input {
   display: none;
 }
 
+.roman-map-pan {
+  margin: 8px 0 0;
+  color: #9a3412;
+  font-size: 0.92rem;
+}
+
 .roman-map-credit,
 .roman-map-note {
   color: #9a3412;
+}
+
+@media (min-width: 761px) {
+  .roman-map-pan {
+    display: none;
+  }
+}
+
+.roman-map-dot.is-offview {
+  display: none;
+}
+
+.roman-map-frame.is-fit {
+  max-height: none;
+}
+
+@media (max-width: 760px) {
+  .roman-map-frame {
+    max-height: 68vh;
+  }
+
+  .roman-map-frame.is-fit {
+    max-height: none;
+  }
+
+  .roman-map-stage {
+    width: 1400px;
+  }
+
+  .roman-map-stage.is-zoomed .roman-map-dot span {
+    font-size: 11px;
+    padding: 0 2px;
+  }
 }
 
 @media (min-width: 800px) {

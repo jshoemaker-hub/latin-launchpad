@@ -1,5 +1,6 @@
 // Original Roman-world units: mythology, daily life, history, and a classroom map.
-// The map is a schematic drawn for this course. It is not a survey, and the dots are approximate.
+// Place dots use real latitudes and longitudes. scripts/build-roman-map.py
+// draws the parchment image from Natural Earth vectors and NOAA ETOPO1 relief.
 
 function cultureCard(unit, id, title, latinTitle, summary, connection, linkedWords, minGrade, mark) {
   return {
@@ -134,85 +135,212 @@ const ROMAN_TIMELINE = [
 ];
 
 const ROMAN_MAP_PLACES = [
-  { id: 'roma', latin: 'Roma', english: 'Rome', group: 'mediterranean', x: 355, y: 310 },
-  { id: 'italia', latin: 'Italia', english: 'Italy', group: 'mediterranean', x: 390, y: 290 },
-  { id: 'sicilia', latin: 'Sicilia', english: 'Sicily', group: 'mediterranean', x: 365, y: 448 },
-  { id: 'graecia', latin: 'Graecia', english: 'Greece', group: 'mediterranean', x: 500, y: 345 },
-  { id: 'aegyptus', latin: 'Aegyptus', english: 'Egypt', group: 'mediterranean', x: 600, y: 500 },
-  { id: 'hispania', latin: 'Hispania', english: 'Spain', group: 'mediterranean', x: 90, y: 300 },
-  { id: 'gallia', latin: 'Gallia', english: 'Gaul', group: 'mediterranean', x: 210, y: 185 },
-  { id: 'britannia', latin: 'Britannia', english: 'Britain', group: 'mediterranean', x: 155, y: 90 },
-  { id: 'africa', latin: 'Africa', english: 'Africa province', group: 'mediterranean', x: 250, y: 455 },
-  { id: 'asia', latin: 'Asia', english: 'Asia province', group: 'mediterranean', x: 680, y: 310 },
-  { id: 'syria', latin: 'Syria', english: 'Syria', group: 'mediterranean', x: 780, y: 390 },
-  { id: 'macedonia', latin: 'Macedonia', english: 'Macedonia', group: 'mediterranean', x: 530, y: 280 },
-  { id: 'creta', latin: 'Creta', english: 'Crete', group: 'mediterranean', x: 575, y: 430 },
-  { id: 'cyprus', latin: 'Cyprus', english: 'Cyprus', group: 'mediterranean', x: 730, y: 410 },
-  { id: 'carthago', latin: 'Carthago', english: 'Carthage', group: 'mediterranean', x: 310, y: 430 },
-  { id: 'alexandria', latin: 'Alexandria', english: 'Alexandria', group: 'mediterranean', x: 610, y: 475 },
-  { id: 'athenae', latin: 'Athenae', english: 'Athens', group: 'mediterranean', x: 505, y: 370 },
-  { id: 'ostia', latin: 'Ostia', english: 'Ostia', group: 'italy', x: 340, y: 325 },
-  { id: 'pompeii', latin: 'Pompeii', english: 'Pompeii', group: 'italy', x: 400, y: 365 },
-  { id: 'brundisium', latin: 'Brundisium', english: 'Brundisium', group: 'italy', x: 445, y: 365 },
-  { id: 'capua', latin: 'Capua', english: 'Capua', group: 'italy', x: 385, y: 340 },
-  { id: 'cannae', latin: 'Cannae', english: 'Cannae', group: 'italy', x: 430, y: 345 },
-  { id: 'rubico', latin: 'Rubico', english: 'the Rubicon', group: 'italy', x: 385, y: 265 },
-  { id: 'tiberis', latin: 'Tiberis', english: 'the Tiber', group: 'italy', x: 348, y: 295 },
-  { id: 'latium', latin: 'Latium', english: 'Latium', group: 'italy', x: 368, y: 325 },
-  { id: 'campania', latin: 'Campania', english: 'Campania', group: 'italy', x: 400, y: 350 },
-  { id: 'etruria', latin: 'Etruria', english: 'Etruria', group: 'italy', x: 345, y: 270 },
-  { id: 'mediterraneum', latin: 'Mare Mediterraneum', english: 'the Mediterranean', group: 'waters', x: 470, y: 410 },
-  { id: 'adriaticum', latin: 'Mare Adriaticum', english: 'the Adriatic Sea', group: 'waters', x: 430, y: 300 },
-  { id: 'tyrrhenum', latin: 'Mare Tyrrhenum', english: 'the Tyrrhenian Sea', group: 'waters', x: 310, y: 370 },
-  { id: 'aegaeum', latin: 'Mare Aegaeum', english: 'the Aegean Sea', group: 'waters', x: 560, y: 360 },
-  { id: 'euxinus', latin: 'Pontus Euxinus', english: 'the Black Sea', group: 'waters', x: 720, y: 200 },
-  { id: 'nilus', latin: 'Nilus', english: 'the Nile', group: 'waters', x: 590, y: 540 },
-  { id: 'rhenus', latin: 'Rhenus', english: 'the Rhine', group: 'waters', x: 250, y: 140 },
-  { id: 'danuvius', latin: 'Danuvius', english: 'the Danube', group: 'waters', x: 500, y: 165 },
-  { id: 'rhodanus', latin: 'Rhodanus', english: 'the Rhone', group: 'waters', x: 195, y: 230 },
-  { id: 'sardinia', latin: 'Sardinia', english: 'Sardinia', group: 'waters', x: 275, y: 385 },
-  { id: 'corsica', latin: 'Corsica', english: 'Corsica', group: 'lands', x: 285, y: 340 },
-  { id: 'alpes', latin: 'Alpes', english: 'the Alps', group: 'lands', x: 300, y: 210 },
-  { id: 'apenninus', latin: 'Apenninus', english: 'the Apennines', group: 'lands', x: 385, y: 305 },
-  { id: 'olympus', latin: 'Olympus', english: 'Mount Olympus', group: 'lands', x: 515, y: 300 },
-  { id: 'vesuvius', latin: 'Vesuvius', english: 'Vesuvius', group: 'lands', x: 405, y: 355 },
-  { id: 'aetna', latin: 'Aetna', english: 'Mount Etna', group: 'lands', x: 385, y: 455 },
-  { id: 'helvetia', latin: 'Helvetia', english: 'Switzerland', group: 'lands', x: 270, y: 200 },
-  { id: 'germania', latin: 'Germania', english: 'Germany', group: 'lands', x: 320, y: 130 },
-  { id: 'dacia', latin: 'Dacia', english: 'Dacia', group: 'lands', x: 580, y: 175 },
-  { id: 'parthia', latin: 'Parthia', english: 'Parthia', group: 'lands', x: 860, y: 340 },
-  { id: 'cisalpina', latin: 'Gallia Cisalpina', english: 'Gaul this side of the Alps', group: 'lands', x: 330, y: 240 },
-  { id: 'troia', latin: 'Troia', english: 'Troy', group: 'poetry', x: 690, y: 325 },
-  { id: 'cumae', latin: 'Cumae', english: 'Cumae', group: 'poetry', x: 378, y: 348 },
-  { id: 'delos', latin: 'Delos', english: 'Delos', group: 'poetry', x: 575, y: 385 },
-  { id: 'lesbos', latin: 'Lesbos', english: 'Lesbos', group: 'poetry', x: 610, y: 330 },
-  { id: 'helicon', latin: 'Helicon', english: 'Mount Helicon', group: 'poetry', x: 490, y: 355 },
-  { id: 'parnassus', latin: 'Parnassus', english: 'Mount Parnassus', group: 'poetry', x: 485, y: 340 },
-  { id: 'ithaca', latin: 'Ithaca', english: 'Ithaca', group: 'poetry', x: 455, y: 355 },
-  { id: 'colchis', latin: 'Colchis', english: 'Colchis', group: 'poetry', x: 830, y: 210 },
-  { id: 'mantua', latin: 'Mantua', english: 'Mantua', group: 'poetry', x: 325, y: 250 },
-  { id: 'actium-place', latin: 'Actium', english: 'Actium', group: 'poetry', x: 470, y: 335 },
-  { id: 'sparta', latin: 'Sparta', english: 'Sparta', group: 'poetry', x: 495, y: 400 },
-  { id: 'byzantium', latin: 'Byzantium', english: 'Byzantium', group: 'poetry', x: 640, y: 255 }
+  { id: 'roma', latin: 'Roma', english: 'Rome', group: 'mediterranean', lat: 41.903, lon: 12.496 },
+  { id: 'italia', latin: 'Italia', english: 'Italy', group: 'mediterranean', lat: 42.8, lon: 12.6 },
+  { id: 'sicilia', latin: 'Sicilia', english: 'Sicily', group: 'mediterranean', lat: 37.5, lon: 14.2 },
+  { id: 'graecia', latin: 'Graecia', english: 'Greece', group: 'mediterranean', lat: 39.0, lon: 22.0 },
+  { id: 'aegyptus', latin: 'Aegyptus', english: 'Egypt', group: 'mediterranean', lat: 27.0, lon: 31.0 },
+  { id: 'hispania', latin: 'Hispania', english: 'Spain', group: 'mediterranean', lat: 40.0, lon: -4.0 },
+  { id: 'gallia', latin: 'Gallia', english: 'Gaul', group: 'mediterranean', lat: 46.5, lon: 2.5 },
+  { id: 'britannia', latin: 'Britannia', english: 'Britain', group: 'mediterranean', lat: 52.5, lon: -1.5 },
+  { id: 'africa', latin: 'Africa', english: 'Africa province', group: 'mediterranean', lat: 36.2, lon: 9.5 },
+  { id: 'asia', latin: 'Asia', english: 'Asia province', group: 'mediterranean', lat: 38.5, lon: 28.0 },
+  { id: 'syria', latin: 'Syria', english: 'Syria', group: 'mediterranean', lat: 35.0, lon: 37.5 },
+  { id: 'macedonia', latin: 'Macedonia', english: 'Macedonia', group: 'mediterranean', lat: 41.2, lon: 22.3 },
+  { id: 'creta', latin: 'Creta', english: 'Crete', group: 'mediterranean', lat: 35.24, lon: 24.8 },
+  { id: 'cyprus', latin: 'Cyprus', english: 'Cyprus', group: 'mediterranean', lat: 35.0, lon: 33.2 },
+  { id: 'carthago', latin: 'Carthago', english: 'Carthage', group: 'mediterranean', lat: 36.85, lon: 10.32 },
+  { id: 'alexandria', latin: 'Alexandria', english: 'Alexandria', group: 'mediterranean', lat: 31.2, lon: 29.92 },
+  { id: 'athenae', latin: 'Athenae', english: 'Athens', group: 'mediterranean', lat: 37.97, lon: 23.73 },
+  { id: 'ostia', latin: 'Ostia', english: 'Ostia', group: 'italy', lat: 41.73, lon: 12.29 },
+  { id: 'pompeii', latin: 'Pompeii', english: 'Pompeii', group: 'italy', lat: 40.75, lon: 14.49 },
+  { id: 'brundisium', latin: 'Brundisium', english: 'Brundisium', group: 'italy', lat: 40.64, lon: 17.94 },
+  { id: 'capua', latin: 'Capua', english: 'Capua', group: 'italy', lat: 41.1, lon: 14.21 },
+  { id: 'cannae', latin: 'Cannae', english: 'Cannae', group: 'italy', lat: 41.3, lon: 16.15 },
+  { id: 'rubico', latin: 'Rubico', english: 'the Rubicon', group: 'italy', lat: 44.1, lon: 12.4 },
+  { id: 'tiberis', latin: 'Tiberis', english: 'the Tiber', group: 'italy', lat: 42.2, lon: 12.4 },
+  { id: 'latium', latin: 'Latium', english: 'Latium', group: 'italy', lat: 41.5, lon: 13.1 },
+  { id: 'campania', latin: 'Campania', english: 'Campania', group: 'italy', lat: 40.95, lon: 15.1 },
+  { id: 'etruria', latin: 'Etruria', english: 'Etruria', group: 'italy', lat: 43.0, lon: 11.6 },
+  { id: 'mediterraneum', latin: 'Mare Mediterraneum', english: 'the Mediterranean', group: 'waters', lat: 35.0, lon: 18.0 },
+  { id: 'adriaticum', latin: 'Mare Adriaticum', english: 'the Adriatic Sea', group: 'waters', lat: 42.5, lon: 16.0 },
+  { id: 'tyrrhenum', latin: 'Mare Tyrrhenum', english: 'the Tyrrhenian Sea', group: 'waters', lat: 39.5, lon: 11.5 },
+  { id: 'aegaeum', latin: 'Mare Aegaeum', english: 'the Aegean Sea', group: 'waters', lat: 38.0, lon: 25.5 },
+  { id: 'euxinus', latin: 'Pontus Euxinus', english: 'the Black Sea', group: 'waters', lat: 43.3, lon: 34.0 },
+  { id: 'nilus', latin: 'Nilus', english: 'the Nile', group: 'waters', lat: 28.5, lon: 30.8 },
+  { id: 'rhenus', latin: 'Rhenus', english: 'the Rhine', group: 'waters', lat: 49.5, lon: 8.0 },
+  { id: 'danuvius', latin: 'Danuvius', english: 'the Danube', group: 'waters', lat: 47.2, lon: 19.0 },
+  { id: 'rhodanus', latin: 'Rhodanus', english: 'the Rhone', group: 'waters', lat: 44.5, lon: 4.7 },
+  { id: 'sardinia', latin: 'Sardinia', english: 'Sardinia', group: 'waters', lat: 40.1, lon: 9.0 },
+  { id: 'corsica', latin: 'Corsica', english: 'Corsica', group: 'lands', lat: 42.1, lon: 9.1 },
+  { id: 'alpes', latin: 'Alpes', english: 'the Alps', group: 'lands', lat: 46.5, lon: 10.0 },
+  { id: 'apenninus', latin: 'Apenninus', english: 'the Apennines', group: 'lands', lat: 42.8, lon: 13.3 },
+  { id: 'olympus', latin: 'Olympus', english: 'Mount Olympus', group: 'lands', lat: 40.09, lon: 22.35 },
+  { id: 'vesuvius', latin: 'Vesuvius', english: 'Vesuvius', group: 'lands', lat: 40.82, lon: 14.43 },
+  { id: 'aetna', latin: 'Aetna', english: 'Mount Etna', group: 'lands', lat: 37.75, lon: 14.99 },
+  { id: 'helvetia', latin: 'Helvetia', english: 'Switzerland', group: 'lands', lat: 46.8, lon: 8.2 },
+  { id: 'germania', latin: 'Germania', english: 'Germany', group: 'lands', lat: 51.0, lon: 10.5 },
+  { id: 'dacia', latin: 'Dacia', english: 'Dacia', group: 'lands', lat: 46.0, lon: 24.5 },
+  { id: 'parthia', latin: 'Parthia', english: 'Parthia', group: 'lands', lat: 34.5, lon: 48.0 },
+  { id: 'cisalpina', latin: 'Gallia Cisalpina', english: 'Gaul this side of the Alps', group: 'lands', lat: 45.0, lon: 11.8 },
+  { id: 'troia', latin: 'Troia', english: 'Troy', group: 'poetry', lat: 39.96, lon: 26.24 },
+  { id: 'cumae', latin: 'Cumae', english: 'Cumae', group: 'poetry', lat: 40.85, lon: 14.06 },
+  { id: 'delos', latin: 'Delos', english: 'Delos', group: 'poetry', lat: 37.4, lon: 25.27 },
+  { id: 'lesbos', latin: 'Lesbos', english: 'Lesbos', group: 'poetry', lat: 39.2, lon: 26.3 },
+  { id: 'helicon', latin: 'Helicon', english: 'Mount Helicon', group: 'poetry', lat: 38.35, lon: 22.82 },
+  { id: 'parnassus', latin: 'Parnassus', english: 'Mount Parnassus', group: 'poetry', lat: 38.53, lon: 22.62 },
+  { id: 'ithaca', latin: 'Ithaca', english: 'Ithaca', group: 'poetry', lat: 38.44, lon: 20.66 },
+  { id: 'colchis', latin: 'Colchis', english: 'Colchis', group: 'poetry', lat: 42.15, lon: 41.65 },
+  { id: 'mantua', latin: 'Mantua', english: 'Mantua', group: 'poetry', lat: 45.16, lon: 10.79 },
+  { id: 'actium-place', latin: 'Actium', english: 'Actium', group: 'poetry', lat: 38.95, lon: 20.77 },
+  { id: 'sparta', latin: 'Sparta', english: 'Sparta', group: 'poetry', lat: 37.08, lon: 22.43 },
+  { id: 'byzantium', latin: 'Byzantium', english: 'Byzantium', group: 'poetry', lat: 41.01, lon: 28.98 }
 ];
 
-const ROMAN_MAP_SVG = `
-<svg class="roman-map-drawing" viewBox="0 0 1000 640" role="img" aria-label="Schematic map of the Mediterranean">
-  <rect width="1000" height="640" fill="#d5eef8"></rect>
-  <path fill="#f4e4c4" d="M30 250 L130 210 L160 280 L100 360 L20 330 Z"></path>
-  <path fill="#f4e4c4" d="M120 55 L185 50 L200 115 L145 140 Z"></path>
-  <path fill="#f4e4c4" d="M145 145 L300 125 L320 230 L160 260 Z"></path>
-  <path fill="#f4e4c4" d="M300 200 L390 215 L400 280 L360 340 L410 400 L360 430 L330 360 L345 270 Z"></path>
-  <path fill="#f4e4c4" d="M345 435 L400 445 L365 475 Z"></path>
-  <path fill="#f4e4c4" d="M255 360 L295 350 L300 400 L265 410 Z"></path>
-  <path fill="#f4e4c4" d="M265 370 L290 365 L295 410 L270 415 Z"></path>
-  <path fill="#f4e4c4" d="M450 290 L530 270 L545 370 L470 400 Z"></path>
-  <path fill="#f4e4c4" d="M555 250 L760 230 L780 360 L560 370 Z"></path>
-  <path fill="#f4e4c4" d="M20 400 L300 385 L430 450 L560 520 L200 580 L20 540 Z"></path>
-  <path fill="#f4e4c4" d="M540 460 L660 450 L680 580 L540 580 Z"></path>
-  <path fill="#f4e4c4" d="M760 300 L900 280 L930 420 L780 430 Z"></path>
-  <path fill="#c5d7a4" d="M560 470 L600 560" stroke="#7aa0b8" stroke-width="3"></path>
-</svg>`;
+// Generated by scripts/build-roman-map.py. Lambert conformal conic, parallels 31N and 47N.
+/* roman-map-geometry:start */
+const ROMAN_MAP_GEOMETRY = {
+  width: 1000,
+  height: 640,
+  padX: 18.0,
+  padY: 16.0,
+  contentW: 964.0,
+  contentH: 608.0,
+  lon0: 20.0,
+  lat0: 39.0,
+  lat1: 31.0,
+  lat2: 47.0,
+  projMinX: -0.53262156,
+  projMaxX: 0.52329495,
+  projMinY: -0.28729057,
+  projMaxY: 0.40238531,
+  checkLon: 12.496,
+  checkLat: 41.903,
+  checkX: 416.13,
+  checkY: 322.96,
+  imageWidth: 2800,
+  imageHeight: 1792,
+  image: 'assets/roman-map.webp'
+};
+/* roman-map-geometry:end */
+
+// Close views. Italy replaces the sheet with a sharper crop. The Mediterranean
+// view keeps the full map, zoomed to Greece, with a sharper overlay on that window.
+const ROMAN_MAP_DETAIL = {
+  italy: {
+    minX: 352,
+    minY: 228,
+    maxX: 508,
+    maxY: 424,
+    image: 'assets/roman-map-italy.webp',
+    imageWidth: 2028,
+    imageHeight: 2548,
+    replace: true,
+    labels: ['roma', 'italia', 'sicilia', 'ostia', 'pompeii', 'brundisium', 'capua', 'cannae', 'rubico', 'tiberis', 'latium', 'campania', 'etruria', 'vesuvius', 'aetna', 'cumae', 'apenninus', 'corsica', 'sardinia', 'mantua', 'cisalpina', 'alpes']
+  },
+  mediterranean: {
+    minX: 490,
+    minY: 308,
+    maxX: 632,
+    maxY: 456,
+    image: 'assets/roman-map-greece.webp',
+    imageWidth: 1846,
+    imageHeight: 1924,
+    replace: false
+  }
+};
+
+function romanMapProject(lon, lat) {
+  const geometry = ROMAN_MAP_GEOMETRY;
+  const radian = Math.PI / 180;
+  const phi1 = geometry.lat1 * radian;
+  const phi2 = geometry.lat2 * radian;
+  const phi0 = geometry.lat0 * radian;
+  const cone = Math.log(Math.cos(phi1) / Math.cos(phi2)) / Math.log(
+    Math.tan(Math.PI / 4 + phi2 / 2) / Math.tan(Math.PI / 4 + phi1 / 2)
+  );
+  const scale = Math.cos(phi1) * (Math.tan(Math.PI / 4 + phi1 / 2) ** cone) / cone;
+  const rho0 = scale / (Math.tan(Math.PI / 4 + phi0 / 2) ** cone);
+  const rho = scale / (Math.tan(Math.PI / 4 + lat * radian / 2) ** cone);
+  const theta = cone * (lon - geometry.lon0) * radian;
+  const east = rho * Math.sin(theta);
+  const north = rho0 - rho * Math.cos(theta);
+  return {
+    x: geometry.padX + (east - geometry.projMinX) / (geometry.projMaxX - geometry.projMinX) * geometry.contentW,
+    y: geometry.padY + (geometry.projMaxY - north) / (geometry.projMaxY - geometry.projMinY) * geometry.contentH
+  };
+}
+
+function layoutRomanMapPlaces() {
+  const separation = 17;
+  const clusterDistance = 17;
+  ROMAN_MAP_PLACES.forEach((place) => {
+    const projected = romanMapProject(place.lon, place.lat);
+    place.x = projected.x;
+    place.y = projected.y;
+    place.tapX = projected.x;
+    place.tapY = projected.y;
+  });
+  const parent = ROMAN_MAP_PLACES.map((_, index) => index);
+  const find = (index) => (parent[index] === index ? index : (parent[index] = find(parent[index])));
+  for (let left = 0; left < ROMAN_MAP_PLACES.length; left += 1) {
+    for (let right = left + 1; right < ROMAN_MAP_PLACES.length; right += 1) {
+      const a = ROMAN_MAP_PLACES[left];
+      const b = ROMAN_MAP_PLACES[right];
+      if (Math.hypot(a.x - b.x, a.y - b.y) < clusterDistance) parent[find(left)] = find(right);
+    }
+  }
+  const groups = new Map();
+  ROMAN_MAP_PLACES.forEach((place, index) => {
+    const root = find(index);
+    if (!groups.has(root)) groups.set(root, []);
+    groups.get(root).push(place);
+  });
+  groups.forEach((group) => {
+    if (group.length < 2) return;
+    const centerX = group.reduce((sum, place) => sum + place.x, 0) / group.length;
+    const centerY = group.reduce((sum, place) => sum + place.y, 0) / group.length;
+    group.sort((a, b) => Math.atan2(a.y - centerY, a.x - centerX) - Math.atan2(b.y - centerY, b.x - centerX) || a.id.localeCompare(b.id));
+    const radius = separation / (2 * Math.sin(Math.PI / group.length));
+    const start = Math.atan2(group[0].y - centerY, group[0].x - centerX);
+    group.forEach((place, index) => {
+      const angle = start + index * (2 * Math.PI / group.length);
+      place.tapX = Math.min(976, Math.max(24, centerX + Math.cos(angle) * radius));
+      place.tapY = Math.min(616, Math.max(24, centerY + Math.sin(angle) * radius));
+    });
+  });
+  const home = ROMAN_MAP_PLACES.map((place) => ({ x: place.tapX, y: place.tapY }));
+  for (let pass = 0; pass < 24; pass += 1) {
+    for (let left = 0; left < ROMAN_MAP_PLACES.length; left += 1) {
+      for (let right = left + 1; right < ROMAN_MAP_PLACES.length; right += 1) {
+        const a = ROMAN_MAP_PLACES[left];
+        const b = ROMAN_MAP_PLACES[right];
+        const dx = b.tapX - a.tapX;
+        const dy = b.tapY - a.tapY;
+        const distance = Math.hypot(dx, dy);
+        if (distance >= separation || distance < 0.01) continue;
+        const push = (separation - distance) / 2;
+        a.tapX -= dx / distance * push;
+        a.tapY -= dy / distance * push;
+        b.tapX += dx / distance * push;
+        b.tapY += dy / distance * push;
+      }
+    }
+    ROMAN_MAP_PLACES.forEach((place, index) => {
+      const dx = place.tapX - home[index].x;
+      const dy = place.tapY - home[index].y;
+      const drift = Math.hypot(dx, dy);
+      if (drift > 12) {
+        place.tapX = home[index].x + dx / drift * 12;
+        place.tapY = home[index].y + dy / drift * 12;
+      }
+      place.tapX = Math.min(976, Math.max(24, place.tapX));
+      place.tapY = Math.min(616, Math.max(24, place.tapY));
+    });
+  }
+}
+
+layoutRomanMapPlaces();
 
 const RomanWorldState = {
   tab: 'myth',
@@ -225,7 +353,9 @@ const RomanWorldState = {
   mapCorrect: 0,
   mapAsked: 0,
   mapLabels: false,
-  mapNote: ''
+  mapNote: '',
+  mapScroll: null,
+  mapReframe: false
 };
 
 function romanWorldShuffle(items) {
@@ -317,6 +447,360 @@ function startMapRound() {
   RomanWorldState.mapNote = 'Click the dot for the place named below.';
 }
 
+// One painted name for the central sea. Mare Nostrum and Mare Mediterraneum stay in its note.
+// Aegaeum and Pontus Euxinus sit in open water, clear of Delos and Colchis.
+// spreadX/spreadY are the label's half-size in logical units on a fitted desktop map.
+const ROMAN_MAP_SEA_TITLES = [
+  { latin: 'Oceanus Atlanticus', lon: -8.8, lat: 44.5, spreadX: 68, spreadY: 14 },
+  {
+    latin: 'Mare Internum',
+    lon: 20.0,
+    lat: 33.2,
+    note: 'Also called Mare Nostrum and Mare Mediterraneum.',
+    spreadX: 54,
+    spreadY: 14
+  },
+  {
+    latin: 'Mare Aegaeum',
+    lines: ['Mare', 'Aegaeum'],
+    lon: 29.0,
+    lat: 35.2,
+    placeId: 'aegaeum',
+    spreadX: 38,
+    spreadY: 22
+  },
+  {
+    latin: 'Pontus Euxinus',
+    lines: ['Pontus', 'Euxinus'],
+    lon: 37.6,
+    lat: 42.7,
+    placeId: 'euxinus',
+    spreadX: 34,
+    spreadY: 20
+  }
+];
+
+const ROMAN_MAP_SEA_LABEL_IDS = new Set(
+  ROMAN_MAP_SEA_TITLES.map((title) => title.placeId).filter(Boolean).concat(['mediterraneum'])
+);
+
+function mapSeaTitleMarkup() {
+  if (!RomanWorldState.mapLabels || RomanWorldState.mapGroup === 'italy') return '';
+  return ROMAN_MAP_SEA_TITLES.map((title) => {
+    const point = romanMapProject(title.lon, title.lat);
+    const text = (title.lines || [title.latin]).map((line) => escapeHtml(line)).join('<br>');
+    const note = title.note ? ` title="${escapeHtml(title.note)}"` : '';
+    return `<span class="roman-map-sea" style="left:${(point.x / 10).toFixed(2)}%;top:${(point.y / 6.4).toFixed(2)}%"${note}>${text}</span>`;
+  }).join('');
+}
+
+function mapLabelAnchors(extended) {
+  const anchors = [
+    { x: 14, y: -16, align: 'left' },
+    { x: -14, y: -16, align: 'right' },
+    { x: 0, y: -20, align: 'center' },
+    { x: 0, y: 12, align: 'center' },
+    { x: 16, y: 4, align: 'left' },
+    { x: -16, y: 4, align: 'right' },
+    { x: 20, y: -8, align: 'left' },
+    { x: -20, y: 8, align: 'right' }
+  ];
+  const radii = extended ? [32, 48, 66, 84] : [30, 46, 62];
+  radii.forEach((radius) => {
+    for (let step = 0; step < 8; step += 1) {
+      const angle = -Math.PI / 2 + step * (Math.PI / 4);
+      const cos = Math.cos(angle);
+      anchors.push({
+        x: Math.round(Math.cos(angle) * radius),
+        y: Math.round(Math.sin(angle) * radius),
+        align: cos > 0.35 ? 'left' : cos < -0.35 ? 'right' : 'center'
+      });
+    }
+  });
+  return anchors;
+}
+
+function applyMapLabelAnchor(span, anchor) {
+  span.style.right = 'auto';
+  span.style.transform = 'none';
+  span.style.top = `calc(50% + ${anchor.y}px)`;
+  if (anchor.align === 'right') {
+    span.style.left = 'auto';
+    span.style.right = `calc(50% - ${anchor.x}px)`;
+    return;
+  }
+  span.style.left = `calc(50% + ${anchor.x}px)`;
+  if (anchor.align === 'center') span.style.transform = 'translateX(-50%)';
+}
+
+function mapRectsOverlap(a, b, pad) {
+  return a.left < b.right + pad && a.right > b.left - pad && a.top < b.bottom + pad && a.bottom > b.top - pad;
+}
+
+function mapDetail() {
+  return ROMAN_MAP_DETAIL[RomanWorldState.mapGroup] || null;
+}
+
+function mapDetailAnchors() {
+  const anchors = [
+    { x: 12, y: -14, align: 'left' },
+    { x: -12, y: -14, align: 'right' },
+    { x: 0, y: -18, align: 'center' },
+    { x: 0, y: 10, align: 'center' },
+    { x: 14, y: 2, align: 'left' },
+    { x: -14, y: 2, align: 'right' },
+    { x: 16, y: -6, align: 'left' },
+    { x: -16, y: 8, align: 'right' }
+  ];
+  [24, 36, 48, 64].forEach((radius) => {
+    for (let step = 0; step < 8; step += 1) {
+      const angle = -Math.PI / 2 + step * (Math.PI / 4);
+      const cos = Math.cos(angle);
+      anchors.push({
+        x: Math.round(Math.cos(angle) * radius),
+        y: Math.round(Math.sin(angle) * radius),
+        align: cos > 0.35 ? 'left' : cos < -0.35 ? 'right' : 'center'
+      });
+    }
+  });
+  return anchors;
+}
+
+function adjacentMapAnchors() {
+  return [
+    { x: 11, y: -13, align: 'left' },
+    { x: -11, y: -13, align: 'right' },
+    { x: 0, y: -16, align: 'center' },
+    { x: 0, y: 8, align: 'center' },
+    { x: 12, y: 2, align: 'left' },
+    { x: -12, y: 2, align: 'right' },
+    { x: 14, y: -4, align: 'left' },
+    { x: -14, y: 6, align: 'right' }
+  ];
+}
+
+function settleDetailDots(stage, view) {
+  if (stage.clientWidth < 560) return;
+  const spanX = view.maxX - view.minX;
+  const spanY = view.maxY - view.minY;
+  const pxPer = stage.clientWidth / spanX;
+  if (!(pxPer > 0)) return;
+  const minSep = 16 / pxPer;
+  const maxDrift = 8 / pxPer;
+  const points = [...stage.querySelectorAll('.roman-map-dot:not(.is-offview)')].map((dot) => {
+    const place = ROMAN_MAP_PLACES.find((item) => item.id === dot.getAttribute('data-map-place'));
+    if (!place) return null;
+    return { dot, place, x: place.x, y: place.y };
+  }).filter(Boolean);
+  for (let pass = 0; pass < 18; pass += 1) {
+    for (let left = 0; left < points.length; left += 1) {
+      for (let right = left + 1; right < points.length; right += 1) {
+        const a = points[left];
+        const b = points[right];
+        let dx = b.x - a.x;
+        let dy = b.y - a.y;
+        let distance = Math.hypot(dx, dy);
+        if (distance >= minSep) continue;
+        if (distance < 0.05) {
+          dx = 1;
+          dy = 0;
+          distance = 1;
+        }
+        const push = (minSep - distance) / 2;
+        a.x -= dx / distance * push;
+        a.y -= dy / distance * push;
+        b.x += dx / distance * push;
+        b.y += dy / distance * push;
+      }
+    }
+    points.forEach((point) => {
+      const dx = point.x - point.place.x;
+      const dy = point.y - point.place.y;
+      const drift = Math.hypot(dx, dy);
+      if (drift > maxDrift) {
+        point.x = point.place.x + dx / drift * maxDrift;
+        point.y = point.place.y + dy / drift * maxDrift;
+      }
+    });
+  }
+  const leaders = stage.querySelector('.roman-map-pin-leaders');
+  if (leaders) {
+    while (leaders.firstChild) leaders.removeChild(leaders.firstChild);
+  }
+  points.forEach((point) => {
+    point.dot.style.left = `${((point.x - view.minX) / spanX * 100).toFixed(2)}%`;
+    point.dot.style.top = `${((point.y - view.minY) / spanY * 100).toFixed(2)}%`;
+    const drift = Math.hypot(point.x - point.place.x, point.y - point.place.y);
+    if (!leaders || drift * pxPer < 14) return;
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', point.place.x.toFixed(1));
+    line.setAttribute('y1', point.place.y.toFixed(1));
+    line.setAttribute('x2', point.x.toFixed(1));
+    line.setAttribute('y2', point.y.toFixed(1));
+    leaders.appendChild(line);
+  });
+}
+
+function fitMapLabels() {
+  const stage = document.querySelector('#romanWorldStage .roman-map-stage');
+  if (!stage) return;
+  const leaderGroup = stage.querySelector('.roman-map-label-leaders');
+  if (leaderGroup) {
+    while (leaderGroup.firstChild) leaderGroup.removeChild(leaderGroup.firstChild);
+  }
+  stage.querySelectorAll('.roman-map-dot').forEach((dot) => {
+    dot.classList.remove('is-labeled');
+    const span = dot.querySelector('span');
+    if (!span) return;
+    span.style.left = '';
+    span.style.right = '';
+    span.style.top = '';
+    span.style.transform = '';
+  });
+  if (!RomanWorldState.mapLabels) return;
+  const stageRect = stage.getBoundingClientRect();
+  if (stageRect.width < 40) return;
+  const frame = stage.closest('.roman-map-frame');
+  const frameRect = frame ? frame.getBoundingClientRect() : stageRect;
+  const extended = stage.classList.contains('is-zoomed');
+  const detail = mapDetail();
+  const replacing = Boolean(detail && detail.replace);
+  const limit = extended ? frameRect : stageRect;
+  const taken = [];
+  stage.querySelectorAll('.roman-map-dot').forEach((dot) => {
+    const rect = dot.getBoundingClientRect();
+    const cx = (rect.left + rect.right) / 2;
+    const cy = (rect.top + rect.bottom) / 2;
+    taken.push({ left: cx - 9, top: cy - 9, right: cx + 9, bottom: cy + 9 });
+  });
+  stage.querySelectorAll('.roman-map-sea').forEach((sea) => {
+    const baseLeft = sea.style.left;
+    const baseTop = sea.style.top;
+    let placed = false;
+    for (let radius = 0; radius <= 48 && !placed; radius += 12) {
+      const steps = radius === 0 ? 1 : 8;
+      for (let step = 0; step < steps && !placed; step += 1) {
+        const angle = step * (Math.PI / 4);
+        const dx = Math.round(Math.cos(angle) * radius);
+        const dy = Math.round(Math.sin(angle) * radius);
+        sea.style.left = dx ? `calc(${baseLeft} + ${dx}px)` : baseLeft;
+        sea.style.top = dy ? `calc(${baseTop} + ${dy}px)` : baseTop;
+        const rect = sea.getBoundingClientRect();
+        const box = { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
+        const inside = box.left >= stageRect.left + 2 && box.top >= stageRect.top + 2
+          && box.right <= stageRect.right - 2 && box.bottom <= stageRect.bottom - 2;
+        if (!inside || taken.some((other) => mapRectsOverlap(box, other, 8))) continue;
+        taken.push(box);
+        placed = true;
+      }
+    }
+    if (!placed) {
+      sea.style.left = baseLeft;
+      sea.style.top = baseTop;
+      const rect = sea.getBoundingClientRect();
+      taken.push({ left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom });
+    }
+  });
+  const rank = { mediterranean: 0, waters: 1, lands: 2, italy: 3, poetry: 4 };
+  const boost = { roma: 0, italia: 1, graecia: 2, athenae: 3, macedonia: 4, sicilia: 5, carthago: 6, brundisium: 7 };
+  const nearAnchors = mapLabelAnchors(false);
+  const farAnchors = mapLabelAnchors(true);
+  const detailAnchors = mapDetailAnchors();
+  const labels = [...stage.querySelectorAll('.roman-map-dot')].filter((dot) => {
+    return !dot.classList.contains('is-dim') && !dot.classList.contains('is-sea-named') && dot.querySelector('span');
+  }).map((dot) => {
+    const place = ROMAN_MAP_PLACES.find((item) => item.id === dot.getAttribute('data-map-place'));
+    return { dot, place, span: dot.querySelector('span') };
+  }).filter((item) => item.place).sort((a, b) => {
+    const boostGap = (boost[a.place.id] ?? 20) - (boost[b.place.id] ?? 20);
+    if (boostGap) return boostGap;
+    if (replacing) {
+      const italyGap = (a.place.group === 'italy' ? 0 : 1) - (b.place.group === 'italy' ? 0 : 1);
+      if (italyGap) return italyGap;
+    }
+    const groupGap = rank[a.place.group] - rank[b.place.group];
+    if (groupGap) return groupGap;
+    const lengthGap = extended && !replacing
+      ? b.place.latin.length - a.place.latin.length
+      : a.place.latin.length - b.place.latin.length;
+    return lengthGap || a.place.id.localeCompare(b.place.id);
+  });
+  const originX = replacing ? detail.minX : 0;
+  const originY = replacing ? detail.minY : 0;
+  const spanX = replacing ? detail.maxX - detail.minX : 1000;
+  const spanY = replacing ? detail.maxY - detail.minY : 640;
+  labels.forEach((item) => {
+    let chosen = null;
+    let chosenAnchor = null;
+    const anchors = stageRect.width < 560
+      ? adjacentMapAnchors()
+      : extended
+        ? detailAnchors
+        : Object.prototype.hasOwnProperty.call(boost, item.place.id) ? farAnchors : nearAnchors;
+    anchors.forEach((anchor) => {
+      if (chosen) return;
+      applyMapLabelAnchor(item.span, anchor);
+      const rect = item.span.getBoundingClientRect();
+      const box = { left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
+      const inside = box.left >= limit.left - 2 && box.top >= limit.top - 2
+        && box.right <= limit.right + 2 && box.bottom <= limit.bottom + 2;
+      const pad = stageRect.width < 520 ? 1 : 3;
+      if (!inside || taken.some((other) => mapRectsOverlap(box, other, pad))) return;
+      chosen = box;
+      chosenAnchor = anchor;
+    });
+    if (!chosen) {
+      applyMapLabelAnchor(item.span, anchors[0]);
+      return;
+    }
+    item.dot.classList.add('is-labeled');
+    taken.push(chosen);
+    const leaderLimit = extended ? 72 : 22;
+    if (!leaderGroup || Math.hypot(chosenAnchor.x, chosenAnchor.y) < leaderLimit) return;
+    const toLogicalX = (px) => originX + (px - stageRect.left) / stageRect.width * spanX;
+    const toLogicalY = (py) => originY + (py - stageRect.top) / stageRect.height * spanY;
+    const dotRect = item.dot.getBoundingClientRect();
+    const x1 = toLogicalX((dotRect.left + dotRect.right) / 2);
+    const y1 = toLogicalY((dotRect.top + dotRect.bottom) / 2);
+    const left = toLogicalX(chosen.left);
+    const top = toLogicalY(chosen.top);
+    const right = toLogicalX(chosen.right);
+    const bottom = toLogicalY(chosen.bottom);
+    const x2 = Math.min(Math.max(x1, left), right);
+    const y2 = Math.min(Math.max(y1, top), bottom);
+    if (Math.hypot(x2 - x1, y2 - y1) < 2.5) return;
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('class', 'is-label-leader');
+    line.setAttribute('x1', x1.toFixed(1));
+    line.setAttribute('y1', y1.toFixed(1));
+    line.setAttribute('x2', x2.toFixed(1));
+    line.setAttribute('y2', y2.toFixed(1));
+    leaderGroup.appendChild(line);
+  });
+}
+
+function mapLeaderMarkup(view) {
+  if (view && view.replace) {
+    const spanX = view.maxX - view.minX;
+    const spanY = view.maxY - view.minY;
+    return `<svg class="roman-map-leaders" viewBox="${view.minX} ${view.minY} ${spanX} ${spanY}" aria-hidden="true"><g class="roman-map-pin-leaders"></g><g class="roman-map-label-leaders"></g></svg>`;
+  }
+  const marks = ROMAN_MAP_PLACES.map((place) => {
+    if (Math.hypot(place.tapX - place.x, place.tapY - place.y) < 8) return '';
+    return `<line x1="${place.x.toFixed(1)}" y1="${place.y.toFixed(1)}" x2="${place.tapX.toFixed(1)}" y2="${place.tapY.toFixed(1)}"></line><circle cx="${place.x.toFixed(1)}" cy="${place.y.toFixed(1)}" r="2.4"></circle>`;
+  }).join('');
+  return `<svg class="roman-map-leaders" viewBox="0 0 1000 640" aria-hidden="true">${marks}<g class="roman-map-label-leaders"></g></svg>`;
+}
+
+function mapSharpMarkup(view) {
+  if (!view || view.replace) return '';
+  const left = (view.minX / 10).toFixed(2);
+  const top = (view.minY / 6.4).toFixed(2);
+  const width = ((view.maxX - view.minX) / 10).toFixed(2);
+  const height = ((view.maxY - view.minY) / 6.4).toFixed(2);
+  return `<img class="roman-map-sharp" alt="" width="${view.imageWidth}" height="${view.imageHeight}" data-sharp="${view.image}" style="left:${left}%;top:${top}%;width:${width}%;height:${height}%" hidden>`;
+}
+
 function renderRomanMap() {
   if (RomanWorldState.mapQueue.length === 0) startMapRound();
   const target = RomanWorldState.mapQueue[RomanWorldState.mapIndex] || null;
@@ -328,38 +812,161 @@ function renderRomanMap() {
     ['lands', 'Lands and mountains'],
     ['poetry', 'Poetry places']
   ];
+  const view = mapDetail();
+  const labelSet = view && view.labels ? new Set(view.labels) : null;
   const dots = ROMAN_MAP_PLACES.map((place) => {
-    const hidden = RomanWorldState.mapGroup !== 'all' && place.group !== RomanWorldState.mapGroup;
+    const hidden = labelSet
+      ? !labelSet.has(place.id)
+      : RomanWorldState.mapGroup !== 'all' && place.group !== RomanWorldState.mapGroup;
+    const classes = ['roman-map-dot'];
+    if (hidden) classes.push('is-dim');
+    const pointX = view && view.replace ? place.x : place.tapX;
+    const pointY = view && view.replace ? place.y : place.tapY;
+    if (view && view.replace && (place.x < view.minX || place.x > view.maxX || place.y < view.minY || place.y > view.maxY)) {
+      classes.push('is-offview');
+    }
+    if (place.group === 'waters') classes.push('is-water');
+    if (ROMAN_MAP_SEA_LABEL_IDS.has(place.id)) classes.push('is-sea-named');
+    if (!(view && view.replace) && Math.hypot(place.tapX - place.x, place.tapY - place.y) >= 8) classes.push('has-leader');
+    const label = RomanWorldState.mapLabels ? `<span>${escapeHtml(place.latin)}</span>` : '';
+    const left = view && view.replace
+      ? ((pointX - view.minX) / (view.maxX - view.minX) * 100).toFixed(2)
+      : (pointX / 10).toFixed(2);
+    const top = view && view.replace
+      ? ((pointY - view.minY) / (view.maxY - view.minY) * 100).toFixed(2)
+      : (pointY / 6.4).toFixed(2);
     return `
       <button
         type="button"
-        class="roman-map-dot${hidden ? ' is-dim' : ''}"
-        style="left:${(place.x / 10).toFixed(2)}%;top:${(place.y / 6.4).toFixed(2)}%"
+        class="${classes.join(' ')}"
+        style="left:${left}%;top:${top}%"
         data-map-place="${escapeHtml(place.id)}"
         aria-label="${escapeHtml(place.english)}"
-      >${RomanWorldState.mapLabels ? `<span>${escapeHtml(place.latin)}</span>` : ''}</button>
+        title="${escapeHtml(place.latin)}"
+      >${label}</button>
     `;
   }).join('');
+  const sheet = view && view.replace ? view : ROMAN_MAP_GEOMETRY;
   return `
     <section class="roman-map-panel">
       <div class="roman-map-toolbar">
         ${groups.map(([id, label]) => `<button type="button" data-map-group="${id}" class="${RomanWorldState.mapGroup === id ? 'active' : ''}">${escapeHtml(label)}</button>`).join('')}
-        <button type="button" data-map-action="labels">${RomanWorldState.mapLabels ? 'Hide labels' : 'Show labels'}</button>
+        <button type="button" data-map-action="labels" aria-pressed="${RomanWorldState.mapLabels ? 'true' : 'false'}">${RomanWorldState.mapLabels ? 'Hide labels' : 'Show labels'}</button>
       </div>
       <p class="roman-map-prompt">${target ? `Where is <strong>${escapeHtml(target.latin)}</strong>, ${escapeHtml(target.english)}?` : 'Round complete.'}</p>
       <p class="roman-map-note">${escapeHtml(RomanWorldState.mapNote)} Score ${RomanWorldState.mapCorrect}/${RomanWorldState.mapAsked}.</p>
-      <div class="roman-map-frame">
-        ${ROMAN_MAP_SVG}
-        ${dots}
+      <div class="roman-map-frame" tabindex="0">
+        <div class="roman-map-stage">
+          <img class="roman-map-image" src="${sheet.image}" width="${sheet.imageWidth}" height="${sheet.imageHeight}" alt="Parchment map of the lands around the Mediterranean, from the Atlantic to Mesopotamia, with coastlines, rivers, lakes, and shaded relief.">
+          ${mapSharpMarkup(view)}
+          ${mapLeaderMarkup(view)}
+          ${mapSeaTitleMarkup()}
+          ${dots}
+        </div>
       </div>
-      <p class="roman-map-credit">Original classroom map. Coastlines are simplified, and the dots are approximate.</p>
+      <p class="roman-map-pan"${view && view.replace ? ' hidden' : ''}>Slide the map to look around Italy and the rest of the sea.</p>
+      <p class="roman-map-credit">Coastlines, rivers, and lakes from Natural Earth, public domain. Relief from NOAA ETOPO1, public domain. Each place is drawn at its latitude and longitude.</p>
     </section>
   `;
+}
+
+function captureMapScroll() {
+  const frame = document.querySelector('#romanWorldStage .roman-map-frame');
+  if (!frame) return;
+  RomanWorldState.mapScroll = { left: frame.scrollLeft, top: frame.scrollTop };
+}
+
+function showSharpOverlay(stage, view) {
+  const sharp = stage.querySelector('.roman-map-sharp');
+  if (!sharp) return;
+  if (!view || view.replace) {
+    sharp.hidden = true;
+    return;
+  }
+  if (!sharp.getAttribute('src')) sharp.src = sharp.getAttribute('data-sharp');
+  sharp.hidden = false;
+}
+
+function applyMapFrame() {
+  const frame = document.querySelector('#romanWorldStage .roman-map-frame');
+  const stage = frame && frame.querySelector('.roman-map-stage');
+  if (!frame || !stage) return;
+  const mobile = window.matchMedia('(max-width: 760px)').matches;
+  const column = frame.clientWidth;
+  const saved = RomanWorldState.mapScroll && typeof RomanWorldState.mapScroll.left === 'number';
+  const view = mapDetail();
+  if (view && view.replace && column > 0) {
+    frame.classList.add('is-fit');
+    frame.style.height = '';
+    frame.style.maxHeight = '';
+    stage.style.width = '100%';
+    stage.style.aspectRatio = `${view.maxX - view.minX} / ${view.maxY - view.minY}`;
+    stage.classList.add('is-zoomed');
+    frame.scrollLeft = 0;
+    frame.scrollTop = 0;
+    settleDetailDots(stage, view);
+  } else if (view && column > 0) {
+    frame.classList.remove('is-fit');
+    const spanX = view.maxX - view.minX;
+    const spanY = view.maxY - view.minY;
+    const height = Math.round(column * spanY / spanX);
+    const capped = mobile ? Math.min(height, Math.max(280, Math.round(window.innerHeight * 0.72))) : height;
+    frame.style.height = `${capped}px`;
+    frame.style.maxHeight = `${capped}px`;
+    const stageWidth = column / spanX * 1000;
+    stage.style.width = `${Math.round(stageWidth)}px`;
+    stage.style.aspectRatio = '';
+    stage.classList.add('is-zoomed');
+    stage.querySelectorAll('.roman-map-dot').forEach((dot) => {
+      const place = ROMAN_MAP_PLACES.find((item) => item.id === dot.getAttribute('data-map-place'));
+      if (!place) return;
+      dot.style.left = `${(place.x / 10).toFixed(2)}%`;
+      dot.style.top = `${(place.y / 6.4).toFixed(2)}%`;
+      dot.classList.remove('has-leader');
+    });
+    stage.classList.add('is-true-dots');
+    showSharpOverlay(stage, view);
+    if (saved) {
+      frame.scrollLeft = RomanWorldState.mapScroll.left;
+      frame.scrollTop = RomanWorldState.mapScroll.top;
+    } else {
+      const stageHeight = stageWidth * 640 / 1000;
+      frame.scrollLeft = Math.max(0, view.minX / 1000 * stageWidth);
+      frame.scrollTop = Math.max(0, view.minY / 640 * stageHeight);
+    }
+  } else {
+    frame.classList.remove('is-fit');
+    frame.style.height = '';
+    frame.style.maxHeight = '';
+    stage.style.width = '';
+    stage.style.aspectRatio = '';
+    stage.classList.remove('is-zoomed');
+    if (saved) {
+      frame.scrollLeft = RomanWorldState.mapScroll.left;
+      frame.scrollTop = RomanWorldState.mapScroll.top;
+    } else {
+      const fits = frame.scrollWidth <= frame.clientWidth + 2 && frame.scrollHeight <= frame.clientHeight + 2;
+      if (fits) {
+        frame.scrollLeft = 0;
+        frame.scrollTop = 0;
+      } else {
+        const focusId = RomanWorldState.mapGroup === 'mediterranean' ? 'graecia' : 'italia';
+        const focus = ROMAN_MAP_PLACES.find((place) => place.id === focusId);
+        if (focus) {
+          frame.scrollLeft = Math.max(0, frame.scrollWidth * (focus.x / 1000) - frame.clientWidth / 2);
+          frame.scrollTop = Math.max(0, frame.scrollHeight * (focus.y / 640) - frame.clientHeight / 2);
+        }
+      }
+    }
+  }
+  fitMapLabels();
 }
 
 function renderRomanWorld() {
   const stage = document.getElementById('romanWorldStage');
   if (!stage) return;
+  if (RomanWorldState.mapReframe) RomanWorldState.mapScroll = null;
+  else captureMapScroll();
   const tabs = [
     ['myth', 'Mythology'],
     ['life', 'Daily life'],
@@ -385,6 +992,7 @@ function renderRomanWorld() {
     ${extra}
     <div class="roman-world-grid">${cards}</div>
   `;
+  applyMapFrame();
 }
 
 function onRomanWorldClick(event) {
@@ -417,8 +1025,10 @@ function onRomanWorldClick(event) {
   const group = event.target.closest('[data-map-group]');
   if (group) {
     RomanWorldState.mapGroup = group.getAttribute('data-map-group');
+    RomanWorldState.mapReframe = true;
     startMapRound();
     renderRomanWorld();
+    RomanWorldState.mapReframe = false;
     return;
   }
   const mapAction = event.target.closest('[data-map-action]');
@@ -427,8 +1037,29 @@ function onRomanWorldClick(event) {
     renderRomanWorld();
     return;
   }
-  const dot = event.target.closest('[data-map-place]');
+  let dot = event.target.closest('[data-map-place]');
   if (dot) {
+    const candidates = [...document.querySelectorAll('#romanWorldStage .roman-map-dot:not(.is-offview)')];
+    let best = Infinity;
+    candidates.forEach((candidate) => {
+      const rect = candidate.getBoundingClientRect();
+      const distance = Math.hypot((rect.left + rect.right) / 2 - event.clientX, (rect.top + rect.bottom) / 2 - event.clientY);
+      if (distance < best) {
+        best = distance;
+        dot = candidate;
+      }
+    });
+    const parked = RomanWorldState.mapLabels
+      && !dot.classList.contains('is-dim')
+      && !dot.classList.contains('is-labeled')
+      && !dot.classList.contains('is-sea-named');
+    if (parked && !dot.classList.contains('is-revealed')) {
+      document.querySelectorAll('#romanWorldStage .roman-map-dot.is-revealed').forEach((el) => {
+        el.classList.remove('is-revealed');
+      });
+      dot.classList.add('is-revealed');
+      return;
+    }
     const target = RomanWorldState.mapQueue[RomanWorldState.mapIndex];
     if (!target) return;
     RomanWorldState.mapAsked += 1;
@@ -451,5 +1082,14 @@ function bindRomanWorld() {
   if (stage && !stage.dataset.bound) {
     stage.dataset.bound = 'true';
     stage.addEventListener('click', onRomanWorldClick);
+    let mapResizeTimer = 0;
+    window.addEventListener('resize', () => {
+      if (RomanWorldState.tab !== 'map') return;
+      window.clearTimeout(mapResizeTimer);
+      mapResizeTimer = window.setTimeout(() => {
+        if (RomanWorldState.mapGroup === 'italy') RomanWorldState.mapScroll = null;
+        applyMapFrame();
+      }, 120);
+    });
   }
 }
