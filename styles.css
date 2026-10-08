@@ -1035,6 +1035,123 @@ input {
   color: #9a3412;
 }
 
+.roman-world-tabs,
+.roman-map-toolbar,
+.timeline-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 16px;
+}
+
+.roman-world-tabs button,
+.roman-map-toolbar button,
+.timeline-choices button,
+.timeline-actions button {
+  border: 1px solid #fed7aa;
+  background: #fff;
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.roman-world-tabs button.active,
+.roman-map-toolbar button.active {
+  background: #9a3412;
+  color: #fff;
+}
+
+.roman-world-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.roman-world-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid #fed7aa;
+  border-radius: 16px;
+  background: #fffaf0;
+}
+
+.timeline-columns {
+  display: grid;
+  gap: 16px;
+}
+
+.timeline-choices button {
+  display: block;
+  width: 100%;
+  margin: 0 0 8px;
+  border-radius: 12px;
+  text-align: left;
+}
+
+.timeline-game,
+.roman-map-panel {
+  margin-bottom: 18px;
+}
+
+.roman-map-frame {
+  position: relative;
+  max-width: 1000px;
+}
+
+.roman-map-drawing {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+}
+
+.roman-map-dot {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin: -8px 0 0 -8px;
+  padding: 0;
+  border: 2px solid #7c2d12;
+  border-radius: 50%;
+  background: #fff;
+  cursor: pointer;
+}
+
+.roman-map-dot span {
+  position: absolute;
+  left: 18px;
+  top: -4px;
+  padding: 1px 4px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #7c2d12;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.roman-map-dot.is-dim {
+  opacity: 0.28;
+}
+
+.roman-map-dot.is-dim span {
+  display: none;
+}
+
+.roman-map-credit,
+.roman-map-note {
+  color: #9a3412;
+}
+
+@media (min-width: 800px) {
+  .roman-world-grid,
+  .timeline-columns {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .phrase-focus {
   margin-top: 18px;
 }
