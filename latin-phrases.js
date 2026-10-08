@@ -861,7 +861,7 @@ function getPhraseFocusForLesson(grade, lessonWords, maxPhrases = 2) {
     lessonWordMap.set(normalizeLatinPhraseTerm(word.latin), word);
   });
 
-  return LATIN_PHRASES
+  const ranked = LATIN_PHRASES
     .filter((phrase) => grade >= (phrase.minGrade || 3) && grade <= (phrase.maxGrade || 8))
     .map((phrase, index) => {
       const matchedWords = phrase.linkedWords
@@ -875,7 +875,15 @@ function getPhraseFocusForLesson(grade, lessonWords, maxPhrases = 2) {
       };
     })
     .filter((phrase) => phrase.matchScore > 0)
-    .sort((a, b) => b.matchScore - a.matchScore || a.sortIndex - b.sortIndex)
+    .sort((a, b) => b.matchScore - a.matchScore || a.sortIndex - b.sortIndex);
+
+  const classic = ranked.filter((phrase) => !phrase.added);
+  const added = ranked.filter((phrase) => phrase.added);
+  const chosen = classic.length && added.length && maxPhrases >= 2
+    ? [classic[0], added[0]]
+    : ranked.slice(0, maxPhrases);
+
+  return chosen
     .slice(0, maxPhrases)
     .map(({ matchScore, sortIndex, ...phrase }) => phrase);
 }

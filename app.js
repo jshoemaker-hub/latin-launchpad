@@ -529,6 +529,7 @@ const pages = {
   dashboard: document.getElementById('dashboardPage'),
   annualExam: document.getElementById('annualExamPage'),
   romanWorld: document.getElementById('romanWorldPage'),
+  wordBuilding: document.getElementById('wordBuildingPage'),
   resetPassword: document.getElementById('resetPasswordPage'),
   contact: document.getElementById('contactPage'),
   codeCheck: document.getElementById('codeCheckPage')
@@ -631,6 +632,9 @@ const elements = {
   romanWorldButton: document.getElementById('romanWorldButton'),
   romanWorldBackButton: document.getElementById('romanWorldBackButton'),
   homePracticeRomanWorld: document.getElementById('homePracticeRomanWorld'),
+  wordBuildingButton: document.getElementById('wordBuildingButton'),
+  wordBuildingBackButton: document.getElementById('wordBuildingBackButton'),
+  homePracticeWordBuilding: document.getElementById('homePracticeWordBuilding'),
   annualExamBackButton: document.getElementById('annualExamBackButton'),
   annualExamStage: document.getElementById('annualExamStage'),
   homePracticeAnnualExam: document.getElementById('homePracticeAnnualExam'),
@@ -1090,6 +1094,7 @@ function updateNavState(page) {
     assessments: 'assessmentsButton',
     annualExam: 'annualExamButton',
     romanWorld: 'romanWorldButton',
+    wordBuilding: 'wordBuildingButton',
     dashboard: 'dashboardButton',
     account: 'accountButton',
     resetPassword: 'accountButton',
@@ -1103,6 +1108,7 @@ function updateNavState(page) {
     elements.assessmentsButton,
     elements.annualExamButton,
     elements.romanWorldButton,
+    elements.wordBuildingButton,
     elements.dashboardButton,
     elements.accountButton,
     elements.contactButton
@@ -1801,7 +1807,9 @@ function renderLessonList() {
       ? ''
       : lesson.series === 'syntax'
         ? '<span class="lesson-kind-tag">Advanced grammar</span>'
-        : '<span class="lesson-kind-tag">Grammar</span>';
+        : lesson.series === 'meter'
+          ? '<span class="lesson-kind-tag">Poetry</span>'
+          : '<span class="lesson-kind-tag">Grammar</span>';
     const coreTag = lesson.coreSet
       ? '<span class="lesson-kind-tag">Core words</span>'
       : lesson.gapSet
@@ -6235,6 +6243,12 @@ function annualExamLevelProgress(levelId) {
   return progress.levels[levelId] || { categoryStats: {}, exams: [] };
 }
 
+function showWordBuilding() {
+  if (typeof bindWordBuilding === 'function') bindWordBuilding();
+  if (typeof renderWordBuilding === 'function') renderWordBuilding();
+  showPage('wordBuilding');
+}
+
 function showRomanWorld() {
   if (typeof bindRomanWorld === 'function') bindRomanWorld();
   if (typeof renderRomanWorld === 'function') renderRomanWorld();
@@ -6820,6 +6834,9 @@ function setupEvents() {
   elements.romanWorldButton.addEventListener('click', showRomanWorld);
   elements.romanWorldBackButton.addEventListener('click', showHomeOrWelcome);
   elements.homePracticeRomanWorld.addEventListener('click', showRomanWorld);
+  elements.wordBuildingButton.addEventListener('click', showWordBuilding);
+  elements.wordBuildingBackButton.addEventListener('click', showHomeOrWelcome);
+  elements.homePracticeWordBuilding.addEventListener('click', showWordBuilding);
   elements.annualExamBackButton.addEventListener('click', leaveAnnualExamView);
   elements.annualExamStage.addEventListener('click', handleAnnualExamClick);
   elements.homePracticeAnnualExam.addEventListener('click', showAnnualExam);
