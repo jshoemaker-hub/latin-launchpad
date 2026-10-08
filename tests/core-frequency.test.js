@@ -107,11 +107,17 @@ test('core words keep existing lesson ids and follow frequency order', () => {
   const yearFourCore = Array.from(after.VOCAB_LESSONS).filter((lesson) => lesson.grade >= 6 && lesson.coreSet);
   const coreTitles = yearFourCore.map((lesson) => String(lesson.title));
   assert.equal(new Set(coreTitles).size, coreTitles.length);
-  assert.equal(coreTitles[0], 'Year 4: Core words 1');
-  assert.equal(coreTitles[coreTitles.length - 1], `Year 4: Core words ${coreTitles.length}`);
-  assert.equal(yearFourBase[0].title, 'Year 4: Lesson 1');
-  const numbers = yearFourBase.map((lesson) => Number(String(lesson.title).slice(String(lesson.title).lastIndexOf(' ') + 1)));
-  assert.equal(numbers.join(','), Array.from({ length: numbers.length }, (_, index) => index + 1).join(','));
+  assert.equal(coreTitles[0], 'Year 4A: Core words 1');
+  assert.match(coreTitles[coreTitles.length - 1], /^Year 4C: Core words \d+$/);
+  assert.equal(yearFourBase[0].id, 'grade6-1');
+  assert.equal(yearFourBase[0].title, 'Year 4A: Lesson 1');
+  ['Year 4A', 'Year 4B', 'Year 4C'].forEach((label) => {
+    const numbers = yearFourBase
+      .filter((lesson) => String(lesson.title).startsWith(`${label}:`))
+      .map((lesson) => Number(String(lesson.title).slice(String(lesson.title).lastIndexOf(' ') + 1)));
+    assert.ok(numbers.length > 0, label);
+    assert.equal(numbers.join(','), Array.from({ length: numbers.length }, (_, index) => index + 1).join(','));
+  });
 });
 
 test('the sources note credits the frequency list without copying its definitions', () => {

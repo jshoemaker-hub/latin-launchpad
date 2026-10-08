@@ -1,8 +1,10 @@
 const CURRICULUM_LEVELS = [
-  { grade: 3, year: 1, label: 'Year 1', shortLabel: 'Y1', book: 'First Form Latin', lessonGrades: [3] },
-  { grade: 4, year: 2, label: 'Year 2', shortLabel: 'Y2', book: 'Second Form Latin', lessonGrades: [4] },
-  { grade: 5, year: 3, label: 'Year 3', shortLabel: 'Y3', book: 'Third Form Latin', lessonGrades: [5] },
-  { grade: 6, year: 4, label: 'Year 4', shortLabel: 'Y4', book: 'Advanced Latin', lessonGrades: [6, 7, 8] }
+  { grade: 3, year: 1, label: 'Year 1', shortLabel: 'Y1', book: 'Foundation: words, myth, maps, sayings', lessonGrades: [3] },
+  { grade: 4, year: 2, label: 'Year 2', shortLabel: 'Y2', book: 'Foundation: words, myth, maps, sayings', lessonGrades: [4] },
+  { grade: 5, year: 3, label: 'Year 3', shortLabel: 'Y3', book: 'Foundation: words, myth, maps, sayings', lessonGrades: [5] },
+  { grade: 6, year: 4, label: 'Year 4A', shortLabel: 'Y4A', book: 'Grade 6 · Introduction', lessonGrades: [6], examLevelId: 'intro' },
+  { grade: 7, year: 4, label: 'Year 4B', shortLabel: 'Y4B', book: 'Grade 7 · Beginning', lessonGrades: [7], examLevelId: 'beginning' },
+  { grade: 8, year: 4, label: 'Year 4C', shortLabel: 'Y4C', book: 'Grade 8 · Intermediate', lessonGrades: [8], examLevelId: 'intermediate' }
 ];
 
 function getCurriculumLevelByGrade(grade) {
@@ -499,6 +501,8 @@ const AssessmentState = {
   missedHeadwords: [],
   message: ''
 };
+
+let assignmentQuizGrades = null;
 
 const StudyState = {
   mode: 'list',
@@ -1769,6 +1773,7 @@ function renderGradeOptions() {
 function selectGrade(grade) {
   const normalizedGrade = normalizeCurriculumGrade(grade);
   if (!normalizedGrade) return;
+  assignmentQuizGrades = null;
   AppState.grade = normalizedGrade;
   StudyState.dueOnly = false;
   StudyState.words = [];
@@ -5711,6 +5716,10 @@ function ensureAssessmentDefaults() {
 }
 
 function getQuizChapters() {
+  if (Array.isArray(assignmentQuizGrades) && assignmentQuizGrades.length > 1) {
+    const grades = new Set(assignmentQuizGrades);
+    return LESSONS.filter((lesson) => grades.has(lesson.grade));
+  }
   return getCurrentGradeLessons();
 }
 
@@ -6022,9 +6031,11 @@ function printAnnualExam() {
     renderAnnualExam();
     return;
   }
-  const year = CURRICULUM_LEVELS.find((item) => item.year === level.primaryYear);
+  const band = CURRICULUM_LEVELS.find((item) => item.examLevelId === level.id)
+    || CURRICULUM_LEVELS.find((item) => item.grade === level.suggestedGrade)
+    || CURRICULUM_LEVELS.find((item) => item.year === level.primaryYear);
   const lesson = {
-    grade: year ? year.grade : 6,
+    grade: band ? band.grade : (level.suggestedGrade || 6),
     kind: 'vocabulary',
     title: level.name
   };
@@ -6231,9 +6242,11 @@ function tickAnnualExam() {
 }
 
 function suggestedAnnualExamLevelId() {
-  if (typeof getSuggestedAnnualExamLevelId !== 'function') return null;
   const level = getCurriculumLevelByGrade(AppState.grade);
-  return level ? getSuggestedAnnualExamLevelId(level.year) : null;
+  if (!level) return null;
+  if (level.examLevelId) return level.examLevelId;
+  if (typeof getSuggestedAnnualExamLevelId !== 'function') return null;
+  return getSuggestedAnnualExamLevelId(level.year, level.grade);
 }
 
 function annualExamLevelProgress(levelId) {
@@ -6277,25 +6290,43 @@ function renderAnnualExam() {
 
 function renderAnnualExamLevels() {
   const suggested = suggestedAnnualExamLevelId();
-  const cards = ANNUAL_EXAM_LEVELS.map((level) => {
-    const progress = annualExamLevelProgress(level.id);
-    const latestExam = [...progress.exams].reverse().find((exam) => exam.mode === 'exam');
-    const questionCount = ANNUAL_EXAM_QUESTIONS.filter((question) => question.level === level.id).length;
-    const status = latestExam
-      ? `Latest exam ${latestExam.correct}/${latestExam.total}`
-      : (questionCount ? `${questionCount} original questions` : 'Topics coming');
+  const groups = [
+    {
+      track: 'year4',
+      title: 'With Year 4',
+      note: 'Years 1–3 are the foundation: words, myth, maps, mottoes, and spoken Latin. Year 4A aims at Introduction, Year 4B at Beginning and Beginning Reading, and Year 4C at Intermediate.'
+    },
+    {
+      track: 'advanced',
+      title: 'Advanced track',
+      note: 'Optional after Year 4.'
+    }
+  ];
+  elements.annualExamStage.innerHTML = groups.map((group) => {
+    const cards = ANNUAL_EXAM_LEVELS.filter((level) => (level.track || 'year4') === group.track).map((level) => {
+      const progress = annualExamLevelProgress(level.id);
+      const latestExam = [...progress.exams].reverse().find((exam) => exam.mode === 'exam');
+      const questionCount = ANNUAL_EXAM_QUESTIONS.filter((question) => question.level === level.id).length;
+      const status = latestExam
+        ? `Latest exam ${latestExam.correct}/${latestExam.total}`
+        : (questionCount ? `${questionCount} original questions` : 'Topics coming');
+      return `
+        <button type="button" class="annual-exam-level-card${suggested === level.id ? ' suggested' : ''}" data-annual-exam-action="open-level" data-annual-exam-level="${escapeHtml(level.id)}">
+          <span>${escapeHtml(level.legacyName)}</span>
+          <strong>${escapeHtml(level.name)}</strong>
+          <small>${escapeHtml(level.yearNote)}</small>
+          <small>${escapeHtml(status)}</small>
+        </button>
+      `;
+    }).join('');
     return `
-      <button type="button" class="annual-exam-level-card${suggested === level.id ? ' suggested' : ''}" data-annual-exam-action="open-level" data-annual-exam-level="${escapeHtml(level.id)}">
-        <span>${escapeHtml(level.legacyName)}</span>
-        <strong>${escapeHtml(level.name)}</strong>
-        <small>${escapeHtml(level.yearNote)}</small>
-        <small>${escapeHtml(status)}</small>
-      </button>
+      <section class="annual-exam-level-group">
+        <h3>${escapeHtml(group.title)}</h3>
+        <p>${escapeHtml(group.note)}</p>
+        <div class="annual-exam-level-grid">${cards}</div>
+      </section>
     `;
   }).join('');
-  elements.annualExamStage.innerHTML = `
-    <div class="annual-exam-level-grid">${cards}</div>
-  `;
 }
 
 function renderAnnualExamLevel() {
@@ -7177,9 +7208,23 @@ function yearForGrade(grade) {
   return getCurriculumLevelByGrade(grade)?.year || null;
 }
 
-function gradeForYear(year) {
+function gradeFromLessonId(lessonId) {
+  const match = String(lessonId || '').match(/^grade(\d+)-/);
+  return match ? Number(match[1]) : null;
+}
+
+function gradeForYear(year, lessonId) {
+  const named = gradeFromLessonId(lessonId);
+  const namedLevel = named ? getCurriculumLevelByGrade(named) : null;
+  if (namedLevel && namedLevel.year === Number(year)) return namedLevel.grade;
   const level = CURRICULUM_LEVELS.find((item) => item.year === Number(year));
   return level ? level.grade : null;
+}
+
+function gradesForCurriculumYear(year) {
+  return CURRICULUM_LEVELS
+    .filter((item) => item.year === Number(year))
+    .map((item) => item.grade);
 }
 
 function lessonMatchesYear(lessonId, year) {
@@ -7280,17 +7325,27 @@ function applyAssignmentHash() {
       selectGrade(grade);
       return;
     }
-    if (route.kind === 'lesson' && grade && lessonMatchesYear(route.lessonId, route.year)) {
-      selectGrade(grade);
+    if (route.kind === 'lesson' && lessonMatchesYear(route.lessonId, route.year)) {
+      const lessonGrade = gradeForYear(route.year, route.lessonId);
+      if (!lessonGrade) return;
+      selectGrade(lessonGrade);
       openLesson(route.lessonId);
       selectPracticeMode(route.mode);
       return;
     }
     if (route.kind === 'quiz' && grade) {
-      selectGrade(grade);
+      const namedGrades = Array.isArray(route.lessonIds)
+        ? [...new Set(route.lessonIds.map(gradeFromLessonId).filter((item) => gradesForCurriculumYear(route.year).includes(item)))]
+        : [];
+      const yearGrades = gradesForCurriculumYear(route.year);
+      const quizGrade = namedGrades.length === 1 ? namedGrades[0] : grade;
+      selectGrade(quizGrade);
+      assignmentQuizGrades = namedGrades.length > 1
+        ? namedGrades
+        : (!Array.isArray(route.lessonIds) && yearGrades.length > 1 ? yearGrades : null);
       AssessmentState.mode = 'quiz';
       AssessmentState.quizQuestionCount = route.count;
-      AssessmentState.quizGrade = grade;
+      AssessmentState.quizGrade = quizGrade;
       const validIds = new Set(getQuizChapters().map((lesson) => lesson.id));
       const selected = Array.isArray(route.lessonIds)
         ? route.lessonIds.filter((id) => validIds.has(id))

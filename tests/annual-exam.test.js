@@ -89,10 +89,16 @@ test('eight Annual Exam Study levels map onto the site years', () => {
   assert.equal(nle.getAnnualExamLevel('beginning-reading').questionCount, 36);
   assert.equal(nle.getAnnualExamLevel('advanced-reading').questionCount, 36);
   assert.equal(nle.getAnnualExamLevel('intro').sections.map((section) => section.count).join(','), '12,18,10');
-  assert.equal(nle.getSuggestedAnnualExamLevelId(1), 'intro');
-  assert.equal(nle.getSuggestedAnnualExamLevelId(2), 'beginning');
-  assert.equal(nle.getSuggestedAnnualExamLevelId(3), 'intermediate');
-  assert.equal(nle.getSuggestedAnnualExamLevelId(4), 'advanced-prose');
+  assert.equal(nle.getSuggestedAnnualExamLevelId(1), null);
+  assert.equal(nle.getSuggestedAnnualExamLevelId(4, 6), 'intro');
+  assert.equal(nle.getSuggestedAnnualExamLevelId(4, 7), 'beginning');
+  assert.equal(nle.getSuggestedAnnualExamLevelId(4, 8), 'intermediate');
+  assert.equal(nle.getSuggestedAnnualExamLevelId(4), 'intro');
+  assert.equal(nle.getAnnualExamLevel('intro').track, 'year4');
+  assert.equal(nle.getAnnualExamLevel('intermediate-reading').track, 'advanced');
+  assert.equal(nle.getAnnualExamLevel('advanced-prose').track, 'advanced');
+  assert.doesNotMatch(nle.getAnnualExamLevel('intro').yearNote, /Form/);
+  assert.doesNotMatch(nle.getAnnualExamLevel('advanced-prose').yearNote, /Form/);
   assert.match(nle.getAnnualExamLevel('beginning').legacyName, /Latin I/);
 });
 
