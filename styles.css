@@ -604,6 +604,15 @@ input {
   background: #ecfdf5;
 }
 
+.welcome-flashcard-levels button small,
+.home-quick-flashcards button small {
+  display: block;
+  margin-top: 2px;
+  color: #4b6b63;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
 .home-hero-flashcards {
   grid-column: 1 / -1;
 }

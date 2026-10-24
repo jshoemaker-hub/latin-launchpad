@@ -1,7 +1,7 @@
 const CURRICULUM_LEVELS = [
-  { grade: 3, year: 1, label: 'Year 1', shortLabel: 'Y1', book: 'Foundation: words, myth, maps, sayings', lessonGrades: [3] },
-  { grade: 4, year: 2, label: 'Year 2', shortLabel: 'Y2', book: 'Foundation: words, verbs, and little phrases', lessonGrades: [4] },
-  { grade: 5, year: 3, label: 'Year 3', shortLabel: 'Y3', book: 'Foundation: sentences and first case jobs', lessonGrades: [5] },
+  { grade: 3, year: 1, label: 'Year 1', shortLabel: 'Y1', book: 'Grade 3 · Words, myth, maps, sayings', lessonGrades: [3] },
+  { grade: 4, year: 2, label: 'Year 2', shortLabel: 'Y2', book: 'Grade 4 · Words, verbs, little phrases', lessonGrades: [4] },
+  { grade: 5, year: 3, label: 'Year 3', shortLabel: 'Y3', book: 'Grade 5 · Sentences and first case jobs', lessonGrades: [5] },
   { grade: 6, year: 4, label: 'Year 4A', shortLabel: 'Y4A', book: 'Grade 6 · Introduction', lessonGrades: [6], examLevelId: 'intro' },
   { grade: 7, year: 4, label: 'Year 4B', shortLabel: 'Y4B', book: 'Grade 7 · Beginning', lessonGrades: [7], examLevelId: 'beginning' },
   { grade: 8, year: 4, label: 'Year 4C', shortLabel: 'Y4C', book: 'Grade 8 · Intermediate', lessonGrades: [8], examLevelId: 'intermediate' }
@@ -1076,7 +1076,7 @@ function showPage(page, options = {}) {
   updateNavState(page);
   document.title = page === 'annualExam'
     ? 'Annual Exam Study — Latin Launchpad'
-    : 'Latin Launchpad — Latin Practice for Years 1–4';
+    : 'Latin Launchpad — Latin Practice for Grades 3–8';
   document.getElementById('headerNav')?.classList.remove('is-open');
   document.getElementById('headerMenuButton')?.setAttribute('aria-expanded', 'false');
   window.LatinLaunchpadAnalytics?.trackPageView(page);
