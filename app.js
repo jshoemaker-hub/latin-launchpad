@@ -1080,7 +1080,7 @@ function showPage(page, options = {}) {
   document.getElementById('headerNav')?.classList.remove('is-open');
   document.getElementById('headerMenuButton')?.setAttribute('aria-expanded', 'false');
   window.LatinLaunchpadAnalytics?.trackPageView(page);
-  if (!options.preserveScroll) window.scrollTo({ top: 0, behavior: 'smooth' });
+  if (!options.preserveScroll) window.scrollTo({ top: 0, behavior: scrollBehavior() });
   if (page !== 'annualExam') assignmentFocus = null;
   if (!options.skipHash) syncAssignmentHash();
 }
@@ -3484,7 +3484,7 @@ function openPrintPreview(heading, bodyHtml) {
   elements.printArea.setAttribute('aria-hidden', 'false');
   document.body.classList.add('print-preview-open');
   elements.printArea.querySelector('[data-print-action="print"]')?.focus();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top: 0, behavior: scrollBehavior() });
 }
 
 function printLessonResource(type) {
@@ -7544,6 +7544,17 @@ window.addEventListener('hashchange', () => {
   applyAssignmentHash();
   if (!assignmentNavigationPending) syncAssignmentHash();
 });
+
+function scrollBehavior() {
+  return window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+}
+
+function focusMainContent(event) {
+  event.preventDefault();
+  document.getElementById('main')?.focus();
+}
+
+document.querySelector('.skip-link')?.addEventListener('click', focusMainContent);
 
 window.addEventListener('DOMContentLoaded', () => {
   init();

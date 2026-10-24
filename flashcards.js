@@ -822,11 +822,17 @@ function bindFlashcardUi() {
   applyDeckHash();
   renderHome();
   syncDeckHash();
+  document.querySelector('.skip-link')?.addEventListener('click', focusMainContent);
   window.addEventListener('hashchange', () => {
     applyDeckHash();
     renderHome();
     syncDeckHash();
   });
+}
+
+function focusMainContent(event) {
+  event.preventDefault();
+  document.getElementById('main')?.focus();
 }
 
 bindFlashcardUi();
