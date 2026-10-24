@@ -5493,6 +5493,23 @@ function renderFlashcardRating(word) {
   `;
 }
 
+const FLASHCARD_GOAL_CARDS_PER_MINUTE = 2;
+
+function getFlashcardSessionGoal() {
+  const minutes = StudyState.durationSeconds / 60;
+  return Math.max(1, Math.min(StudyState.words.length, Math.round(minutes * FLASHCARD_GOAL_CARDS_PER_MINUTE)));
+}
+
+function renderFlashcardGoal() {
+  const goal = getFlashcardSessionGoal();
+  const seenTotal = StudyState.seenKeys?.size || 0;
+  const seen = Math.min(seenTotal, goal);
+  if (seen >= goal) {
+    return `<div class="flashcard-counter flashcard-goal-met${seenTotal === goal ? ' is-new' : ''}"><span aria-hidden="true">🎉</span> Goal reached! Bonus cards</div>`;
+  }
+  return `<div class="flashcard-counter">Goal: ${seen} of ${goal} cards</div>`;
+}
+
 function renderFlashcard() {
   updateReviewQueueSummary();
   const word = StudyState.words[StudyState.index];
@@ -5505,7 +5522,7 @@ function renderFlashcard() {
   const elapsedPercent = Math.max(0, Math.min(100, ((totalMs - StudyState.remainingMs) / totalMs) * 100));
   elements.flashcardStage.innerHTML = `
     <div class="flashcard-progress" aria-hidden="true"><span style="width:${elapsedPercent}%"></span></div>
-    <div class="flashcard-counter">Card ${StudyState.index + 1} of ${StudyState.words.length}</div>
+    ${renderFlashcardGoal()}
     <div class="flashcard-face">
       <span class="flashcard-kicker">${StudyState.showingAnswer ? 'Meaning' : (word.isPhrase ? 'Latin phrase' : 'Latin')}</span>
       <strong>${escapeHtml(StudyState.showingAnswer ? word.english : word.latin)}</strong>
@@ -7433,7 +7450,10 @@ function noteFlashcardSeen() {
   if (!word) return;
   if (!StudyState.seenKeys) StudyState.seenKeys = new Set();
   const label = window.LatinLaunchpadAssign?.normalizeMissedLabel(word.latin);
-  if (label) StudyState.seenKeys.add(label);
+  if (!label || StudyState.seenKeys.has(label)) return;
+  StudyState.seenKeys.add(label);
+  const goal = getFlashcardSessionGoal();
+  if (StudyState.seenKeys.size === goal) announceAssignment(`Goal reached: ${goal} cards. Keep going for bonus cards.`);
 }
 
 function renderAnnualExamAssignmentNote(level) {

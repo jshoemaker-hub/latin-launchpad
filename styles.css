@@ -5449,3 +5449,17 @@ body.print-preview-open .app-shell {
   align-items: flex-start;
   gap: 4px;
 }
+
+.flashcard-goal-met {
+  color: #166534;
+}
+
+.flashcard-goal-met.is-new {
+  animation: flashcard-goal-pop 0.5s ease-out;
+}
+
+@keyframes flashcard-goal-pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  70% { transform: scale(1.08); opacity: 1; }
+  100% { transform: scale(1); }
+}
