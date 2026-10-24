@@ -1079,6 +1079,7 @@ function showPage(page, options = {}) {
     : 'Latin Launchpad — Latin Practice for Grades 3–8';
   document.getElementById('headerNav')?.classList.remove('is-open');
   document.getElementById('headerMenuButton')?.setAttribute('aria-expanded', 'false');
+  setHeaderMoreOpen(false);
   window.LatinLaunchpadAnalytics?.trackPageView(page);
   if (!options.preserveScroll) window.scrollTo({ top: 0, behavior: scrollBehavior() });
   if (page !== 'annualExam') assignmentFocus = null;
@@ -1120,6 +1121,17 @@ function updateNavState(page) {
     if (!button) return;
     button.classList.toggle('active', button.id === activeButtonByPage[page]);
   });
+  const moreButton = document.getElementById('headerMoreButton');
+  const moreMenu = document.getElementById('headerMoreMenu');
+  moreButton?.classList.toggle('active', Boolean(moreMenu?.querySelector(`#${activeButtonByPage[page]}`)));
+}
+
+function setHeaderMoreOpen(open) {
+  const moreButton = document.getElementById('headerMoreButton');
+  const moreMenu = document.getElementById('headerMoreMenu');
+  if (!moreButton || !moreMenu) return;
+  moreMenu.hidden = !open;
+  moreButton.setAttribute('aria-expanded', String(open));
 }
 
 function isEmailAccount(state = AppState) {
@@ -7056,6 +7068,18 @@ function setupEvents() {
       event.preventDefault();
       nextQuestion();
     }
+  });
+  document.getElementById('headerMoreButton')?.addEventListener('click', (event) => {
+    event.stopPropagation();
+    setHeaderMoreOpen(event.currentTarget.getAttribute('aria-expanded') !== 'true');
+  });
+  document.addEventListener('click', (event) => {
+    if (!(event.target instanceof Element) || !event.target.closest('.header-more')) setHeaderMoreOpen(false);
+  });
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Escape' || document.getElementById('headerMoreButton')?.getAttribute('aria-expanded') !== 'true') return;
+    setHeaderMoreOpen(false);
+    document.getElementById('headerMoreButton')?.focus();
   });
   elements.headerMenuButton = document.getElementById('headerMenuButton');
   elements.headerMenuButton?.addEventListener('click', () => {
