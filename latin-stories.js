@@ -460,12 +460,22 @@ function getStorySceneForLesson(grade, lessonIndex) {
 const STORY_NOUN_ENDINGS = new Set(['', 'a', 'ae', 'am', 'as', 'arum', 'is', 'e', 'i', 'o', 'um', 'os', 'orum', 'us', 'ui', 'u', 'uum', 'ibus', 'ei', 'em', 'es', 'ebus', 'ium', 'bus', 'm']);
 const STORY_VERB_ENDINGS = new Set(['t', 'nt', 'mus', 'tis', 're', 'ri', 'tur', 'mur', 'te', 'bo', 'bis', 'bit', 'bunt', 'bam', 'bat', 'bamus', 'batis', 'bant', 'vit', 'uit', 'vi', 'vere', 'sti', 'stis', 'runt', 'ere', 'io', 'at', 'ant', 'amus', 'atis']);
 
+// Lessons are all built at startup, so the same headwords and story tokens
+// are folded and compared many thousands of times. Cache the pure results.
+const STORY_FOLD_CACHE = new Map();
+
 function storyFold(value) {
-  return String(value || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z]/g, '');
+  const raw = String(value || '');
+  let folded = STORY_FOLD_CACHE.get(raw);
+  if (folded === undefined) {
+    folded = raw
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z]/g, '');
+    STORY_FOLD_CACHE.set(raw, folded);
+  }
+  return folded;
 }
 
 function storyTokenMatchesHeadword(headword, token) {
@@ -495,9 +505,22 @@ function storyTextTokens(storyId) {
   return text.split(/[^A-Za-z]+/).filter(Boolean);
 }
 
+const STORY_TOKEN_CACHE = new Map();
+const STORY_HEADWORD_MATCH_CACHE = new Map();
+
+function storyHeardHeadword(headword, storyId) {
+  const cacheKey = `${storyId}|${headword}`;
+  let heard = STORY_HEADWORD_MATCH_CACHE.get(cacheKey);
+  if (heard === undefined) {
+    if (!STORY_TOKEN_CACHE.has(storyId)) STORY_TOKEN_CACHE.set(storyId, [...new Set(storyTextTokens(storyId))]);
+    heard = STORY_TOKEN_CACHE.get(storyId).some((token) => storyTokenMatchesHeadword(headword, token));
+    STORY_HEADWORD_MATCH_CACHE.set(cacheKey, heard);
+  }
+  return heard;
+}
+
 function wordsHeardInStory(words, storyId) {
-  const tokens = storyTextTokens(storyId);
-  return words.filter((word) => tokens.some((token) => storyTokenMatchesHeadword(word.latin, token)));
+  return words.filter((word) => storyHeardHeadword(word.latin, storyId));
 }
 
 function lessonListeningLine(words) {
@@ -525,18 +548,31 @@ function cloneStoryScene(storyId) {
   };
 }
 
+const FOLDED_STORY_WORD_SETS = new WeakMap();
+
+function foldedStoryWordSet(words) {
+  if (!Array.isArray(words)) return new Set();
+  let folded = FOLDED_STORY_WORD_SETS.get(words);
+  if (!folded) {
+    folded = new Set(words.map((word) => storyFold(word.latin || word)));
+    FOLDED_STORY_WORD_SETS.set(words, folded);
+  }
+  return folded;
+}
+
 function getVocabularyStoryForLesson(grade, lessonIndex, lessonWords, earlierWords) {
   const words = (Array.isArray(lessonWords) ? lessonWords : []).filter((word) => word && word.latin);
-  const earlier = new Set((earlierWords || []).map((word) => storyFold(word.latin || word)));
+  const earlier = foldedStoryWordSet(earlierWords);
   const fresh = words.filter((word) => !earlier.has(storyFold(word.latin)));
   const featured = fresh.length >= 3 ? fresh : words;
+  const featuredKeys = new Set(featured.map((word) => storyFold(word.latin)));
   const sequence = getUniqueStorySequenceForGrade(grade);
   let bestId = sequence[Math.max(0, lessonIndex) % sequence.length];
   let bestScore = -1;
   sequence.forEach((storyId) => {
     const found = wordsHeardInStory(featured, storyId);
     const targets = (LATIN_SEEK_FIND_SCENES[storyId]?.targets || []).filter((target) => (
-      featured.some((word) => storyFold(word.latin) === storyFold(target.latin))
+      featuredKeys.has(storyFold(target.latin))
     ));
     const score = found.length * 2 + targets.length * 5;
     if (score > bestScore) {
@@ -558,9 +594,7 @@ function getVocabularyStoryForLesson(grade, lessonIndex, lessonWords, earlierWor
     }
   }
   const countWords = ['', 'unam', 'duas', 'tres', 'quattuor', 'quinque', 'sex'];
-  const targets = (story.seekFind?.targets || []).filter((target) => (
-    featured.some((word) => storyFold(word.latin) === storyFold(target.latin))
-  ));
+  const targets = (story.seekFind?.targets || []).filter((target) => featuredKeys.has(storyFold(target.latin)));
   if (targets.length > 0) {
     const count = countWords[targets.length] || String(targets.length);
     story.seekFind = {

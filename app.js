@@ -119,6 +119,19 @@ function getVocabLessonNumber(grade, indexWithinGrade) {
   return offset + Number(indexWithinGrade) + 1;
 }
 
+const EARLIER_YEAR_WORDS = new Map();
+
+function getEarlierYearWords(grade) {
+  const level = getCurriculumLevelByGrade(grade);
+  const year = level ? level.year : 0;
+  if (!EARLIER_YEAR_WORDS.has(year)) {
+    EARLIER_YEAR_WORDS.set(year, CURRICULUM_LEVELS
+      .filter((item) => level && item.year < level.year)
+      .flatMap((item) => item.lessonGrades.flatMap((itemGrade) => GRADE_WORDS[itemGrade] || [])));
+  }
+  return EARLIER_YEAR_WORDS.get(year);
+}
+
 function buildVocabularyLesson(grade, lessonWords, index, id, title, description, coreSet) {
   const phrases = typeof getPhraseFocusForLesson === 'function'
     ? getPhraseFocusForLesson(Number(grade), lessonWords)
@@ -126,10 +139,7 @@ function buildVocabularyLesson(grade, lessonWords, index, id, title, description
   const phraseQuestions = typeof getPhraseQuestionsForLesson === 'function'
     ? getPhraseQuestionsForLesson(phrases)
     : [];
-  const level = getCurriculumLevelByGrade(Number(grade));
-  const earlierWords = CURRICULUM_LEVELS
-    .filter((item) => level && item.year < level.year)
-    .flatMap((item) => item.lessonGrades.flatMap((itemGrade) => GRADE_WORDS[itemGrade] || []));
+  const earlierWords = getEarlierYearWords(Number(grade));
   const phraseDescription = phrases.length > 0
     ? `Practice Latin vocabulary words ${description}, then connect them to popular Latin phrases.`
     : `Practice Latin vocabulary words ${description}.`;
