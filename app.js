@@ -5202,6 +5202,13 @@ function getHomeGreeting(state = AppState) {
   return `Welcome back, ${state.studentName || 'Learner'}.`;
 }
 
+function getHomeSummary(completedCount, lessonCount) {
+  if (lessonCount === 0) return 'Choose a year to unlock your Latin learning path.';
+  if (completedCount === 0) return `${lessonCount} chapters are ready for you. Start with the first one!`;
+  if (completedCount >= lessonCount) return `All ${lessonCount} chapters done. Optime! Keep your words fresh with flashcards.`;
+  return `${completedCount} of ${lessonCount} chapters done. Bene! Keep going.`;
+}
+
 function renderHome() {
   if (!elements.homeGreeting) return;
   const gradeLabel = VALID_GRADES.includes(AppState.grade) ? getCurriculumLevelTitle(AppState.grade) : 'Latin practice';
@@ -5211,12 +5218,17 @@ function renderHome() {
 
   elements.homeGradePill.textContent = gradeLabel;
   elements.homeGreeting.textContent = getHomeGreeting();
-  elements.homeSummary.textContent = lessons.length > 0
-    ? `${completedCount}/${lessons.length} chapters complete. Keep lessons, quizzes, and tests in one place.`
-    : 'Choose a year to unlock your Latin learning path.';
-  elements.homePointsValue.textContent = AppState.progress.points;
-  elements.homeLessonsValue.textContent = Object.keys(AppState.progress.lessons).length;
-  elements.homeSkillsValue.textContent = Object.keys(AppState.progress.wordsMastered).length;
+  elements.homeSummary.textContent = getHomeSummary(completedCount, lessons.length);
+  const points = AppState.progress.points;
+  const lessonCount = Object.keys(AppState.progress.lessons).length;
+  const wordCount = Object.keys(AppState.progress.wordsMastered).length;
+  elements.homePointsValue.textContent = points;
+  elements.homeLessonsValue.textContent = lessonCount;
+  elements.homeSkillsValue.textContent = wordCount;
+  const statsEmpty = !points && !lessonCount && !wordCount;
+  document.getElementById('homeStats')?.classList.toggle('is-empty', statsEmpty);
+  const statsHint = document.getElementById('homeStatsHint');
+  if (statsHint) statsHint.hidden = !statsEmpty;
 
   if (nextLesson) {
     elements.homeNextTitle.textContent = getLessonDisplayTitle(nextLesson);

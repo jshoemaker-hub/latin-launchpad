@@ -502,6 +502,38 @@ input {
   font-weight: 800;
 }
 
+.home-stats .home-stat-icon {
+  margin: 0 0 8px;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.home-stats .home-stat-points {
+  border-color: #fcd34d;
+  background: #fffbeb;
+}
+
+.home-stats .home-stat-lessons {
+  border-color: #bfdbfe;
+  background: #eff6ff;
+}
+
+.home-stats .home-stat-words {
+  border-color: #a7f3d0;
+  background: #ecfdf5;
+}
+
+.home-stats.is-empty strong {
+  color: var(--muted);
+}
+
+.home-stats .home-stats-hint {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: #7c4a03;
+  font-weight: 800;
+}
+
 .home-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
@@ -4011,11 +4043,21 @@ input {
   }
 
   .home-stats {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
   }
 
   .home-stats div {
     min-height: auto;
+    padding: 12px;
+  }
+
+  .home-stats strong {
+    font-size: 1.6rem;
+  }
+
+  .home-stats span {
+    font-size: 0.82rem;
   }
 
   .home-path-item {

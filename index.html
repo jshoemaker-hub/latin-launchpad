@@ -148,19 +148,23 @@
                 <button type="button" class="secondary-button" data-copy-assignment>Copy assignment link</button>
               </div>
             </div>
-            <div class="home-stats" aria-label="Progress summary">
-              <div>
+            <div id="homeStats" class="home-stats" aria-label="Progress summary">
+              <div class="home-stat home-stat-points">
+                <span class="home-stat-icon" aria-hidden="true">⭐</span>
                 <strong id="homePointsValue">0</strong>
                 <span>Points</span>
               </div>
-              <div>
+              <div class="home-stat home-stat-lessons">
+                <span class="home-stat-icon" aria-hidden="true">📘</span>
                 <strong id="homeLessonsValue">0</strong>
                 <span>Lessons</span>
               </div>
-              <div>
+              <div class="home-stat home-stat-words">
+                <span class="home-stat-icon" aria-hidden="true">🏅</span>
                 <strong id="homeSkillsValue">0</strong>
-                <span>Skills</span>
+                <span>Words mastered</span>
               </div>
+              <p id="homeStatsHint" class="home-stats-hint" hidden>Finish your first lesson to earn stars and points.</p>
             </div>
             <div class="home-quick-flashcards home-hero-flashcards" aria-label="Start 10-minute flashcards">
               <strong>10-minute flashcards</strong>
