@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ICRA Permit App – Prototype</title>
+<style>
+:root{--bg:#F4F3EF;--card:#FFFFFF;--line:#E2E0DA;--ink:#1C1F24;--muted:#5A5F66;--teal:#0F5C63;--teal-l:#E3F0F1;--amber-l:#FFF4E5;--amber:#6B3D07;--red-l:#FDE3D3;--red:#8A2F05;--green-l:#E6F2EA;--green:#1F6B3A}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.top{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--line);padding:12px 16px 10px}
+.top h1{margin:0 0 2px;font-size:16px}
+.top p{margin:0 0 10px;font-size:12px;color:var(--muted)}
+.tabs{display:flex;gap:6px;overflow-x:auto}
+.tabs button{flex:0 0 auto;font:inherit;font-size:13px;font-weight:600;min-height:40px;padding:0 14px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--ink);cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--teal);border-color:var(--teal);color:#fff}
+.screen{display:none;max-width:440px;margin:0 auto;padding:16px 16px 40px}
+.screen.on{display:block}
+#hospital{max-width:1100px}
+h2{font-size:24px;margin:4px 0 14px}
+h3{font-size:15px;margin:20px 0 10px}
+.eyebrow{font-size:12px;font-weight:600;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;margin:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.stat b{display:block;font-size:24px}.stat span{font-size:12px;color:var(--muted)}
+.row{display:flex;align-items:center;gap:12px}
+.list{display:flex;flex-direction:column;gap:8px}
+.badge{font-size:13px;padding:4px 8px;border-radius:6px;font-weight:600}
+.b4{background:var(--red-l);color:var(--red)}.b3{background:var(--amber-l);color:var(--amber)}.b2{background:var(--teal-l);color:#0A4247}
+.small{font-size:12px;color:var(--muted)}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;font:inherit;font-size:16px;font-weight:600;min-height:52px;border:0;border-radius:12px;background:var(--teal);color:#fff;cursor:pointer}
+.btn.red{background:var(--red)}
+.btn2{font:inherit;font-size:14px;font-weight:600;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid #C9C6BE;background:#fff;color:var(--ink);cursor:pointer}
+.btn2.pri{background:var(--teal);border-color:var(--teal);color:#fff}
+.status{border-radius:10px;padding:12px;font-size:14px;font-weight:600;text-align:center}
+.ok{background:var(--green-l);color:var(--green)}.warn{background:var(--amber-l);color:var(--amber)}.bad{background:var(--red-l);color:var(--red)}
+label.f{display:block;font-size:13px;font-weight:600;margin:0 0 6px}
+input[type=text]{width:100%;font:inherit;font-size:15px;min-height:44px;padding:0 12px;border:1px solid #C9C6BE;border-radius:10px;background:#fff;color:var(--ink)}
+.opt{display:flex;align-items:center;gap:12px;width:100%;text-align:left;font:inherit;font-size:14px;min-height:52px;padding:10px 12px;border-radius:10px;border:1px solid #D6D3CB;background:#fff;color:var(--ink);cursor:pointer;margin-bottom:8px}
+.opt .k{width:28px;height:28px;border-radius:8px;background:#EEECE6;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.opt.sel{border:2px solid var(--teal);background:var(--teal-l)}.opt.sel .k{background:var(--teal);color:#fff}
+.pills{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.pill{font:inherit;font-size:14px;font-weight:600;min-height:48px;border-radius:10px;border:1px solid #D6D3CB;background:#fff;color:var(--ink);cursor:pointer}
+.pill.sel{background:var(--teal);border-color:var(--teal);color:#fff}
+ul{margin:8px 0 0;padding-left:18px;font-size:13px;line-height:1.5}
+.chk{display:flex;align-items:center;gap:12px;width:100%;font:inherit;font-size:14px;text-align:left;background:none;border:0;border-bottom:1px solid #EEECE6;min-height:52px;color:var(--ink);cursor:pointer}
+.chk .bx{width:26px;height:26px;border-radius:7px;border:2px solid #9B978D;display:flex;align-items:center;justify-content:center;color:#fff;flex-shrink:0;font-size:16px}
+.chk.on .bx{background:var(--teal);border-color:var(--teal)}
+.stepper{display:flex;align-items:center;gap:10px;margin:10px 0}
+.stepper button{width:48px;height:48px;border-radius:10px;border:1px solid #D6D3CB;background:#fff;font-size:22px;cursor:pointer;color:var(--ink)}
+.stepper span{flex:1;text-align:center;font-size:30px;font-weight:600}
+.photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
+.ph{aspect-ratio:1;border-radius:10px;background:#DCD9D1;display:flex;align-items:center;justify-content:center;font-size:11px;color:#4A4F56;text-align:center;padding:6px}
+.hgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.agrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px}
+.tbl{overflow-x:auto;background:#fff;border:1px solid var(--line);border-radius:12px}
+table{width:100%;min-width:680px;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;padding:12px 14px;border-bottom:1px solid var(--line)}
+td{padding:12px 14px;border-bottom:1px solid #EEECE6}
+.note{font-size:12px;color:var(--muted);margin-top:24px;text-align:center}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>ICRA Permit App · Prototype</h1>
+  <p>Concept only, with sample data. Tap the tabs to see each screen.</p>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-go="today">Today</button>
+    <button role="tab" aria-selected="false" data-go="permit">New permit</button>
+    <button role="tab" aria-selected="false" data-go="check">Daily check</button>
+    <button role="tab" aria-selected="false" data-go="hospital">Hospital view</button>
+  </div>
+</div>
+
+<!-- TODAY -->
+<section id="today" class="screen on" aria-label="Today">
+  <p class="eyebrow">Superintendent · Sat, Oct 24</p>
+  <h2>Today</h2>
+  <div class="grid3">
+    <div class="card stat"><b>3</b><span>Active permits</span></div>
+    <div class="card stat" style="background:var(--amber-l);border-color:#F2C98B"><b style="color:#8A4B05">2</b><span style="color:var(--amber)">Checks due</span></div>
+    <div class="card stat"><b>1</b><span>Shutdown pending</span></div>
+  </div>
+  <h3>Due now</h3>
+  <button class="card row" data-go="check" style="width:100%;font:inherit;text-align:left;cursor:pointer;color:var(--ink)">
+    <span style="flex:1"><b style="font-size:15px">Daily barrier check · P-0142</b><br><span class="small">L2 East corridor · Class IV · due 10:00</span></span>
+    <span aria-hidden="true">›</span>
+  </button>
+  <h3>Active permits</h3>
+  <div class="list">
+    <div class="card row"><span class="badge b4 mono">IV</span><span style="flex:1"><b style="font-size:14px">L2 East corridor</b><br><span class="small">P-0142 · Drywall demo · exp Nov 6</span></span><span class="small" style="color:#8A4B05;font-weight:600">Check due</span></div>
+    <div class="card row"><span class="badge b3 mono">III</span><span style="flex:1"><b style="font-size:14px">L1 Imaging tie-in</b><br><span class="small">P-0139 · Above-ceiling MEP · exp Oct 31</span></span><span class="small" style="color:var(--green);font-weight:600">OK today</span></div>
+    <div class="card row"><span class="badge b2 mono">II</span><span style="flex:1"><b style="font-size:14px">L3 Nurse station</b><br><span class="small">P-0137 · Finishes · exp Oct 28</span></span><span class="small" style="color:#8A4B05;font-weight:600">Check due</span></div>
+  </div>
+  <div style="margin-top:20px"><button class="btn" data-go="permit">+ New ICRA permit</button></div>
+</section>
+
+<!-- PERMIT -->
+<section id="permit" class="screen" aria-label="New ICRA permit">
+  <h2>New ICRA permit</h2>
+  <label class="f" for="loc">Work area</label>
+  <input id="loc" type="text" value="L2 East corridor, rooms 214–220">
+  <h3>Construction activity type</h3>
+  <div id="types"></div>
+  <h3>Patient risk group (adjacent areas)</h3>
+  <div class="pills" id="risks"></div>
+  <div class="card" style="margin-top:18px">
+    <div class="row" style="justify-content:space-between"><b class="small" style="font-size:13px">Required precautions</b><span id="cls" class="badge mono"></span></div>
+    <p id="split" class="small" style="color:var(--amber);margin:8px 0 0;display:none">Class III/IV is Infection Prevention's call. Showing Class IV controls until they decide.</p>
+    <ul id="controls"></ul>
+  </div>
+  <div style="margin-top:16px" id="permitAct"></div>
+</section>
+
+<!-- CHECK -->
+<section id="check" class="screen" aria-label="Daily barrier check">
+  <h2 style="margin-bottom:2px">Daily barrier check</h2>
+  <p class="small" style="margin:0 0 14px">P-0142 · L2 East corridor · Class IV</p>
+  <div class="card">
+    <div class="row" style="justify-content:space-between"><b style="font-size:13px">Differential pressure</b><span class="small">Target ≤ −0.010 in. w.c.</span></div>
+    <div class="stepper"><button id="pLess" aria-label="More negative">−</button><span id="pVal" class="mono"></span><button id="pMore" aria-label="Less negative">+</button></div>
+    <div id="pMsg" class="status" role="status"></div>
+  </div>
+  <div class="card" style="margin-top:12px;padding:4px 14px" id="checks"></div>
+  <div class="photos">
+    <div class="ph">[Barrier photo]</div><div class="ph">[Gauge photo]</div>
+    <button class="ph" style="border:1.5px dashed #9B978D;background:transparent;cursor:pointer;font-size:13px">+ Photo</button>
+  </div>
+  <div style="margin-top:16px" id="checkAct"></div>
+</section>
+
+<!-- HOSPITAL -->
+<section id="hospital" class="screen" aria-label="Hospital view">
+  <p class="eyebrow">[Hospital name] · Infection Prevention</p>
+  <h2>Construction activity · Sat, Oct 24</h2>
+  <div class="hgrid">
+    <div class="card stat"><span>Active permits</span><b>7</b><span>3 contractors</span></div>
+    <div class="card stat"><span>Daily checks logged</span><b>5 of 7</b><span>2 due by noon</span></div>
+    <div class="card stat" style="background:var(--red-l);border-color:#F0B394"><span style="color:#6E2604">Out of range</span><b style="color:var(--red)">1</b><span style="color:#6E2604">Pressure, L1 Imaging</span></div>
+    <div class="card stat"><span>Awaiting your sign-off</span><b id="pending">2</b><span>Permit + shutdown</span></div>
+  </div>
+  <h3 style="font-size:17px">Needs your attention</h3>
+  <div class="agrid" id="asks"></div>
+  <h3 style="font-size:17px">All active permits</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Permit</th><th>Area</th><th>Contractor</th><th>Class</th><th>Today's check</th><th>Expires</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+  <div style="margin-top:16px;max-width:320px"><button class="btn2" style="width:100%">⤓ Weekly compliance report</button></div>
+</section>
+
+<p class="note">Prototype for feedback · sample data · not a finished product</p>
+
+<script>
+(function(){
+  // Tabs
+  function go(id){
+    document.querySelectorAll('.screen').forEach(function(s){s.classList.toggle('on',s.id===id)});
+    document.querySelectorAll('.tabs button').forEach(function(b){b.setAttribute('aria-selected',b.dataset.go===id)});
+    window.scrollTo(0,0);
+  }
+  document.addEventListener('click',function(e){var t=e.target.closest('[data-go]');if(t)go(t.dataset.go)});
+
+  // Permit
+  var P={type:'C',risk:'High',sent:false};
+  var matrix={Low:{A:'I',B:'II',C:'II',D:'III/IV'},Medium:{A:'I',B:'II',C:'III',D:'IV'},High:{A:'I',B:'II',C:'III/IV',D:'IV'},Highest:{A:'II',B:'III/IV',C:'III/IV',D:'IV'}};
+  var typeLabels={A:'Inspection, non-invasive (e.g., lift one ceiling tile)',B:'Small scale, short duration, minimal dust',C:'Moderate to high dust, demo or removal of fixed components',D:'Major demolition and construction'};
+  var c1=['Minimize dust from construction','Replace ceiling tiles moved for inspection right away'];
+  var c2=c1.concat(['Mist work surfaces to control dust','Seal unused doors with tape','Block and seal HVAC return vents','Covered carts for debris; wet-mop or HEPA-vac at end of day']);
+  var c3=c2.concat(['Critical barriers in place before work starts','Negative pressure with HEPA-filtered exhaust','Walk-off mats at entrance','IP sign-off before barriers come down']);
+  var c4=c3.concat(['Anteroom; workers wear shoe covers','Pressure monitored and logged daily','HEPA-vac work area before leaving']);
+  function renderPermit(){
+    var tEl=document.getElementById('types');tEl.innerHTML='';
+    ['A','B','C','D'].forEach(function(id){
+      var b=document.createElement('button');b.type='button';b.className='opt'+(P.type===id?' sel':'');b.setAttribute('aria-pressed',P.type===id);
+      b.innerHTML='<span class="k">'+id+'</span><span>'+typeLabels[id]+'</span>';
+      b.onclick=function(){P.type=id;P.sent=false;renderPermit()};tEl.appendChild(b);
+    });
+    var rEl=document.getElementById('risks');rEl.innerHTML='';
+    ['Low','Medium','High','Highest'].forEach(function(id){
+      var b=document.createElement('button');b.type='button';b.className='pill'+(P.risk===id?' sel':'');b.textContent=id;b.setAttribute('aria-pressed',P.risk===id);
+      b.onclick=function(){P.risk=id;P.sent=false;renderPermit()};rEl.appendChild(b);
+    });
+    var cls=matrix[P.risk][P.type];
+    var badge=document.getElementById('cls');badge.textContent='Class '+cls;
+    badge.className='badge mono '+(cls==='IV'||cls==='III/IV'?'b4':cls==='III'?'b3':'b2');
+    document.getElementById('split').style.display=cls==='III/IV'?'block':'none';
+    var lv=cls==='I'?c1:cls==='II'?c2:cls==='III'?c3:c4;
+    document.getElementById('controls').innerHTML=lv.map(function(x){return '<li>'+x+'</li>'}).join('');
+    var a=document.getElementById('permitAct');
+    if(P.sent){a.innerHTML='<div class="status ok" role="status">✓ Sent · awaiting IP signature</div>'}
+    else{a.innerHTML='<button class="btn" id="sendP">Send to Infection Prevention</button>';document.getElementById('sendP').onclick=function(){P.sent=true;renderPermit()}}
+  }
+  renderPermit();
+
+  // Check
+  var C={p:-0.025,checks:[true,true,false,true,false],done:false};
+  var labels=['Barrier intact, no gaps or tears','Anteroom door closed and self-closing','Walk-off mat changed today','HEPA unit running and exhausting','Corridor outside barrier clean'];
+  function renderCheck(){
+    var ok=C.p<=-0.0095;
+    document.getElementById('pVal').textContent=(C.p<0?'−':'')+Math.abs(C.p).toFixed(3);
+    var m=document.getElementById('pMsg');m.className='status '+(ok?'ok':'bad');
+    m.textContent=ok?'In range: negative pressure holding':'Out of range: IP and facilities will be notified';
+    var el=document.getElementById('checks');el.innerHTML='';
+    labels.forEach(function(l,i){
+      var b=document.createElement('button');b.type='button';b.className='chk'+(C.checks[i]?' on':'');b.setAttribute('aria-pressed',C.checks[i]);
+      b.innerHTML='<span class="bx">'+(C.checks[i]?'✓':'')+'</span><span>'+l+'</span>';
+      b.onclick=function(){C.checks[i]=!C.checks[i];C.done=false;renderCheck()};el.appendChild(b);
+    });
+    var pass=ok&&C.checks.every(Boolean);
+    var a=document.getElementById('checkAct');
+    if(C.done){a.innerHTML=pass?'<div class="status ok" role="status">Logged 9:42 AM · sent to hospital log</div>':'<div class="status warn" role="status">Logged with deficiencies · corrective action opened</div>'}
+    else{a.innerHTML='<button class="btn'+(pass?'':' red')+'" id="sendC">'+(pass?'Sign and submit check':'Submit with deficiencies')+'</button>';document.getElementById('sendC').onclick=function(){C.done=true;renderCheck()}}
+  }
+  document.getElementById('pLess').onclick=function(){C.p=Math.round((C.p-0.005)*1000)/1000;C.done=false;renderCheck()};
+  document.getElementById('pMore').onclick=function(){C.p=Math.round((C.p+0.005)*1000)/1000;C.done=false;renderCheck()};
+  renderCheck();
+
+  // Hospital
+  var asks=[
+    {key:'permit',kind:'Permit to sign',cls:'IV',title:'P-0143 · L2 West, patient rooms 230–236',yes:'Sign permit',detail:'[General contractor] · Type D demolition next to High-risk unit. Hard-wall barrier, anteroom, HEPA negative air. Starts Mon 6:00 AM.'},
+    {key:'shut',kind:'Utility shutdown',cls:'ILSM',title:'Medical gas zone valve, L2 East · Tue 10 PM–2 AM',yes:'Approve shutdown',detail:'[General contractor] · Affects rooms 210–224. Portable O2 staged, nursing notified.'}
+  ];
+  var res={};
+  function renderAsks(){
+    var el=document.getElementById('asks');el.innerHTML='';var open=0;
+    asks.forEach(function(a){
+      var r=res[a.key];if(!r)open++;
+      var d=document.createElement('article');d.className='card';
+      d.innerHTML='<div class="row" style="gap:8px"><span class="badge" style="background:#EEECE6;color:#3A3F46;font-size:12px">'+a.kind+'</span><span class="badge b4 mono" style="font-size:12px">'+a.cls+'</span></div>'+
+        '<h4 style="margin:10px 0 6px;font-size:16px">'+a.title+'</h4><p style="margin:0 0 12px;font-size:13px;color:#4A4F56;line-height:1.45">'+a.detail+'</p>';
+      if(r){var s=document.createElement('div');s.className='status '+(r==='yes'?'ok':'warn');s.style.textAlign='left';s.textContent=r==='yes'?'Approved · contractor notified':'Changes requested · contractor notified';d.appendChild(s)}
+      else{
+        var w=document.createElement('div');w.className='row';w.style.flexWrap='wrap';w.style.gap='8px';
+        var y=document.createElement('button');y.className='btn2 pri';y.textContent=a.yes;y.onclick=function(){res[a.key]='yes';renderAsks()};
+        var n=document.createElement('button');n.className='btn2';n.textContent='Request changes';n.onclick=function(){res[a.key]='no';renderAsks()};
+        w.appendChild(y);w.appendChild(n);d.appendChild(w);
+      }
+      el.appendChild(d);
+    });
+    var def=document.createElement('article');def.className='card';def.style.borderColor='#F0B394';
+    def.innerHTML='<div class="row" style="gap:8px"><span class="badge bad" style="font-size:12px">Deficiency</span><span class="badge b3 mono" style="font-size:12px">III</span></div><h4 style="margin:10px 0 6px;font-size:16px">L1 Imaging tie-in · pressure −0.004</h4><p style="margin:0;font-size:13px;color:#4A4F56;line-height:1.45">[Mechanical sub] logged at 8:15 AM. Corrective action opened: HEPA filter swap. Re-check due 11:00.</p>';
+    el.appendChild(def);
+    document.getElementById('pending').textContent=open;
+  }
+  renderAsks();
+  var rows=[['P-0142','L2 East corridor','[General contractor]','IV','Logged 9:42','ok','Nov 6'],['P-0139','L1 Imaging tie-in','[Mechanical sub]','III','Out of range','bad','Oct 31'],['P-0137','L3 Nurse station','[General contractor]','II','Due by noon','due','Oct 28'],['P-0135','Central plant tunnel','[Electrical sub]','II','Logged 7:10','ok','Nov 2'],['P-0131','L1 ED waiting','[Facilities in-house]','III','Logged 8:05','ok','Oct 29'],['P-0128','L4 Mech room','[Mechanical sub]','II','Due by noon','due','Nov 9']];
+  var col={ok:'var(--green)',bad:'var(--red)',due:'#8A4B05'};
+  document.getElementById('rows').innerHTML=rows.map(function(r){var b=r[3]==='IV'?'b4':r[3]==='III'?'b3':'b2';return '<tr><td class="mono" style="font-size:13px">'+r[0]+'</td><td>'+r[1]+'</td><td style="color:#4A4F56">'+r[2]+'</td><td><span class="badge mono '+b+'" style="font-size:12px">'+r[3]+'</span></td><td style="font-weight:600;color:'+col[r[5]]+'">'+r[4]+'</td><td style="color:#4A4F56">'+r[6]+'</td></tr>'}).join('');
+})();
+</script>
+</body>
+</html>

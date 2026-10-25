@@ -15,10 +15,11 @@ export function canRecord(item: ItemState, checklist: ChecklistState, permit: Pe
   return true
 }
 
-export default function ItemCard({ item, checklist, permit }: { item: ItemState; checklist: ChecklistState; permit: PermitState }) {
+/** Full item view. `embedded` drops the outer card and title, for the detail panel of a quick-check row. */
+export default function ItemCard({ item, checklist, permit, embedded = false }: { item: ItemState; checklist: ChecklistState; permit: PermitState; embedded?: boolean }) {
   const { state, me, dispatch } = useProject()
   const editable = canRecord(item, checklist, permit, me?.role)
-  const [editing, setEditing] = useState(item.status === 'open' || item.status === 'deficient')
+  const [editing, setEditing] = useState(embedded || item.status === 'open' || item.status === 'deficient')
   const [note, setNote] = useState(item.status === 'deficient' ? '' : item.note)
   const [photos, setPhotos] = useState<PhotoRef[]>(item.status === 'deficient' ? [] : item.photos)
   const [value, setValue] = useState(item.reading ? String(item.reading.value) : '')
@@ -51,9 +52,10 @@ export default function ItemCard({ item, checklist, permit }: { item: ItemState;
   const deficiency = item.openDeficiencyId ? state.deficiencies[item.openDeficiencyId] : undefined
   const stepLocked = isCloseout && !editable && item.status !== 'complete' && checklist.status !== 'approved'
 
+  const Root = embedded ? 'div' : 'li'
   return (
-    <li className={`item item-${item.status}`}>
-      <div className="item-head">
+    <Root className={embedded ? 'item-embedded' : `item item-${item.status}`}>
+      <div className="item-head" hidden={embedded}>
         <div className="grow">
           <div className="item-text">{item.text}</div>
           {item.help && <div className="small muted">{item.help}</div>}
@@ -167,7 +169,7 @@ export default function ItemCard({ item, checklist, permit }: { item: ItemState;
       )}
 
       {unchecking && <UncheckDialog checklistId={checklist.id} itemId={item.id} onClose={() => setUnchecking(false)} />}
-    </li>
+    </Root>
   )
 }
 

@@ -11,7 +11,7 @@ export const fmtDate = (ymd: string) =>
   new Date(`${ymd}T12:00:00`).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
 
 export const checklistName = (c: { kind: string; date: string; title: string }) =>
-  c.kind === 'daily' ? `Daily walk · ${fmtDate(c.date)}` : c.title
+  c.kind === 'daily' ? `Daily barrier check · ${fmtDate(c.date)}` : c.title
 
 const PILL_TONE: Record<string, string> = {
   open: 'muted',
@@ -28,6 +28,9 @@ const PILL_TONE: Record<string, string> = {
   resolved: 'info',
   closed: 'muted',
   na: 'muted',
+  changes_requested: 'bad',
+  restored: 'muted',
+  out_of_service: 'bad',
 }
 
 const PILL_LABEL: Record<string, string> = {
@@ -37,6 +40,9 @@ const PILL_LABEL: Record<string, string> = {
   rework: 'Rework needed',
   na: 'N/A',
   resolved: 'Fixed, awaiting check',
+  changes_requested: 'Changes requested',
+  restored: 'Restored',
+  out_of_service: 'Out of service',
 }
 
 export function Pill({ status }: { status: string }) {
@@ -44,8 +50,12 @@ export function Pill({ status }: { status: string }) {
   return <span className={`pill pill-${PILL_TONE[status] ?? 'muted'}`}>{label}</span>
 }
 
-export function ClassBadge({ cls }: { cls: IcraClass }) {
-  return <span className={`class-badge class-${cls}`}>Class {ROMAN[cls]}</span>
+export function ClassBadge({ cls, short = false }: { cls: IcraClass; short?: boolean }) {
+  return (
+    <span className={`class-badge class-${cls}`} title={`Class ${ROMAN[cls]}`}>
+      {short ? ROMAN[cls] : `Class ${ROMAN[cls]}`}
+    </span>
+  )
 }
 
 export function RoleTag({ role }: { role: Role }) {
@@ -69,13 +79,17 @@ export function Modal({ title, onClose, children }: { title: string; onClose(): 
 }
 
 /** Signature capture: finger signature plus a printed name and what the signature means. */
-export function SignDialog({ title, meaning, role, defaultName, onSign, onClose }: {
+export function SignDialog({ title, meaning, role, defaultName, onSign, onClose, children, ready = true }: {
   title: string
   meaning: string
   role: Role
   defaultName: string
   onSign(sig: Signature): Promise<void> | void
   onClose(): void
+  /** Extra fields shown above the signature (e.g. a deficiency note). */
+  children?: ReactNode
+  /** False keeps Sign disabled until the extra fields are filled in. */
+  ready?: boolean
 }) {
   const canvas = useRef<HTMLCanvasElement>(null)
   const drawing = useRef(false)
@@ -118,6 +132,7 @@ export function SignDialog({ title, meaning, role, defaultName, onSign, onClose 
       <p className="sign-meaning">
         <strong>By signing:</strong> {meaning}
       </p>
+      {children}
       <label className="field">
         Printed name
         <input value={name} onChange={(e) => setName(e.target.value)} />
@@ -156,7 +171,7 @@ export function SignDialog({ title, meaning, role, defaultName, onSign, onClose 
         >
           Clear
         </button>
-        <button className="btn-primary" disabled={!inked || !name.trim() || busy} onClick={sign}>
+        <button className="btn-primary" disabled={!inked || !name.trim() || busy || !ready} onClick={sign}>
           Sign
         </button>
       </div>

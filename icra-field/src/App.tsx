@@ -1,6 +1,6 @@
-import { BrowserRouter, NavLink, Navigate, Outlet, Route, Routes, useParams } from 'react-router-dom'
+import { BrowserRouter, NavLink, Navigate, Outlet, Route, Routes, useLocation, useParams } from 'react-router-dom'
 import { DEMO_PERSONAS } from './data/seed'
-import { ROLE_LABEL } from './domain/types'
+import { HOSPITAL_ROLES, ROLE_LABEL } from './domain/types'
 import { AppProvider, useApp } from './state/app'
 import { ProjectProvider, useProject } from './state/project'
 import Login from './pages/Login'
@@ -15,6 +15,8 @@ import Activity from './pages/Activity'
 import Team from './pages/Team'
 import Settings from './pages/Settings'
 import Report from './pages/Report'
+import Shutdowns from './pages/Shutdowns'
+import Weekly from './pages/Weekly'
 
 export default function App() {
   return (
@@ -41,6 +43,8 @@ function Shell() {
         <Route path="permit/:permitId/report" element={<Report />} />
         <Route path="c/:checklistId" element={<Checklist />} />
         <Route path="issues" element={<Issues />} />
+        <Route path="shutdowns" element={<Shutdowns />} />
+        <Route path="weekly" element={<Weekly />} />
         <Route path="activity" element={<Activity />} />
         <Route path="team" element={<Team />} />
         <Route path="settings" element={<Settings />} />
@@ -62,7 +66,11 @@ function ProjectLayout() {
 function ProjectChrome() {
   const { state, loading, me, pending } = useProject()
   const { mode, persona, setPersona } = useApp()
+  const { pathname } = useLocation()
   const openIssues = Object.values(state.deficiencies).filter((d) => !d.resolvedAt).length
+  const shutdownAlerts = Object.values(state.shutdowns).filter((s) => s.status === 'active' || (s.status === 'pending' && me && HOSPITAL_ROLES.includes(me.role))).length
+  // The hospital dashboard and weekly report are tables meant for a desk screen.
+  const wide = /\/weekly$/.test(pathname) || (me && HOSPITAL_ROLES.includes(me.role) && /^\/p\/[^/]+\/?$/.test(pathname))
   if (loading) return <div className="splash">Loading project…</div>
   return (
     <div className="app">
@@ -91,7 +99,7 @@ function ProjectChrome() {
       </header>
       {mode === 'demo' && <div className="demo-banner no-print">Demo mode: data stays in this browser. Switch roles at top right to see each person's view.</div>}
       {mode === 'supabase' && !me && <div className="demo-banner warn no-print">You're not on this project's team yet. Ask the superintendent to add your email.</div>}
-      <main className="content">
+      <main className={`content${wide ? ' wide' : ''}`}>
         <Outlet />
       </main>
       <nav className="tabbar no-print">
@@ -100,6 +108,9 @@ function ProjectChrome() {
         </NavLink>
         <NavLink to="permits">
           <span aria-hidden>▦</span>Permits
+        </NavLink>
+        <NavLink to="shutdowns">
+          <span aria-hidden>⏻</span>Shutdowns{shutdownAlerts > 0 && <b className="badge">{shutdownAlerts}</b>}
         </NavLink>
         <NavLink to="issues">
           <span aria-hidden>⚠</span>Issues{openIssues > 0 && <b className="badge">{openIssues}</b>}

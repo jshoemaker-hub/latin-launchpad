@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { hashEvent, verifyChain } from './hash'
-import { missedDays, reduce } from './reducer'
+import { checksDue, hoursOut, inbox, missedDays, reduce } from './reducer'
 import { CLOSEOUT_STEPS, DEFAULT_SETTINGS, computeClass, dailyItems, setupItems } from './templates'
 import type { Actor, AnyEvent, EventPayloads, EventType, ProjectEvent, Role } from './types'
 
@@ -156,7 +156,7 @@ describe('daily walk', () => {
     const { l, items } = await activeClass4Permit()
     await completeAll(l, 'c1', items)
     await l.add('worker', 'checklist.submitted', { checklistId: 'c1', signature: sig('worker') })
-    await l.add('worker', 'item.recorded', { checklistId: 'c1', itemId: 'd.clean', status: 'na', note: '', photos: [] })
+    await l.add('worker', 'item.recorded', { checklistId: 'c1', itemId: 'd.tiles', status: 'na', note: '', photos: [] })
     expect(l.state().log.at(-1)!.ok).toBe(false)
   })
 })
@@ -181,7 +181,7 @@ describe('closeout', () => {
     await rec('ip', 'c.return')
     const s = l.state()
     expect(s.permits.p1.status).toBe('closed')
-    await l.add('worker', 'item.unchecked', { checklistId: 'c1', itemId: 'd.clean', reason: 'x', photos: [] })
+    await l.add('worker', 'item.unchecked', { checklistId: 'c1', itemId: 'd.tiles', reason: 'x', photos: [] })
     expect(l.state().log.at(-1)!.ok).toBe(false)
   })
 })
@@ -204,5 +204,75 @@ describe('audit chain', () => {
     expect((await verifyChain(tampered)).map((p) => p.problem)).toEqual(['Content does not match its hash (edited after signing)'])
     const missing = l.events.filter((e) => e.type !== 'zone.created')
     expect((await verifyChain(missing)).some((p) => p.problem.startsWith('Break in device chain'))).toBe(true)
+  })
+})
+
+describe('fast check helpers', () => {
+  it('clears a mis-tapped item back to open before submit, but not after', async () => {
+    const { l, items } = await activeClass4Permit()
+    await l.add('worker', 'item.recorded', { checklistId: 'c1', itemId: 'd.tiles', status: 'complete', note: '', photos: [] })
+    await l.add('worker', 'item.recorded', { checklistId: 'c1', itemId: 'd.tiles', status: 'open', note: '', photos: [] })
+    expect(l.state().checklists.c1.items.find((i) => i.id === 'd.tiles')!.status).toBe('open')
+    await completeAll(l, 'c1', items)
+    await l.add('worker', 'checklist.submitted', { checklistId: 'c1', signature: sig('worker') })
+    await l.add('worker', 'item.recorded', { checklistId: 'c1', itemId: 'd.tiles', status: 'open', note: '', photos: [] })
+    expect(l.state().log.at(-1)!.ok).toBe(false)
+  })
+
+  it('counts checks due and routes failed readings to IP and facilities', async () => {
+    const { l } = await activeClass4Permit()
+    expect(checksDue(l.state(), '2026-10-01').map((p) => p.id)).toEqual(['p1'])
+    await l.add('worker', 'item.recorded', {
+      checklistId: 'c1', itemId: 'p.0', status: 'complete', note: '', photos: [photo],
+      reading: { value: 0.004, location: 'Door', method: 'gauge', threshold: 0.01, pass: false },
+    })
+    const s = l.state()
+    expect(inbox(s, 'ip', 'u-ip').outOfRange).toHaveLength(1)
+    expect(inbox(s, 'worker', 'u-worker').outOfRange).toHaveLength(0)
+  })
+})
+
+describe('permit changes', () => {
+  it('signer sends back, contractor resubmits, signer can then sign', async () => {
+    const l = log()
+    await l.add('super', 'project.created', { name: 'Demo', facility: 'H', owner: '', contractor: '', settings: DEFAULT_SETTINGS })
+    await l.add('super', 'zone.created', { zoneId: 'z1', name: 'Zone 1', floor: '', area: '', phase: '', trades: '' })
+    await l.add('super', 'permit.created', {
+      permitId: 'p1', zoneId: 'z1', number: 'P-1', scope: '', activityType: 'C', riskGroup: 'high', specialHazards: [], cls: 4,
+      matrixVersion: 'v', ilsm: false, ilsmMeasures: [], pressurePoints: [], pressureThreshold: 0.01, startDate: '2026-10-01', endDate: '2026-10-05',
+    })
+    await l.add('ip', 'permit.changes_requested', { permitId: 'p1', note: 'Need hard-wall barrier, not poly' })
+    let s = l.state()
+    expect(inbox(s, 'ip', 'u-ip').permitsToSign).toHaveLength(0)
+    expect(inbox(s, 'superintendent', 'u-super').permitChanges).toHaveLength(1)
+    await l.add('worker', 'permit.resubmitted', { permitId: 'p1', note: 'x' }) // rejected
+    await l.add('super', 'permit.resubmitted', { permitId: 'p1', note: 'Switched to hard wall' })
+    s = l.state()
+    expect(s.permits.p1.changesRequested).toBeUndefined()
+    expect(inbox(s, 'ip', 'u-ip').permitsToSign).toHaveLength(1)
+  })
+})
+
+describe('shutdowns', () => {
+  it('request → changes → resubmit → approve → start → restore, with hospital-only approval', async () => {
+    const l = log()
+    await l.add('super', 'project.created', { name: 'Demo', facility: 'H', owner: '', contractor: '', settings: DEFAULT_SETTINGS })
+    await l.add('super', 'shutdown.requested', {
+      shutdownId: 's1', system: 'sprinkler', title: 'Sprinkler zone 2E', contractor: 'GC', start: '2026-10-02T22:00:00Z', end: '2026-10-03T02:00:00Z',
+      affectedAreas: 'Rooms 210-224', mitigation: 'Fire watch',
+    })
+    await l.add('foreman', 'shutdown.decided', { shutdownId: 's1', decision: 'approved', note: '' }) // rejected
+    await l.add('safety', 'shutdown.decided', { shutdownId: 's1', decision: 'changes_requested', note: 'Notify the fire department first' })
+    await l.add('super', 'shutdown.started', { shutdownId: 's1' }) // rejected: not approved
+    await l.add('super', 'shutdown.resubmitted', { shutdownId: 's1', note: 'FD notified' })
+    await l.add('facilities', 'shutdown.decided', { shutdownId: 's1', decision: 'approved', note: '' })
+    await l.add('super', 'shutdown.started', { shutdownId: 's1' })
+    let s = l.state()
+    expect(s.log.filter((e) => !e.ok).map((e) => e.event.type)).toEqual(['shutdown.decided', 'shutdown.started'])
+    expect(s.shutdowns.s1.status).toBe('active')
+    await l.add('facilities', 'shutdown.restored', { shutdownId: 's1', note: 'Tested OK' })
+    s = l.state()
+    expect(s.shutdowns.s1.status).toBe('restored')
+    expect(hoursOut(s.shutdowns.s1)).toBeGreaterThan(0)
   })
 })

@@ -2,7 +2,17 @@ import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ClassBadge } from '../components/ui'
 import { addDays, localYmd } from '../domain/reducer'
-import { ACTIVITY_TYPES, ILSM_MEASURES, RISK_GROUPS, SPECIAL_HAZARDS, computeClass, requiredPermitSigners, setupItems } from '../domain/templates'
+import {
+  ACTIVITY_TYPES,
+  ILSM_MEASURES,
+  PRESSURE_FROM_CLASS,
+  RISK_GROUPS,
+  SPECIAL_HAZARDS,
+  computeClass,
+  dailyItems,
+  requiredPermitSigners,
+  setupItems,
+} from '../domain/templates'
 import { ROLE_LABEL, type ActivityType, type RiskGroup } from '../domain/types'
 import { useProject } from '../state/project'
 
@@ -27,6 +37,7 @@ export default function NewPermit() {
     pressureThreshold: state.settings.pressureThreshold,
     startDate: localYmd(),
     endDate: addDays(localYmd(), 14),
+    contractor: state.contractor,
   })
   const [error, setError] = useState('')
   const cls = computeClass(state.settings.matrix, f.activityType, f.riskGroup, f.specialHazards)
@@ -49,10 +60,11 @@ export default function NewPermit() {
         matrixVersion: state.settings.matrixVersion,
         ilsm: f.ilsm,
         ilsmMeasures: f.ilsm ? f.ilsmMeasures : [],
-        pressurePoints: cls >= 4 ? f.pressurePoints.split('\n').map((s) => s.trim()).filter(Boolean) : [],
+        pressurePoints: cls >= PRESSURE_FROM_CLASS ? f.pressurePoints.split('\n').map((s) => s.trim()).filter(Boolean) : [],
         pressureThreshold: Number(f.pressureThreshold),
         startDate: f.startDate,
         endDate: f.endDate,
+        contractor: f.contractor.trim(),
       })
       await dispatch('checklist.created', {
         checklistId: crypto.randomUUID(),
@@ -129,17 +141,35 @@ export default function NewPermit() {
         ))}
       </fieldset>
 
-      <div className="card class-result">
-        <ClassBadge cls={cls} />
-        <div>
+      <div className="card">
+        <div className="class-result">
+          <ClassBadge cls={cls} />
           <div>
-            Needs sign-off from: <strong>{requiredPermitSigners(cls, f.ilsm).map((r) => ROLE_LABEL[r]).join(', ')}</strong>
+            <div>
+              Needs sign-off from: <strong>{requiredPermitSigners(cls, f.ilsm).map((r) => ROLE_LABEL[r]).join(', ')}</strong>
+            </div>
+            <div className="small muted">From matrix "{state.settings.matrixVersion}" (editable in Settings)</div>
           </div>
-          <div className="small muted">From matrix "{state.settings.matrixVersion}" (editable in Settings)</div>
         </div>
+        <details style={{ marginTop: 8 }}>
+          <summary className="small" style={{ fontWeight: 600 }}>
+            Required precautions for Class {['', 'I', 'II', 'III', 'IV', 'V'][cls]}
+          </summary>
+          <ul className="small">
+            {[...setupItems(cls), ...dailyItems({ cls, ilsm: false, ilsmMeasures: [], pressurePoints: [] })].map((i) => (
+              <li key={i.id}>{i.text}</li>
+            ))}
+            {cls >= PRESSURE_FROM_CLASS && <li>Differential pressure read and logged daily at each opening</li>}
+          </ul>
+        </details>
       </div>
 
-      {cls >= 4 && (
+      <label className="field">
+        Contractor doing the work
+        <input value={f.contractor} onChange={(e) => setF({ ...f, contractor: e.target.value })} placeholder="GC or subcontractor" />
+      </label>
+
+      {cls >= PRESSURE_FROM_CLASS && (
         <div className="grid-2">
           <label className="field">
             Pressure reading points (one per line)

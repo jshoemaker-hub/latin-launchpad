@@ -1,124 +1,161 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { ClassBadge, Empty, Pill, checklistName, fmtDate } from '../components/ui'
-import { inbox, localYmd, missedDays } from '../domain/reducer'
-import { ROLE_LABEL } from '../domain/types'
+import { ClassBadge, Empty, checklistName, fmtDate } from '../components/ui'
+import { checksDue, hoursOut, inbox, localYmd, missedDays, type PermitState } from '../domain/reducer'
+import { ROMAN, SHUTDOWN_SYSTEMS } from '../domain/templates'
+import { HOSPITAL_ROLES, ROLE_LABEL } from '../domain/types'
+import { dueLabel, shortDate, todayStatus } from '../state/status'
 import { startDailyWalk, todaysWalk } from '../state/actions'
 import { useProject } from '../state/project'
+import HospitalDashboard from './HospitalDashboard'
 
 export default function Today() {
+  const { me } = useProject()
+  if (me && HOSPITAL_ROLES.includes(me.role)) return <HospitalDashboard />
+  return <CrewToday />
+}
+
+function CrewToday() {
   const { state, me, dispatch } = useProject()
   const navigate = useNavigate()
   const today = localYmd()
   const base = `/p/${state.id}`
-  const active = Object.values(state.permits).filter((p) => p.status === 'active')
+  const active = Object.values(state.permits).filter((p) => p.status === 'active' || p.status === 'closing')
+  const due = checksDue(state, today)
+  const pendingShutdowns = Object.values(state.shutdowns).filter((s) => s.status === 'pending' || s.status === 'changes_requested' || s.status === 'approved')
+  const activeShutdowns = Object.values(state.shutdowns).filter((s) => s.status === 'active')
   const work = me ? inbox(state, me.role, me.id) : null
   const zoneName = (id: string) => state.zones[id]?.name ?? ''
-  const permitLabel = (id: string) => {
-    const p = state.permits[id]
-    return `${p.number} · ${zoneName(p.zoneId)}`
+  const canManage = me && ['superintendent', 'ip', 'facilities', 'safety'].includes(me.role)
+
+  async function openCheck(p: PermitState) {
+    const walk = todaysWalk(state, p, today)
+    navigate(`${base}/c/${walk ? walk.id : await startDailyWalk(dispatch, p, today)}`)
   }
-  const needsCount = work ? work.permitsToSign.length + work.toCosign.length + work.rework.length + work.closeoutSteps.length : 0
+
+  const asks = work
+    ? [
+        ...work.permitChanges.map((p) => ({ key: `pc${p.id}`, to: `${base}/permit/${p.id}`, title: `Changes requested · ${p.number}`, sub: `${p.changesRequested!.by.name}: ${p.changesRequested!.note}`, tone: 'bad' })),
+        ...work.rework.map((c) => ({ key: `rw${c.id}`, to: `${base}/c/${c.id}`, title: `Rework · ${checklistName(c)}`, sub: `${state.permits[c.permitId].number} · ${c.reworkNote ?? ''}`, tone: 'bad' })),
+        ...work.shutdownChanges.map((s) => ({ key: `sc${s.id}`, to: `${base}/shutdowns`, title: 'Shutdown changes requested', sub: s.title, tone: 'bad' })),
+        ...work.toCosign.map((c) => ({
+          key: `cs${c.id}`,
+          to: `${base}/c/${c.id}`,
+          title: `Co-sign · ${checklistName(c)}`,
+          sub: `${state.permits[c.permitId].number} · ${zoneName(state.permits[c.permitId].zoneId)} · by ${c.submitted?.name}`,
+          tone: 'attention',
+        })),
+        ...work.closeoutSteps.map(({ checklist, item }) => ({ key: `co${checklist.id}`, to: `${base}/c/${checklist.id}`, title: `Closeout · ${item.text}`, sub: state.permits[checklist.permitId].number, tone: 'attention' })),
+      ]
+    : []
 
   return (
     <div className="page">
+      <p className="eyebrow">
+        {me ? ROLE_LABEL[me.role] : 'Viewer'} · {fmtDate(today)}
+      </p>
       <h1>Today</h1>
-      <p className="muted">{fmtDate(today)}</p>
+      <div className="stats">
+        <Link className="stat" to={`${base}/permits`}>
+          <b>{active.length}</b>
+          <span>Active permits</span>
+        </Link>
+        <div className={`stat ${due.length ? 'warn' : ''}`}>
+          <b>{due.length}</b>
+          <span>Checks due</span>
+        </div>
+        <Link className={`stat ${activeShutdowns.length ? 'bad' : ''}`} to={`${base}/shutdowns`}>
+          <b>{activeShutdowns.length || pendingShutdowns.length}</b>
+          <span>{activeShutdowns.length ? 'Systems out now' : 'Shutdowns pending'}</span>
+        </Link>
+      </div>
 
-      {me && (
-        <section>
-          <h2>
-            Needs you <span className="muted small">as {ROLE_LABEL[me.role]}</span>
-          </h2>
-          {needsCount === 0 && <Empty>Nothing waiting on you right now.</Empty>}
+      {activeShutdowns.map((s) => {
+        const h = hoursOut(s)
+        const limit = SHUTDOWN_SYSTEMS.find((x) => x.id === s.system)?.fireWatchAfterHours
+        return (
+          <Link key={s.id} to={`${base}/shutdowns`} className="banner bad">
+            ⚠ {s.title}: out of service {h.toFixed(1)} h{limit && h > limit ? ' · fire watch required' : ''}
+          </Link>
+        )
+      })}
+
+      <h2>Due now</h2>
+      {due.length === 0 && <Empty>All of today's checks are logged.</Empty>}
+      <ul className="list">
+        {due.map((p) => {
+          const walk = todaysWalk(state, p, today)
+          return (
+            <li key={p.id}>
+              <button className="list-item due-row tap-row" onClick={() => openCheck(p)} disabled={!me || me.role === 'viewer'}>
+                <span className="grow">
+                  <b>Daily barrier check · {p.number}</b>
+                  <br />
+                  <span className="small muted">
+                    {zoneName(p.zoneId)} · Class {ROMAN[p.cls]} · {walk ? 'in progress' : dueLabel(state, today)}
+                  </span>
+                </span>
+                <span className="chev" aria-hidden>
+                  ›
+                </span>
+              </button>
+            </li>
+          )
+        })}
+      </ul>
+
+      {asks.length > 0 && (
+        <>
+          <h2>Needs you</h2>
           <ul className="list">
-            {work!.permitsToSign.map((p) => (
-              <li key={p.id}>
-                <Link className="list-item attention" to={`${base}/permit/${p.id}`}>
-                  <strong>Sign permit {p.number}</strong>
-                  <span className="small">{zoneName(p.zoneId)}</span>
-                </Link>
-              </li>
-            ))}
-            {work!.toCosign.map((c) => (
-              <li key={c.id}>
-                <Link className="list-item attention" to={`${base}/c/${c.id}`}>
-                  <strong>Co-sign {checklistName(c)}</strong>
-                  <span className="small">
-                    {permitLabel(c.permitId)} · submitted by {c.submitted?.name}
-                  </span>
-                </Link>
-              </li>
-            ))}
-            {work!.rework.map((c) => (
-              <li key={c.id}>
-                <Link className="list-item bad" to={`${base}/c/${c.id}`}>
-                  <strong>Rework: {checklistName(c)}</strong>
-                  <span className="small">
-                    {permitLabel(c.permitId)} · {c.reworkNote}
-                  </span>
-                </Link>
-              </li>
-            ))}
-            {work!.closeoutSteps.map(({ checklist, item }) => (
-              <li key={checklist.id}>
-                <Link className="list-item attention" to={`${base}/c/${checklist.id}`}>
-                  <strong>Closeout step: {item.text}</strong>
-                  <span className="small">{permitLabel(checklist.permitId)}</span>
+            {asks.map((a) => (
+              <li key={a.key}>
+                <Link className={`list-item ${a.tone}`} to={a.to}>
+                  <strong>{a.title}</strong>
+                  <span className="small">{a.sub}</span>
                 </Link>
               </li>
             ))}
           </ul>
-        </section>
+        </>
       )}
 
-      <section>
-        <h2>Today's walks</h2>
-        {active.length === 0 && <Empty>No active permits. Open one under Permits.</Empty>}
-        <ul className="list">
-          {active.map((p) => {
-            const walk = todaysWalk(state, p, today)
-            const missed = missedDays(state, p, today)
-            const done = walk ? walk.items.filter((i) => i.status !== 'open').length : 0
-            return (
-              <li key={p.id} className="card walk-card">
-                <div className="row">
-                  <ClassBadge cls={p.cls} />
-                  {p.ilsm && <span className="ilsm-tag">ILSM</span>}
-                  <strong className="grow">
-                    <Link to={`${base}/permit/${p.id}`}>{p.number}</Link> · {zoneName(p.zoneId)}
-                  </strong>
-                </div>
-                {missed.length > 0 && (
-                  <p className="warn-text small">
-                    ⚠ No walk recorded for {missed.length} day{missed.length > 1 ? 's' : ''}: {missed.map(fmtDate).join(', ')}
-                  </p>
-                )}
-                {walk ? (
-                  <div className="row">
-                    <Pill status={walk.status} />
-                    <span className="small muted grow">
-                      {done}/{walk.items.length} items
-                    </span>
-                    <Link className="btn-primary" to={`${base}/c/${walk.id}`}>
-                      {walk.status === 'in_progress' ? 'Continue' : 'Open'}
-                    </Link>
-                  </div>
-                ) : (
-                  me &&
-                  me.role !== 'viewer' && (
-                    <button
-                      className="btn-primary btn-block"
-                      onClick={async () => navigate(`${base}/c/${await startDailyWalk(dispatch, p, today)}`)}
-                    >
-                      Start today's walk
-                    </button>
-                  )
-                )}
-              </li>
-            )
-          })}
-        </ul>
-      </section>
+      <h2>Active permits</h2>
+      <ul className="list">
+        {active.map((p) => {
+          const st = todayStatus(state, p, today)
+          const missed = p.status === 'active' ? missedDays(state, p, today).length : 0
+          return (
+            <li key={p.id}>
+              <Link className="list-item due-row" to={`${base}/permit/${p.id}`}>
+                <ClassBadge cls={p.cls} short />
+                <span className="grow">
+                  <b>{zoneName(p.zoneId)}</b>
+                  <br />
+                  <span className="small muted">
+                    {p.number} · {p.contractor || state.contractor} · exp {shortDate(p.endDate)}
+                    {missed > 0 && (
+                      <b className="warn-text">
+                        {' '}
+                        · {missed} missed day{missed > 1 ? 's' : ''}
+                      </b>
+                    )}
+                  </span>
+                </span>
+                <span className={`small ${st.tone}-text`} style={{ fontWeight: 600 }}>
+                  {p.status === 'closing' ? 'Closeout' : st.text}
+                </span>
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+      {active.length === 0 && <Empty>No active permits.</Empty>}
+
+      {canManage && (
+        <Link className="btn-primary btn-block" style={{ marginTop: 20 }} to={`${base}/permits/new`}>
+          + New ICRA permit
+        </Link>
+      )}
     </div>
   )
 }

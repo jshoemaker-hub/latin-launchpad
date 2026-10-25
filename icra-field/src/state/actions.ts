@@ -15,7 +15,7 @@ export async function startDailyWalk(dispatch: Dispatch, permit: PermitState, da
     permitId: permit.id,
     kind: 'daily',
     date,
-    title: `Daily walk ${date}`,
+    title: `Daily barrier check ${date}`,
     items: dailyItems(permit),
   })
   return checklistId

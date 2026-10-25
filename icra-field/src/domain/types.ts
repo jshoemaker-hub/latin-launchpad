@@ -24,6 +24,8 @@ export interface ProjectSettings {
   matrixVersion: string
   /** Minimum negative pressure, in inches of water column, as a positive magnitude. */
   pressureThreshold: number
+  /** Local time (HH:MM) by which each day's walk should be submitted. */
+  checkDueTime?: string
 }
 
 export interface Actor {
@@ -95,8 +97,12 @@ export interface EventPayloads {
     pressureThreshold: number
     startDate: string
     endDate: string
+    /** Company doing the work (GC or sub); defaults to the project's contractor. */
+    contractor?: string
   }
   'permit.signed': { permitId: string; signature: Signature }
+  'permit.changes_requested': { permitId: string; note: string }
+  'permit.resubmitted': { permitId: string; note: string }
   'checklist.created': {
     checklistId: string
     permitId: string
@@ -108,7 +114,8 @@ export interface EventPayloads {
   'item.recorded': {
     checklistId: string
     itemId: string
-    status: 'complete' | 'deficient' | 'na'
+    /** 'open' clears an item that was tapped by mistake, before the checklist is submitted. */
+    status: 'open' | 'complete' | 'deficient' | 'na'
     note: string
     photos: PhotoRef[]
     reading?: Reading
@@ -118,7 +125,25 @@ export interface EventPayloads {
   'checklist.cosigned': { checklistId: string; signature: Signature }
   'rework.requested': { checklistId: string; itemIds: string[]; note: string }
   'comment.added': { checklistId?: string; permitId?: string; itemId?: string; text: string }
+  'shutdown.requested': {
+    shutdownId: string
+    system: ShutdownSystem
+    title: string
+    zoneId?: string
+    contractor: string
+    /** Planned window, ISO datetimes. */
+    start: string
+    end: string
+    affectedAreas: string
+    mitigation: string
+  }
+  'shutdown.decided': { shutdownId: string; decision: 'approved' | 'changes_requested'; note: string }
+  'shutdown.resubmitted': { shutdownId: string; note: string }
+  'shutdown.started': { shutdownId: string }
+  'shutdown.restored': { shutdownId: string; note: string }
 }
+
+export type ShutdownSystem = 'fire_alarm' | 'sprinkler' | 'medical_gas' | 'electrical' | 'hvac' | 'water' | 'other'
 
 export type EventType = keyof EventPayloads
 

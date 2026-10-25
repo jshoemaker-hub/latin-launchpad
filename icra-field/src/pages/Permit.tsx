@@ -7,8 +7,9 @@ import { ACTIVITY_TYPES, ILSM_MEASURES, RISK_GROUPS } from '../domain/templates'
 import { HOSPITAL_ROLES, ROLE_LABEL, SUPERVISOR_ROLES } from '../domain/types'
 import { startCloseout, startDailyWalk, todaysWalk } from '../state/actions'
 import { useProject } from '../state/project'
+import { ChangesDialog } from './HospitalDashboard'
 
-const SIGN_MEANING: Record<string, string> = {
+export const PERMIT_SIGN_MEANING: Record<string, string> = {
   ip: 'I approve the ICRA class and the infection control measures on this permit.',
   facilities: 'I approve the HVAC isolation and building systems plan for this permit.',
   safety: 'I approve the ILSM assessment and the selected interim life safety measures.',
@@ -19,6 +20,8 @@ export default function Permit() {
   const { state, me, dispatch } = useProject()
   const navigate = useNavigate()
   const [signing, setSigning] = useState(false)
+  const [requesting, setRequesting] = useState(false)
+  const [resubmitNote, setResubmitNote] = useState('')
   const permit = state.permits[permitId!]
   if (!permit) return <p className="page empty">Permit not found.</p>
   const base = `/p/${state.id}`
@@ -30,7 +33,9 @@ export default function Permit() {
   const closeout = checklists.find((c) => c.kind === 'closeout')
   const walk = todaysWalk(state, permit, today)
   const missed = permit.status === 'active' ? missedDays(state, permit, today) : []
-  const mySignNeeded = me && permit.status === 'pending' && permit.requiredSigners.includes(me.role) && !permit.signatures.some((s) => s.role === me.role)
+  const mySignNeeded =
+    me && permit.status === 'pending' && !permit.changesRequested && permit.requiredSigners.includes(me.role) && !permit.signatures.some((s) => s.role === me.role)
+  const canResubmit = me && permit.changesRequested && (me.role === 'superintendent' || me.role === 'foreman')
   const canCloseout = me && permit.status === 'active' && (SUPERVISOR_ROLES.includes(me.role) || HOSPITAL_ROLES.includes(me.role))
   const issues = Object.values(state.deficiencies).filter((d) => d.permitId === permit.id && !d.resolvedAt)
 
@@ -54,6 +59,8 @@ export default function Permit() {
       <section className="card">
         <p>{permit.scope}</p>
         <dl className="meta">
+          <dt>Contractor</dt>
+          <dd>{permit.contractor || state.contractor || '–'}</dd>
           <dt>Activity</dt>
           <dd>{ACTIVITY_TYPES.find((t) => t.id === permit.activityType)?.label}</dd>
           <dt>Risk group</dt>
@@ -103,10 +110,33 @@ export default function Permit() {
             )
           })}
         </ul>
+        {permit.changesRequested && (
+          <div className="banner bad">
+            Changes requested by {permit.changesRequested.by.name} ({ROLE_LABEL[permit.changesRequested.by.role]}): {permit.changesRequested.note}
+          </div>
+        )}
+        {canResubmit && (
+          <form
+            className="row"
+            onSubmit={async (e) => {
+              e.preventDefault()
+              await dispatch('permit.resubmitted', { permitId: permit.id, note: resubmitNote.trim() })
+              setResubmitNote('')
+            }}
+          >
+            <input className="grow" placeholder="What did you change?" value={resubmitNote} onChange={(e) => setResubmitNote(e.target.value)} />
+            <button className="btn-primary">Resubmit</button>
+          </form>
+        )}
         {mySignNeeded && (
-          <button className="btn-primary btn-block" onClick={() => setSigning(true)}>
-            Sign as {ROLE_LABEL[me.role]}
-          </button>
+          <div className="row">
+            <button className="btn-primary grow" onClick={() => setSigning(true)}>
+              Sign as {ROLE_LABEL[me.role]}
+            </button>
+            <button className="btn-secondary" onClick={() => setRequesting(true)}>
+              Request changes
+            </button>
+          </div>
         )}
       </section>
 
@@ -138,7 +168,7 @@ export default function Permit() {
       </section>
 
       <section>
-        <h2>Daily walks</h2>
+        <h2>Daily barrier checks</h2>
         {missed.length > 0 && (
           <p className="warn-text">
             ⚠ Missed: {missed.map(fmtDate).join(', ')}
@@ -146,10 +176,10 @@ export default function Permit() {
         )}
         {permit.status === 'active' && !walk && me && me.role !== 'viewer' && (
           <button className="btn-primary btn-block" onClick={async () => navigate(`${base}/c/${await startDailyWalk(dispatch, permit, today)}`)}>
-            Start today's walk
+            Start today's check
           </button>
         )}
-        {permit.status === 'pending' && <Empty>Daily walks start once all approvals are signed.</Empty>}
+        {permit.status === 'pending' && <Empty>Daily checks start once all approvals are signed.</Empty>}
         <ul className="list">
           {dailies.map((c) => (
             <li key={c.id}>
@@ -175,7 +205,7 @@ export default function Permit() {
           <button
             className="btn-secondary btn-block"
             onClick={async () => {
-              if (confirm('Start closeout? Daily walks stop and each closeout step must be signed in order by the listed role.'))
+              if (confirm('Start closeout? Daily checks stop and each closeout step must be signed in order by the listed role.'))
                 navigate(`${base}/c/${await startCloseout(dispatch, permit, today)}`)
             }}
           >
@@ -191,13 +221,14 @@ export default function Permit() {
       {signing && me && (
         <SignDialog
           title={`Sign permit ${permit.number}`}
-          meaning={SIGN_MEANING[me.role] ?? 'I approve this permit.'}
+          meaning={PERMIT_SIGN_MEANING[me.role] ?? 'I approve this permit.'}
           role={me.role}
           defaultName={me.name}
           onSign={(signature) => dispatch('permit.signed', { permitId: permit.id, signature })}
           onClose={() => setSigning(false)}
         />
       )}
+      {requesting && <ChangesDialog target={{ kind: 'permit', permit }} onClose={() => setRequesting(false)} />}
     </div>
   )
 }

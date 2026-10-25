@@ -74,6 +74,21 @@ export interface PermitState extends Omit<EventPayloads['permit.created'], 'perm
   activatedAt?: string
   closedAt?: string
   checklistIds: string[]
+  /** Set when a required signer sends the permit back; cleared on resubmit or signature. */
+  changesRequested?: { by: Actor; at: string; note: string }
+}
+
+export type ShutdownStatus = 'pending' | 'changes_requested' | 'approved' | 'active' | 'restored'
+
+export interface ShutdownState extends Omit<EventPayloads['shutdown.requested'], 'shutdownId'> {
+  id: string
+  status: ShutdownStatus
+  requestedBy: Actor
+  requestedAt: string
+  history: { actor: Actor; at: string; text: string }[]
+  approvedBy?: Actor
+  startedAt?: string
+  restoredAt?: string
 }
 
 export interface ZoneState extends Omit<EventPayloads['zone.created'], 'zoneId'> {
@@ -115,6 +130,7 @@ export interface ProjectState {
   permits: Record<string, PermitState>
   checklists: Record<string, ChecklistState>
   deficiencies: Record<string, Deficiency>
+  shutdowns: Record<string, ShutdownState>
   comments: Comment[]
   log: LogEntry[]
 }
@@ -141,6 +157,7 @@ export function emptyState(projectId: string): ProjectState {
     permits: {},
     checklists: {},
     deficiencies: {},
+    shutdowns: {},
     comments: [],
     log: [],
   }
@@ -170,6 +187,7 @@ export function reduce(projectId: string, events: AnyEvent[]): ProjectState {
 const checklistOf = (s: ProjectState, id: string) => s.checklists[id] ?? fail('Checklist not found')
 const permitOf = (s: ProjectState, id: string) => s.permits[id] ?? fail('Permit not found')
 const itemOf = (c: ChecklistState, id: string) => c.items.find((i) => i.id === id) ?? fail('Item not found')
+const shutdownOf = (s: ProjectState, id: string) => s.shutdowns[id] ?? fail('Shutdown not found')
 
 /** Throws a RuleError if the event isn't allowed in the current state. Does not change state. */
 export function validate(s: ProjectState, ev: AnyEvent): void {
@@ -199,6 +217,19 @@ export function validate(s: ProjectState, ev: AnyEvent): void {
       if (p.signatures.some((sig) => sig.role === role)) fail('Already signed for this role')
       return
     }
+    case 'permit.changes_requested': {
+      const p = permitOf(s, ev.payload.permitId)
+      if (p.status !== 'pending') fail('Permit is not awaiting signatures')
+      if (!p.requiredSigners.includes(role)) fail('Only a required signer can request changes')
+      if (!ev.payload.note.trim()) fail('Say what needs to change')
+      return
+    }
+    case 'permit.resubmitted': {
+      const p = permitOf(s, ev.payload.permitId)
+      if (!p.changesRequested) fail('No changes were requested')
+      if (role !== 'superintendent' && role !== 'foreman') fail('Only the superintendent or foreman can resubmit')
+      return
+    }
     case 'checklist.created': {
       const p = permitOf(s, ev.payload.permitId)
       if (p.status === 'closed') fail('Permit is closed')
@@ -217,6 +248,7 @@ export function validate(s: ProjectState, ev: AnyEvent): void {
       const item = itemOf(c, ev.payload.itemId)
       if (s.permits[c.permitId].status === 'closed') fail('Permit is closed')
       if (c.status !== 'in_progress' && c.status !== 'rework') fail('Checklist is locked while awaiting sign-off')
+      if (ev.payload.status === 'open' && c.kind === 'closeout') fail('Closeout steps cannot be cleared')
       if (item.photo === 'required' && ev.payload.status === 'complete' && ev.payload.photos.length === 0) fail('A photo is required for this item')
       if (item.readingAt && ev.payload.status === 'complete' && !ev.payload.reading) fail('A reading is required for this item')
       if (c.kind === 'closeout') {
@@ -260,6 +292,27 @@ export function validate(s: ProjectState, ev: AnyEvent): void {
     }
     case 'comment.added':
       if (!ev.payload.text.trim()) fail('Empty comment')
+      return
+    case 'shutdown.requested':
+      if (s.shutdowns[ev.payload.shutdownId]) fail('Shutdown already exists')
+      if (!ev.payload.title.trim()) fail('Describe the shutdown')
+      if (!(ev.payload.start < ev.payload.end)) fail('End must be after start')
+      return
+    case 'shutdown.decided': {
+      const sd = shutdownOf(s, ev.payload.shutdownId)
+      if (!isHospital(role)) fail('Only hospital staff can approve a shutdown')
+      if (sd.status !== 'pending') fail('Shutdown is not awaiting a decision')
+      if (ev.payload.decision === 'changes_requested' && !ev.payload.note.trim()) fail('Say what needs to change')
+      return
+    }
+    case 'shutdown.resubmitted':
+      if (shutdownOf(s, ev.payload.shutdownId).status !== 'changes_requested') fail('No changes were requested')
+      return
+    case 'shutdown.started':
+      if (shutdownOf(s, ev.payload.shutdownId).status !== 'approved') fail('Shutdown must be approved before it starts')
+      return
+    case 'shutdown.restored':
+      if (shutdownOf(s, ev.payload.shutdownId).status !== 'active') fail('Shutdown has not started')
       return
   }
 }
@@ -321,12 +374,19 @@ function apply(s: ProjectState, ev: AnyEvent): void {
     case 'permit.signed': {
       const p = s.permits[ev.payload.permitId]
       p.signatures.push(ev.payload.signature)
+      p.changesRequested = undefined
       if (p.requiredSigners.every((r) => p.signatures.some((sig) => sig.role === r))) {
         p.status = 'active'
         p.activatedAt = ev.clientTs
       }
       return
     }
+    case 'permit.changes_requested':
+      s.permits[ev.payload.permitId].changesRequested = { by: ev.actor, at: ev.clientTs, note: ev.payload.note }
+      return
+    case 'permit.resubmitted':
+      s.permits[ev.payload.permitId].changesRequested = undefined
+      return
     case 'checklist.created': {
       const { checklistId, items, ...rest } = ev.payload
       s.checklists[checklistId] = {
@@ -354,6 +414,10 @@ function apply(s: ProjectState, ev: AnyEvent): void {
         recordedAt: ev.clientTs,
       })
       item.history.push(ev)
+      if (ev.payload.status === 'open') {
+        item.recordedBy = item.recordedAt = undefined
+        return
+      }
       const failedReading = ev.payload.reading && !ev.payload.reading.pass
       if (failedReading) item.status = 'deficient'
       if (ev.payload.status === 'deficient' || failedReading) {
@@ -416,6 +480,38 @@ function apply(s: ProjectState, ev: AnyEvent): void {
     case 'comment.added':
       s.comments.push({ id: ev.id, actor: ev.actor, at: ev.clientTs, ...ev.payload })
       return
+    case 'shutdown.requested': {
+      const { shutdownId, ...rest } = ev.payload
+      s.shutdowns[shutdownId] = { ...rest, id: shutdownId, status: 'pending', requestedBy: ev.actor, requestedAt: ev.clientTs, history: [{ actor: ev.actor, at: ev.clientTs, text: 'Requested' }] }
+      return
+    }
+    case 'shutdown.decided': {
+      const sd = s.shutdowns[ev.payload.shutdownId]
+      sd.status = ev.payload.decision
+      if (ev.payload.decision === 'approved') sd.approvedBy = ev.actor
+      sd.history.push({ actor: ev.actor, at: ev.clientTs, text: `${ev.payload.decision === 'approved' ? 'Approved' : 'Requested changes'}${ev.payload.note ? `: ${ev.payload.note}` : ''}` })
+      return
+    }
+    case 'shutdown.resubmitted': {
+      const sd = s.shutdowns[ev.payload.shutdownId]
+      sd.status = 'pending'
+      sd.history.push({ actor: ev.actor, at: ev.clientTs, text: `Resubmitted${ev.payload.note ? `: ${ev.payload.note}` : ''}` })
+      return
+    }
+    case 'shutdown.started': {
+      const sd = s.shutdowns[ev.payload.shutdownId]
+      sd.status = 'active'
+      sd.startedAt = ev.clientTs
+      sd.history.push({ actor: ev.actor, at: ev.clientTs, text: 'System taken out of service' })
+      return
+    }
+    case 'shutdown.restored': {
+      const sd = s.shutdowns[ev.payload.shutdownId]
+      sd.status = 'restored'
+      sd.restoredAt = ev.clientTs
+      sd.history.push({ actor: ev.actor, at: ev.clientTs, text: `Restored to service${ev.payload.note ? `: ${ev.payload.note}` : ''}` })
+      return
+    }
   }
 }
 
@@ -451,11 +547,16 @@ export function describe(s: ProjectState, ev: AnyEvent): string {
       return `Opened ICRA permit ${ev.payload.number}: Class ${ROMAN[ev.payload.cls]}${ev.payload.ilsm ? ' + ILSM' : ''} in ${s.zones[ev.payload.zoneId]?.name ?? 'zone'}`
     case 'permit.signed':
       return `Signed permit ${s.permits[ev.payload.permitId]?.number ?? ''}: ${ev.payload.signature.meaning}`
+    case 'permit.changes_requested':
+      return `Requested changes to permit ${s.permits[ev.payload.permitId]?.number ?? ''}: ${ev.payload.note}`
+    case 'permit.resubmitted':
+      return `Resubmitted permit ${s.permits[ev.payload.permitId]?.number ?? ''}${ev.payload.note ? `: ${ev.payload.note}` : ''}`
     case 'checklist.created':
       return `Started ${ev.payload.title}`
     case 'item.recorded': {
       const r = ev.payload.reading
       const extra = r ? ` (reading −${r.value} in. w.c., ${r.pass ? 'pass' : 'FAIL'})` : ''
+      if (ev.payload.status === 'open') return `Cleared "${itemText(s, ev.payload.checklistId, ev.payload.itemId)}"`
       return `Marked "${itemText(s, ev.payload.checklistId, ev.payload.itemId)}" ${ev.payload.status === 'na' ? 'N/A' : ev.payload.status}${extra}`
     }
     case 'item.unchecked':
@@ -468,6 +569,16 @@ export function describe(s: ProjectState, ev: AnyEvent): string {
       return `Requested rework on ${ev.payload.itemIds.length} item(s) in ${checklistLabel(s, ev.payload.checklistId)}: ${ev.payload.note}`
     case 'comment.added':
       return `Commented: ${ev.payload.text}`
+    case 'shutdown.requested':
+      return `Requested shutdown: ${ev.payload.title}`
+    case 'shutdown.decided':
+      return `${ev.payload.decision === 'approved' ? 'Approved' : 'Requested changes to'} shutdown "${s.shutdowns[ev.payload.shutdownId]?.title ?? ''}"${ev.payload.note ? `: ${ev.payload.note}` : ''}`
+    case 'shutdown.resubmitted':
+      return `Resubmitted shutdown "${s.shutdowns[ev.payload.shutdownId]?.title ?? ''}"`
+    case 'shutdown.started':
+      return `Took system out of service: ${s.shutdowns[ev.payload.shutdownId]?.title ?? ''}`
+    case 'shutdown.restored':
+      return `Restored to service: ${s.shutdowns[ev.payload.shutdownId]?.title ?? ''}`
   }
 }
 
@@ -501,7 +612,15 @@ export function addDays(date: string, n: number): string {
 /** Work waiting on someone with this role. */
 export function inbox(s: ProjectState, role: Role, actorId: string) {
   const permitsToSign = Object.values(s.permits).filter(
-    (p) => p.status === 'pending' && p.requiredSigners.includes(role) && !p.signatures.some((sig) => sig.role === role),
+    (p) => p.status === 'pending' && !p.changesRequested && p.requiredSigners.includes(role) && !p.signatures.some((sig) => sig.role === role),
+  )
+  const contractorLead = role === 'superintendent' || role === 'foreman'
+  const permitChanges = Object.values(s.permits).filter((p) => p.changesRequested && contractorLead)
+  const shutdownsToDecide = Object.values(s.shutdowns).filter((sd) => sd.status === 'pending' && isHospital(role))
+  const shutdownChanges = Object.values(s.shutdowns).filter((sd) => sd.status === 'changes_requested' && !isHospital(role))
+  // Failed pressure readings go straight to infection prevention and facilities.
+  const outOfRange = Object.values(s.deficiencies).filter(
+    (d) => !d.resolvedAt && (role === 'ip' || role === 'facilities') && s.checklists[d.checklistId].items.some((i) => i.id === d.itemId && i.readingAt),
   )
   const toCosign = Object.values(s.checklists).filter(
     (c) => c.status === 'submitted' && (isSupervisor(role) || isHospital(role)) && c.submitted?.actorId !== actorId,
@@ -513,5 +632,24 @@ export function inbox(s: ProjectState, role: Role, actorId: string) {
       const next = c.items.find((i) => i.status !== 'complete')
       return next && next.roles?.includes(role) ? [{ checklist: c, item: next }] : []
     })
-  return { permitsToSign, toCosign, rework, closeoutSteps }
+  return { permitsToSign, permitChanges, toCosign, rework, closeoutSteps, shutdownsToDecide, shutdownChanges, outOfRange }
+}
+
+/** Hours a shutdown has been (or was) out of service. */
+export function hoursOut(sd: ShutdownState, now: Date = new Date()): number {
+  if (!sd.startedAt) return 0
+  const end = sd.restoredAt ? Date.parse(sd.restoredAt) : now.getTime()
+  return (end - Date.parse(sd.startedAt)) / 3_600_000
+}
+
+/** Daily walks due today: active permits with nothing submitted for today yet. */
+export function checksDue(s: ProjectState, today: string) {
+  return Object.values(s.permits).filter(
+    (p) =>
+      p.status === 'active' &&
+      !p.checklistIds.some((id) => {
+        const c = s.checklists[id]
+        return c.kind === 'daily' && c.date === today && c.status !== 'in_progress'
+      }),
+  )
 }

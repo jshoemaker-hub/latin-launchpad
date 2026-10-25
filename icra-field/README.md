@@ -4,7 +4,9 @@ A field-first web app (installable on a phone) for documenting **ICRA** (infecti
 assessment) and **ILSM** (interim life safety measures) compliance on healthcare construction jobs.
 
 Built as a working prototype to get feedback from people who do this work. The research behind the
-design is in [`docs/research-report.md`](docs/research-report.md).
+design is in [`docs/research-report.md`](docs/research-report.md). The look, the daily barrier
+check, the hospital view, and utility shutdowns follow a field superintendent's clickable mockup
+([`docs/field-mockup.html`](docs/field-mockup.html)).
 
 ## What it does
 
@@ -12,12 +14,22 @@ design is in [`docs/research-report.md`](docs/research-report.md).
   per-project matrix (activity type × patient risk group, with sewage/mold overrides) that the team
   can edit to match the hospital's adopted permit.
 - **Approvals.** Class III+ permits need Infection Preventionist and Facilities signatures; ILSM adds
-  the Safety Officer. Daily walks can't start until the permit is approved.
-- **One combined daily walk** per permit: ICRA containment items for the class, a structured pressure
-  reading at each opening (pass/fail against the permit's threshold), and the daily ILSM items that
-  were selected. Photos are required where it matters (barriers, gauges).
-- **Sign & submit → co-sign.** The person who walked signs; a different person (foreman,
+  the Safety Officer. A signer can **request changes** instead; the superintendent resubmits. Daily
+  checks can't start until the permit is approved.
+- **Daily barrier check** per permit, built to be fast in the field: a pressure stepper (− / + with a
+  live "in range / out of range" readout and a required gauge photo) at each opening, then
+  tap-to-check rows for the containment items. Rows that need a photo open the camera. Anything
+  left unchecked can be submitted as a deficiency with a note. Out-of-range readings go straight to
+  infection prevention and facilities. Negative air and daily pressure readings start at Class III.
+- **Sign and submit → co-sign.** The person who checked signs; a different person (foreman,
   superintendent, or hospital staff) co-signs. Supervisors can send items back for rework.
+- **Hospital dashboard** (Today, when signed in as Infection Preventionist, Facilities, or Safety):
+  active permits and contractors, checks logged vs due, out-of-range readings, a sign-off queue with
+  Approve / Request changes, a table of every active permit, and a printable **weekly compliance
+  report**.
+- **Utility shutdowns** (medical gas, fire alarm, sprinkler, electrical, HVAC, water): request →
+  hospital approval → out of service → restored, with a clock that flags when a fire watch is
+  required (alarm out > 4 h, sprinklers > 10 h in 24 h).
 - **Anyone can uncheck** an item that's no longer compliant. The earlier check stays in history, an
   issue opens, and the checklist goes back for rework. Issues close only after the fix is co-signed.
 - **Missed days** are flagged on Today and on each permit.
@@ -78,7 +90,7 @@ email and role. They sign in with that email and see the project.
 - The ICRA matrix, checklist wording, and ILSM measures are **draft starting points** compiled from
   search excerpts of ASHE, CDC, Joint Commission, and hospital forms. Verify against the owner's
   current permit and policy before relying on them.
-- Not yet built: impairment / fire-watch timers, hot work and above-ceiling permits, firestop
+- Not yet built: fire watch round logging, hot work and above-ceiling permits, firestop
   penetration logs, worker training roster, voice notes, pressure-monitor data import.
 - Photos taken in hospitals can capture patients. Keep cameras pointed at the work.
 

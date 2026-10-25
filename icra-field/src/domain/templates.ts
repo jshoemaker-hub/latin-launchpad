@@ -1,4 +1,4 @@
-import type { ActivityType, IcraClass, ItemTemplate, Matrix, ProjectSettings, RiskGroup } from './types'
+import type { ActivityType, IcraClass, ItemTemplate, Matrix, ProjectSettings, RiskGroup, ShutdownSystem } from './types'
 
 // Everything in this file is starting data for a prototype. Each hospital adopts its own
 // permit wording and matrix; verify against the owner's current ICRA 2.0 permit before use.
@@ -37,6 +37,7 @@ export const DEFAULT_SETTINGS: ProjectSettings = {
   matrix: DEFAULT_MATRIX,
   matrixVersion: 'ASHE ICRA 2.0 (draft, verify)',
   pressureThreshold: 0.01,
+  checkDueTime: '12:00',
 }
 
 export function computeClass(matrix: Matrix, activity: ActivityType, risk: RiskGroup, hazards: string[]): IcraClass {
@@ -62,29 +63,30 @@ const SETUP: ClassedItem[] = [
   { id: 's.adjacent', minClass: 1, section: 'Setup', photo: 'optional', text: 'Adjacent areas checked: above, below, beside, shared ceiling space, isolation rooms, air intakes' },
   { id: 's.oriented', minClass: 1, section: 'Setup', photo: 'optional', text: 'Crew oriented to ICRA / ILSM requirements for this permit' },
   { id: 's.doors', minClass: 2, section: 'Setup', photo: 'optional', text: 'Unused doors sealed with tape' },
-  { id: 's.vents', minClass: 2, section: 'Setup', photo: 'required', text: 'Air vents blocked and sealed, or HVAC isolated' },
-  { id: 's.mat', minClass: 2, section: 'Setup', photo: 'optional', text: 'Walk-off mat placed at entrance' },
+  { id: 's.vents', minClass: 2, section: 'Setup', photo: 'required', text: 'HVAC return vents blocked and sealed, or HVAC isolated' },
+  { id: 's.mat', minClass: 3, section: 'Setup', photo: 'optional', text: 'Walk-off mat placed at entrance' },
   { id: 's.hvac', minClass: 3, section: 'Setup', photo: 'optional', text: 'HVAC isolation confirmed with facilities', help: 'Record who from facilities confirmed it in the note.' },
-  { id: 's.barrier', minClass: 3, section: 'Setup', photo: 'required', text: 'Critical barriers erected deck to deck; joints taped; penetrations sealed', help: 'Photograph the top of the wall and every penetration.' },
-  { id: 's.nam', minClass: 4, section: 'Setup', photo: 'required', text: 'HEPA negative air machine installed, exhausting outdoors' },
+  { id: 's.barrier', minClass: 3, section: 'Setup', photo: 'required', text: 'Critical barriers in place before work starts: deck to deck, joints taped, penetrations sealed', help: 'Photograph the top of the wall and every penetration.' },
+  { id: 's.nam', minClass: 3, section: 'Setup', photo: 'required', text: 'Negative pressure with HEPA-filtered exhaust running' },
+  { id: 's.smoke', minClass: 3, section: 'Setup', photo: 'required', text: 'Smoke test confirms airflow into containment at barrier' },
   { id: 's.monitor', minClass: 4, section: 'Setup', photo: 'required', text: 'Pressure monitor installed on containment exterior' },
-  { id: 's.ante4', minClass: 4, maxClass: 4, section: 'Setup', photo: 'required', text: 'Anteroom built, or HEPA-vac / coverall removal procedure in place' },
+  { id: 's.ante4', minClass: 4, maxClass: 4, section: 'Setup', photo: 'required', text: 'Anteroom built; shoe covers / coveralls available' },
   { id: 's.ante5', minClass: 5, section: 'Setup', photo: 'required', text: 'Anteroom built, large enough for equipment staging and cart cleaning' },
-  { id: 's.smoke', minClass: 4, section: 'Setup', photo: 'required', text: 'Smoke test confirms airflow into containment at barrier' },
 ]
 
+// Daily wording follows a field superintendent's barrier-check mockup where it covers the item.
 const DAILY: ClassedItem[] = [
-  { id: 'd.clean', minClass: 1, section: 'ICRA', photo: 'optional', text: 'Work area clean; debris removed' },
-  { id: 'd.tiles', minClass: 1, section: 'ICRA', photo: 'optional', text: 'Displaced ceiling tiles replaced' },
-  { id: 'd.dust', minClass: 2, section: 'ICRA', photo: 'optional', text: 'Dust suppression in use (water mist, local HEPA vacuum)' },
-  { id: 'd.transport', minClass: 2, section: 'ICRA', photo: 'optional', text: 'Debris covered / contained before transport' },
-  { id: 'd.mat', minClass: 2, section: 'ICRA', photo: 'optional', text: 'Walk-off mat clean or changed' },
-  { id: 'd.sealed', minClass: 2, section: 'ICRA', photo: 'optional', text: 'Unused doors and vents still sealed' },
-  { id: 'd.barrier', minClass: 3, section: 'ICRA', photo: 'required', text: 'Barrier intact including above ceiling: no gaps, tears, or open penetrations' },
-  { id: 'd.doorsclosed', minClass: 3, section: 'ICRA', photo: 'optional', text: 'Doors to work area closed' },
+  { id: 'd.barrier', minClass: 3, section: 'ICRA', photo: 'required', text: 'Barrier intact, no gaps or tears (including above ceiling)' },
+  { id: 'd.ante', minClass: 4, section: 'ICRA', photo: 'optional', text: 'Anteroom door closed and self-closing' },
+  { id: 'd.mat', minClass: 3, section: 'ICRA', photo: 'optional', text: 'Walk-off mat changed today' },
+  { id: 'd.nam', minClass: 3, section: 'ICRA', photo: 'optional', text: 'HEPA unit running and exhausting' },
+  { id: 'd.corridor', minClass: 2, section: 'ICRA', photo: 'optional', text: 'Corridor outside barrier clean' },
+  { id: 'd.sealed', minClass: 2, section: 'ICRA', photo: 'optional', text: 'Unused doors and return vents still sealed' },
+  { id: 'd.dust', minClass: 2, section: 'ICRA', photo: 'optional', text: 'Work surfaces misted / dust controlled' },
+  { id: 'd.carts', minClass: 2, section: 'ICRA', photo: 'optional', text: 'Debris moved in covered carts' },
   { id: 'd.hvac', minClass: 3, section: 'ICRA', photo: 'optional', text: 'HVAC isolation still in place' },
-  { id: 'd.nam', minClass: 4, section: 'ICRA', photo: 'optional', text: 'Negative air machine running; filter and exhaust hose OK' },
-  { id: 'd.ante', minClass: 4, section: 'ICRA', photo: 'optional', text: 'Anteroom in use; workers HEPA-vac or remove coveralls on exit' },
+  { id: 'd.hepavac', minClass: 4, section: 'ICRA', photo: 'optional', text: 'Work area HEPA-vacuumed before leaving' },
+  { id: 'd.tiles', minClass: 1, section: 'ICRA', photo: 'optional', text: 'Ceiling tiles moved for access replaced' },
 ]
 
 export interface IlsmMeasure {
@@ -117,12 +119,13 @@ export function setupItems(cls: IcraClass): ItemTemplate[] {
 }
 
 export function dailyItems(permit: { cls: IcraClass; ilsm: boolean; ilsmMeasures: string[]; pressurePoints: string[] }): ItemTemplate[] {
-  const items = DAILY.filter(inClass(permit.cls)).map(strip)
-  if (permit.cls >= 4) {
+  const items: ItemTemplate[] = []
+  if (permit.cls >= PRESSURE_FROM_CLASS) {
     permit.pressurePoints.forEach((location, i) =>
-      items.push({ id: `p.${i}`, section: 'Pressure', photo: 'required', text: `Pressure reading: ${location}`, readingAt: location, help: 'Photograph the gauge so the reading can be checked later.' }),
+      items.push({ id: `p.${i}`, section: 'Pressure', photo: 'required', text: `Differential pressure: ${location}`, readingAt: location, help: 'Photograph the gauge so the reading can be checked later.' }),
     )
   }
+  items.push(...DAILY.filter(inClass(permit.cls)).map(strip))
   if (permit.ilsm) {
     for (const m of ILSM_MEASURES) {
       if (m.daily && permit.ilsmMeasures.includes(m.id)) items.push({ id: `l.${m.id}`, section: 'ILSM', photo: m.daily.photo, text: m.daily.text })
@@ -130,6 +133,26 @@ export function dailyItems(permit: { cls: IcraClass; ilsm: boolean; ilsmMeasures
   }
   return items
 }
+
+/** Pressure readings and negative air start at Class III (APIC matrix; matches field practice). */
+export const PRESSURE_FROM_CLASS = 3
+
+export interface SystemInfo {
+  id: ShutdownSystem
+  label: string
+  /** Out of service longer than this (hours in 24) means fire watch or evacuation (CMS K-346 / K-354). */
+  fireWatchAfterHours?: number
+}
+
+export const SHUTDOWN_SYSTEMS: SystemInfo[] = [
+  { id: 'fire_alarm', label: 'Fire alarm / detection', fireWatchAfterHours: 4 },
+  { id: 'sprinkler', label: 'Sprinkler', fireWatchAfterHours: 10 },
+  { id: 'medical_gas', label: 'Medical gas' },
+  { id: 'electrical', label: 'Electrical' },
+  { id: 'hvac', label: 'HVAC / air handling' },
+  { id: 'water', label: 'Domestic water' },
+  { id: 'other', label: 'Other' },
+]
 
 // The order of closeout steps is enforced: a step can't be recorded until the one before it is complete.
 export const CLOSEOUT_STEPS: ItemTemplate[] = [
