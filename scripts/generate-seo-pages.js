@@ -64,6 +64,7 @@ const KNOWN_SITE_FILES = new Set([
   'analytics.js',
   'favicon.ico',
   'favicon.svg',
+  'apple-touch-icon.png',
   'og-image.jpg'
 ]);
 
@@ -261,6 +262,7 @@ function renderPage(page) {
   <meta name="twitter:image:alt" content="Latin Launchpad, Latin practice for grades 3–8">
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="/styles.css">
   ${jsonScript({ '@context': 'https://schema.org', '@graph': [crumbList, mainEntity] })}
 </head>
@@ -867,12 +869,17 @@ function assertLinks(rendered) {
   });
 }
 
+function sitemapLastmod() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 function sitemapXml(relPaths) {
+  const lastmod = sitemapLastmod();
   const urls = [
     ...STATIC_URLS,
     ...relPaths.map((relPath) => `${SITE}/${relPath}`)
   ];
-  const body = urls.map((url) => `  <url><loc>${esc(url)}</loc></url>`).join('\n');
+  const body = urls.map((url) => `  <url><loc>${esc(url)}</loc><lastmod>${lastmod}</lastmod></url>`).join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
 }
 

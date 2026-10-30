@@ -35,6 +35,9 @@ test('the homepage describes the course and FAQ without JavaScript', () => {
   assert.ok(types.includes('FAQPage'));
   assert.ok(types.includes('Course'));
   assert.ok(types.includes('EducationalOrganization'));
+  const organization = graph['@graph'].find((node) => node['@type'] === 'EducationalOrganization');
+  assert.equal(organization.sameAs, 'https://schoollaunch.org/');
+  assert.equal(organization.logo, 'https://latinlaunchpad.com/og-image.jpg');
   const faq = graph['@graph'].find((node) => node['@type'] === 'FAQPage');
   const text = visibleText(html);
   faq.mainEntity.forEach((question) => {
@@ -55,7 +58,9 @@ test('generated topic pages are static, linked from the hub, and listed in the s
   const robots = fs.readFileSync(path.join(dir, 'robots.txt'), 'utf8');
   assert.match(robots, /^User-agent: \*\nAllow: \/\n\nSitemap: https:\/\/latinlaunchpad\.com\/sitemap\.xml\n$/);
   const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+  const lastmods = sitemap.match(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/g) || [];
   assert.equal(new Set(locs).size, locs.length);
+  assert.equal(lastmods.length, locs.length);
   STATIC_URLS.forEach((url) => assert.ok(locs.includes(url), url));
   assert.equal(locs.includes('https://latinlaunchpad.com/404.html'), false);
 
@@ -70,6 +75,7 @@ test('generated topic pages are static, linked from the hub, and listed in the s
     assert.equal((html.match(/<h1[\s>]/g) || []).length, 1, rel);
     assert.match(html, /<meta name="description" content="[^"]{40,}"/, rel);
     assert.match(html, new RegExp(`<link rel="canonical" href="https://latinlaunchpad\\.com/${rel}">`), rel);
+    assert.match(html, /<link rel="apple-touch-icon" href="\/apple-touch-icon\.png">/, rel);
     assert.match(html, /property="og:title"/, rel);
     assert.match(html, /name="twitter:card"/, rel);
     const text = visibleText(html);
