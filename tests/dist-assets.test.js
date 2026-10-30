@@ -18,7 +18,7 @@ function referencedAssets() {
   const files = fs.readdirSync(root).filter((name) => (
     /\.(html|css|js)$/.test(name) && name !== 'supabase.js'
   ));
-  const pattern = /(?:https?:\/\/latinlaunchpad\.com)?\/?(?:assets\/[A-Za-z0-9][\w./-]*|favicon\.(?:ico|svg)|og-image\.jpg)/gi;
+  const pattern = /(?:https?:\/\/latinlaunchpad\.com)?\/?(?:assets\/[A-Za-z0-9][\w./-]*|favicon\.(?:ico|svg)|apple-touch-icon\.png|og-image\.jpg)/gi;
   const paths = new Set();
   files.forEach((name) => {
     const source = fs.readFileSync(path.join(root, name), 'utf8');
@@ -62,4 +62,40 @@ test('the Netlify build copies every referenced asset into dist', () => {
     assert.ok(fs.existsSync(filePath), `dist is missing ${assetPath}`);
     assert.ok(fs.statSync(filePath).size > 0, `${assetPath} is empty`);
   });
+
+  const touchIcon = fs.readFileSync(path.join(dist, 'apple-touch-icon.png'));
+  assert.ok(touchIcon.length > 0, 'apple-touch-icon.png is empty');
+  assert.equal(touchIcon.readUInt32BE(16), 180);
+  assert.equal(touchIcon.readUInt32BE(20), 180);
+  ['index.html', 'flashcards.html', 'about.html', 'privacy.html', 'terms.html', 'contact.html', 'parents-teachers.html', 'school-privacy.html', '404.html'].forEach((name) => {
+    assert.match(fs.readFileSync(path.join(dist, name), 'utf8'), /<link rel="apple-touch-icon" href="\/apple-touch-icon\.png">/, name);
+  });
+
+  const robots = fs.readFileSync(path.join(dist, 'robots.txt'), 'utf8');
+  assert.match(robots, /Sitemap: https:\/\/latinlaunchpad\.com\/sitemap\.xml/);
+  const sitemap = fs.readFileSync(path.join(dist, 'sitemap.xml'), 'utf8');
+  const locs = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
+  const lastmods = sitemap.match(/<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/g) || [];
+  assert.ok(locs.length > 0);
+  assert.equal(lastmods.length, locs.length);
+  [
+    'https://latinlaunchpad.com/',
+    'https://latinlaunchpad.com/topics/index.html',
+    'https://latinlaunchpad.com/topics/vocabulary-year-1.html',
+    'https://latinlaunchpad.com/topics/grammar/index.html',
+    'https://latinlaunchpad.com/topics/roman-culture/index.html',
+    'https://latinlaunchpad.com/topics/derivatives.html',
+    'https://latinlaunchpad.com/topics/mottoes/index.html',
+    'https://latinlaunchpad.com/topics/annual-exam-study/index.html',
+    'https://latinlaunchpad.com/topics/printables.html'
+  ].forEach((url) => assert.ok(sitemap.includes(`<loc>${url}</loc>`), url));
+  const yearOne = fs.readFileSync(path.join(dist, 'topics', 'vocabulary-year-1.html'), 'utf8');
+  assert.match(yearOne, /<link rel="apple-touch-icon" href="\/apple-touch-icon\.png">/);
+  assert.match(yearOne, /<h1>Year 1 Latin vocabulary \(Grade 3\)<\/h1>/);
+  assert.match(yearOne, /<td lang="la">puella<\/td>/);
+  assert.match(yearOne, /<p class="trust-lead">/);
+  const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+  assert.match(home, /homeschool/);
+  assert.match(home, /FAQPage/);
+  assert.match(home, /id="courseOverview"/);
 });

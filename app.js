@@ -2639,7 +2639,7 @@ function renderLessonSeekFind(lesson) {
       <div class="seek-find-layout">
         <figure class="seek-find-figure">
           <div class="seek-find-canvas">
-            ${renderResponsiveStoryImage(config.image, lesson.story.pictureCue, '(max-width: 900px) 92vw, 640px')}
+            ${renderResponsiveStoryImage(config.image, storyImageAlt(lesson.story), '(max-width: 900px) 92vw, 640px')}
             ${hotspots}
             ${complete ? '<div class="seek-find-complete-banner" role="status"><span aria-hidden="true">★</span> Euge! You found them all!</div>' : ''}
           </div>
@@ -4169,6 +4169,16 @@ function renderHighlightedLatin(text, words) {
     .join('');
 }
 
+function storyImageAlt(story) {
+  const title = String(story?.englishTitle || story?.title || '').trim();
+  const cue = String(story?.pictureCue || '').trim();
+  if (title && cue) {
+    if (cue.toLowerCase().includes(title.toLowerCase())) return cue;
+    return `${title}. ${cue}`;
+  }
+  return cue || title || 'Illustrated scene for a Latin Launchpad story';
+}
+
 function renderResponsiveStoryImage(src, alt, sizes) {
   const safeSrc = escapeHtml(src || '');
   if (!safeSrc) return '';
@@ -4202,8 +4212,8 @@ function renderStoryScene(lessonOrStory) {
     <section class="story-scene-panel" style="--scene-bg: ${escapeHtml(story.visual.bg)}; --scene-accent: ${escapeHtml(story.visual.accent)};">
       <figure class="story-visual">
         ${storyImage
-          ? renderResponsiveStoryImage(storyImage, story.pictureCue, '(max-width: 700px) 92vw, 480px')
-          : `<div class="story-visual-fallback" role="img" aria-label="${escapeHtml(story.pictureCue)}">${story.visual.icons.map((icon) => `<span aria-hidden="true">${escapeHtml(icon)}</span>`).join('')}</div>`}
+          ? renderResponsiveStoryImage(storyImage, storyImageAlt(story), '(max-width: 700px) 92vw, 480px')
+          : `<div class="story-visual-fallback" role="img" aria-label="${escapeHtml(storyImageAlt(story))}">${story.visual.icons.map((icon) => `<span aria-hidden="true">${escapeHtml(icon)}</span>`).join('')}</div>`}
       </figure>
       <div class="story-copy">
         <span class="story-eyebrow">Story scene</span>
@@ -7372,6 +7382,8 @@ function currentAssignmentRoute() {
       shuffle: StudyState.shuffled ? 1 : 0
     };
   }
+  if (page === 'romanWorld') return { kind: 'roman-world' };
+  if (page === 'wordBuilding') return { kind: 'word-building' };
   return null;
 }
 
@@ -7399,6 +7411,14 @@ function applyAssignmentHash() {
     assignmentFocus = null;
     if (route.kind === 'check') {
       showPage('codeCheck', { skipHash: true });
+      return;
+    }
+    if (route.kind === 'roman-world') {
+      showRomanWorld();
+      return;
+    }
+    if (route.kind === 'word-building') {
+      showWordBuilding();
       return;
     }
     if (route.kind === 'deck') {

@@ -88,7 +88,7 @@
     banner.innerHTML = `
       <div>
         <strong id="analyticsConsentTitle">Optional analytics</strong>
-        <p>An adult may allow anonymous usage analytics to help improve Latin Launchpad. Advertising features are off. <a href="privacy.html#analytics">Learn more about analytics</a>.</p>
+        <p>An adult may allow anonymous usage analytics to help improve Latin Launchpad. Advertising features are off. <a href="/privacy.html#analytics">Learn more about analytics</a>.</p>
       </div>
       <div class="analytics-consent-actions">
         <button type="button" class="secondary-button" data-analytics-choice="denied">No thanks</button>

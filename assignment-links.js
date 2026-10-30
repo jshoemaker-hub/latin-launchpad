@@ -35,6 +35,8 @@
     if (!parts.length) return null;
     const [head, ...rest] = parts;
     if (head === 'check' && rest.length === 0) return { kind: 'check' };
+    if (head === 'roman-world' && rest.length === 0) return { kind: 'roman-world' };
+    if (head === 'word-building' && rest.length === 0) return { kind: 'word-building' };
     if (head === 'y' && isYear(rest[0])) {
       const year = Number(rest[0]);
       if (rest.length === 1) return { kind: 'year', year };
@@ -77,6 +79,8 @@
     const parsed = route && route.kind ? route : null;
     if (!parsed) return '';
     if (parsed.kind === 'check') return '/check';
+    if (parsed.kind === 'roman-world') return '/roman-world';
+    if (parsed.kind === 'word-building') return '/word-building';
     if (parsed.kind === 'year' && isYear(parsed.year)) return `/y/${Number(parsed.year)}`;
     if (parsed.kind === 'lesson' && isYear(parsed.year) && isLessonId(parsed.lessonId) && PRACTICE_MODES.includes(parsed.mode || 'meaning')) {
       const mode = parsed.mode || 'meaning';
