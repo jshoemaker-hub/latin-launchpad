@@ -48,7 +48,7 @@ test('derivatives, mottoes, numerals, and authors are in place', () => {
     };
   `, context);
   const result = context.__OUT;
-  assert.equal(result.phrases, 144);
+  assert.equal(result.phrases, 150);
   assert.equal(result.focusClassic, 1);
   assert.deepEqual(Array.from(result.focusAdded), ['montani']);
   assert.equal(result.authors, 16);

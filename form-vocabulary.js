@@ -17468,6 +17468,9 @@ function applyFormVocabulary() {
   if (typeof GAP_FORM_RECORDS !== 'undefined' && typeof FORM_VOCABULARY !== 'undefined') {
     Object.assign(FORM_VOCABULARY, GAP_FORM_RECORDS);
   }
+  if (typeof PACE_FORM_RECORDS !== 'undefined' && typeof FORM_VOCABULARY !== 'undefined') {
+    Object.assign(FORM_VOCABULARY, PACE_FORM_RECORDS);
+  }
   if (typeof GRADE_WORDS === 'undefined') return;
   Object.values(GRADE_WORDS).flat().forEach((word) => {
     const record = getFormRecord(word.latin);

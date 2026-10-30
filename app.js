@@ -80,8 +80,12 @@ function isGapVocabularyWord(word) {
   return Boolean(word && word.gapSet);
 }
 
+function isPaceVocabularyWord(word) {
+  return Boolean(word && word.paceSet);
+}
+
 function getBaseVocabularyWords(grade) {
-  return (GRADE_WORDS[grade] || []).filter((word) => !isCoreFrequencyWord(word) && !isGapVocabularyWord(word));
+  return (GRADE_WORDS[grade] || []).filter((word) => !isCoreFrequencyWord(word) && !isGapVocabularyWord(word) && !isPaceVocabularyWord(word));
 }
 
 function getCoreSetNumber(grade, indexWithinGrade) {
@@ -168,7 +172,7 @@ function buildVocabularyLesson(grade, lessonWords, index, id, title, description
 }
 
 const VOCAB_LESSONS = Object.entries(GRADE_WORDS).flatMap(([grade, words]) => {
-  const baseWords = words.filter((word) => !isCoreFrequencyWord(word) && !isGapVocabularyWord(word));
+  const baseWords = words.filter((word) => !isCoreFrequencyWord(word) && !isGapVocabularyWord(word) && !isPaceVocabularyWord(word));
   const coreWords = words.filter((word) => isCoreFrequencyWord(word));
   const gapWords = words.filter((word) => isGapVocabularyWord(word));
   const baseLessons = Array.from({ length: Math.ceil(baseWords.length / LESSON_CHUNK_SIZE) }, (_, index) => {
@@ -213,7 +217,25 @@ const VOCAB_LESSONS = Object.entries(GRADE_WORDS).flatMap(([grade, words]) => {
     lesson.description = `Little words and everyday words that turn up often in reading. ${lesson.description}`;
     return lesson;
   });
-  return [...baseLessons, ...coreLessons, ...gapLessons];
+  const paceWords = words.filter((word) => isPaceVocabularyWord(word));
+  const paceLabel = { 3: 'Exclamations', 5: 'Little connectors' }[Number(grade)] || 'Recognition';
+  const paceLessons = Array.from({ length: Math.ceil(paceWords.length / LESSON_CHUNK_SIZE) }, (_, index) => {
+    const start = index * LESSON_CHUNK_SIZE;
+    const lessonWords = paceWords.slice(start, start + LESSON_CHUNK_SIZE);
+    const lesson = buildVocabularyLesson(
+      grade,
+      lessonWords,
+      baseLessons.length + coreLessons.length + gapLessons.length + index,
+      `grade${grade}-pace-${index + 1}`,
+      `${getLessonLevelName(Number(grade))}: ${paceLabel}`,
+      `${start + 1}-${start + lessonWords.length}`,
+      false
+    );
+    lesson.paceSet = true;
+    lesson.description = `Words to recognize in a sentence. ${lesson.description}`;
+    return lesson;
+  });
+  return [...baseLessons, ...coreLessons, ...gapLessons, ...paceLessons];
 });
 
 const ALL_GRAMMAR_LESSONS = [
@@ -1841,7 +1863,9 @@ function renderLessonList() {
       ? '<span class="lesson-kind-tag">Core words</span>'
       : lesson.gapSet
         ? '<span class="lesson-kind-tag">Extra words</span>'
-        : '';
+        : lesson.paceSet
+          ? '<span class="lesson-kind-tag">Recognize</span>'
+          : '';
     const phraseTag = getLessonPhraseCount(lesson) > 0
       ? `<span class="lesson-phrase-tag">${getLessonPhraseCount(lesson)} ${getLessonPhraseCount(lesson) === 1 ? 'phrase' : 'phrases'}</span>`
       : '';
@@ -6299,6 +6323,14 @@ function annualExamLevelProgress(levelId) {
 }
 
 function showWordBuilding() {
+  if (typeof WordBuildingState !== 'undefined') {
+    const grade = Number(AppState.grade);
+    if (grade >= 3 && grade <= 8) {
+      WordBuildingState.grade = grade >= 6 ? 6 : grade;
+      if (WordBuildingState.grade > 4 && WordBuildingState.mode === 'numbers') WordBuildingState.mode = 'root';
+      WordBuildingState.queue = [];
+    }
+  }
   if (typeof bindWordBuilding === 'function') bindWordBuilding();
   if (typeof renderWordBuilding === 'function') renderWordBuilding();
   showPage('wordBuilding');

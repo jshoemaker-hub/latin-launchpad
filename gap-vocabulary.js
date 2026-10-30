@@ -145,3 +145,52 @@ function appendGapVocabulary() {
 }
 
 appendGapVocabulary();
+
+// Recognition words that were still missing from the year lists.
+// Glosses are original. These are not a textbook word list.
+const PACE_VOCABULARY_WORDS = [
+  { latin: 'eheu', english: 'alas / oh dear', emoji: '😢', grade: 3, partOfSpeech: 'interjection', dictionaryEntry: 'ēheu' },
+  { latin: 'euge', english: 'hurrah / well done', emoji: '🎉', grade: 3, partOfSpeech: 'interjection', dictionaryEntry: 'euge' },
+  { latin: 'quod', english: 'because', emoji: '🔗', grade: 5, partOfSpeech: 'conjunction', dictionaryEntry: 'quod' },
+  { latin: 'igitur', english: 'and so / therefore', emoji: '➡️', grade: 5, partOfSpeech: 'adverb', dictionaryEntry: 'igitur' }
+];
+
+const PACE_FORM_RECORDS = {};
+PACE_VOCABULARY_WORDS.forEach((word) => {
+  PACE_FORM_RECORDS[word.latin] = {
+    headword: word.latin,
+    dictionaryEntry: word.dictionaryEntry,
+    gender: '',
+    principalParts: '',
+    partOfSpeech: word.partOfSpeech,
+    declension: '',
+    formBooks: [],
+    macronSource: 'Lewis & Short quantities',
+    reliable: true,
+    endingHint: '',
+    chant: null
+  };
+});
+
+function appendPaceVocabulary() {
+  if (typeof GRADE_WORDS === 'undefined' || !Array.isArray(PACE_VOCABULARY_WORDS)) return;
+  const seen = new Set();
+  Object.values(GRADE_WORDS).flat().forEach((word) => {
+    gapVocabularyBlocks(word.latin).forEach((key) => seen.add(key));
+  });
+  PACE_VOCABULARY_WORDS.forEach((word) => {
+    const keys = gapVocabularyKey(word.latin);
+    if (!keys.length || keys.some((key) => seen.has(key))) return;
+    const grade = String(word.grade);
+    if (!Array.isArray(GRADE_WORDS[grade])) return;
+    GRADE_WORDS[grade].push({
+      latin: word.latin,
+      english: word.english,
+      emoji: word.emoji || '',
+      paceSet: true
+    });
+    keys.forEach((key) => seen.add(key));
+  });
+}
+
+appendPaceVocabulary();

@@ -64,7 +64,13 @@ const MORE_LATIN_PHRASES = [
   motto('fl-abbr', 'fl.', 'he flourished', 'An abbreviation of floruit. It dates the years when a person was active.', ['annus'], 4),
   motto('in-memoriam', 'In memoriam', 'in memory', 'A heading for a remembrance of someone who has died.', ['memoria'], 6),
   motto('non-scholae', 'Non scholae, sed vitae', 'not for school, but for life', 'A school motto that turns around Seneca. He complained that people learn for school rather than for life.', ['schola'], 5),
-  motto('arma-virumque', 'Arma virumque cano', 'I sing of arms and a man', 'The opening of Vergil\'s Aeneid, public domain. Epic begins with a hero and a war.', ['bellum'], 7)
+  motto('arma-virumque', 'Arma virumque cano', 'I sing of arms and a man', 'The opening of Vergil\'s Aeneid, public domain. Epic begins with a hero and a war.', ['bellum'], 7),
+  motto('quid-pro-quo', 'Quid pro quo', 'something for something', 'One thing given in return for another. Each side brings what the other side asked for.', ['pro'], 5),
+  motto('per-capita', 'Per capita', 'by the head, for each person', 'A count or a share for every person, one by one, rather than for the group as a lump.', ['caput'], 5),
+  motto('magnum-opus', 'Magnum opus', 'a great work', 'The most important work a person makes. Magnum agrees with opus, a work.', ['opus'], 5),
+  motto('sine-qua-non', 'Sine qua non', 'without which not', 'Something you cannot do without. If it is missing, the rest cannot stand.', ['sine'], 6),
+  motto('ipso-facto', 'Ipso facto', 'by the fact itself', 'The result follows from the fact already named. No extra step is required.', ['ipse'], 6),
+  motto('in-loco-parentis', 'In loco parentis', 'in the place of a parent', 'A person trusted to care for a child as a parent would. Parens is a parent, and pater is a father.', ['pater'], 6)
 ];
 
 MORE_LATIN_PHRASES.forEach((phrase) => LATIN_PHRASES.push(phrase));

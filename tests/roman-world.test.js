@@ -25,11 +25,11 @@ test('Roman-world units have cards, a timeline, a map, and bank questions', () =
   const myth = units.filter((card) => card.unit === 'myth');
   const life = units.filter((card) => card.unit === 'life');
   const history = units.filter((card) => card.unit === 'history');
-  assert.equal(myth.length, 40);
-  assert.equal(life.length, 25);
-  assert.equal(history.length, 20);
-  assert.equal(units.length, 85);
-  assert.equal(cards.length, 119);
+  assert.equal(myth.length, 48);
+  assert.equal(life.length, 35);
+  assert.equal(history.length, 31);
+  assert.equal(units.length, 114);
+  assert.equal(cards.length, 148);
 
   const ids = units.map((card) => card.id);
   assert.equal(new Set(ids).size, ids.length);
@@ -40,14 +40,14 @@ test('Roman-world units have cards, a timeline, a map, and bank questions', () =
     assert.equal(/\b(First|Second|Third) Form\b/.test(`${card.summary} ${card.connection}`), false);
   });
 
-  assert.equal(timeline.length, 20);
+  assert.equal(timeline.length, 27);
   timeline.forEach((event, index) => {
     assert.equal(event.order, index + 1);
     assert.ok(history.some((card) => card.id === event.cardId), event.cardId);
   });
 
-  assert.equal(places.length, 60);
-  assert.equal(new Set(places.map((place) => place.id)).size, 60);
+  assert.equal(places.length, 69);
+  assert.equal(new Set(places.map((place) => place.id)).size, 69);
   places.forEach((place) => {
     assert.ok(place.latin && place.english && place.group);
     assert.ok(place.x >= 0 && place.x <= 1000 && place.y >= 0 && place.y <= 640, place.id);
@@ -124,6 +124,8 @@ test('Roman-world units have cards, a timeline, a map, and bank questions', () =
     assert.ok(place.x > italy.minX && place.x < italy.maxX, id);
     assert.ok(place.y > italy.minY && place.y < italy.maxY, id);
   });
+  assert.equal(byId.sardinia.group, 'lands');
+  assert.notEqual(byId.sardinia.group, 'waters');
   assert.ok((byId.sardinia.x - italy.minX) / italySpanX < 0.2, 'Sardinia sits near the western edge');
   assert.ok((byId.corsica.x - italy.minX) / italySpanX < 0.22, 'Corsica sits near the western edge');
   assert.ok((byId.alpes.y - italy.minY) / (italy.maxY - italy.minY) < 0.2, 'the Alps sit near the northern edge');

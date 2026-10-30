@@ -275,6 +275,90 @@ insertGrammarLessonAfter('grade5-grammar-do-and-to-do', EARLY_GRAMMAR_LESSONS[6]
 insertGrammarLessonAfter('grade5-grammar-bonus-puella', EARLY_GRAMMAR_LESSONS[7]);
 insertGrammarLessonAfter('grade5-grammar-rex-pater', EARLY_GRAMMAR_LESSONS[8]);
 
+GRAMMAR_LESSONS.push(
+  {
+    id: 'grade4-grammar-question-chunks',
+    grade: 4,
+    kind: 'grammar',
+    title: 'Grade 4 Grammar: Asking a Question',
+    description: 'Recognize Quid est, Ubi est, Cur, Quando, and Quomodo as spoken chunks.',
+    sourceNote: 'Original classroom lesson. The questions were written for this course.',
+    focus: ['Quid est?', 'Ubi est?', 'Cur, Quando, and Quomodo'],
+    explain: [
+      'Learn these questions as whole chunks. Quid est? means What is it? Ubi est? means Where is it? Cur asks why. Quando asks when. Quomodo asks how.',
+      'Ubi can also mean when, as in Ubi pater venit, when father comes. Do not memorize a chart. A later year sorts the question words one by one.'
+    ],
+    examples: [
+      { latin: 'Quid est?', english: 'What is it?', note: 'Quid asks what.' },
+      { latin: 'Ubi est?', english: 'Where is it?', note: 'Ubi asks where.' },
+      { latin: 'Cur?', english: 'Why?', note: 'A one-word question.' },
+      { latin: 'Ubi pater venit.', english: 'When father comes.', note: 'Here ubi means when.' }
+    ],
+    words: [
+      earlyGrammarWord('Quid est?', 'What is it?', 'What does Quid est? mean?', ['What is it?', 'Where is it?', 'Who is it?', 'Why is it?'], 'Quid asks what.', 'Quid est? means What is it?'),
+      earlyGrammarWord('Ubi est?', 'Where is it?', 'Ubi est? means', ['Where is it?', 'What is it?', 'When is it?', 'How is it?'], 'This ubi asks for a place.', 'Ubi est? means Where is it?'),
+      earlyGrammarWord('Cur?', 'Why?', 'What does Cur? ask?', ['Why?', 'Where?', 'When?', 'Who?'], 'Cur is the question for a reason.', 'Cur? means Why?'),
+      earlyGrammarWord('Quando?', 'When?', 'Quando? asks', ['When?', 'Where?', 'How?', 'What?'], 'Quando asks for a time.', 'Quando? means When?'),
+      earlyGrammarWord('Quomodo?', 'How?', 'What does Quomodo? ask?', ['How?', 'Why?', 'Who?', 'Where?'], 'Quomodo asks for the way something happens.', 'Quomodo? means How?'),
+      earlyGrammarWord('Ubi pater venit.', 'When father comes.', 'In Ubi pater venit, ubi means', ['When father comes.', 'Where is father?', 'Why does father come?', 'Father is here.'], 'Ubi can mean when, not only where.', 'Ubi pater venit means When father comes.')
+    ]
+  },
+  {
+    id: 'grade5-grammar-little-connectors',
+    grade: 5,
+    kind: 'grammar',
+    title: 'Grade 5 Grammar: And, Or, and Because',
+    description: 'Recognize -que, -ne, aut, quod, quot, and igitur as chunks. No chart yet.',
+    sourceNote: 'Original classroom lesson. The sentences were written for this course.',
+    focus: ['-que and aut', '-ne as a question', 'quod, quot, and igitur'],
+    explain: [
+      'Puer puellaque means the boy and the girl. The little -que sticks to the second word and means and. Aut means or, as in panis aut aqua, bread or water. Videsne? means Do you see? The -ne sticks on and makes a question.',
+      'Quod in this lesson means because. Quot asks how many. Igitur means and so, or therefore, like ergo. Learn the chunks. The longer question patterns wait for a later year.'
+    ],
+    examples: [
+      { latin: 'puer puellaque', english: 'the boy and the girl', note: '-que means and.' },
+      { latin: 'Videsne?', english: 'Do you see?', note: '-ne makes a question.' },
+      { latin: 'panis aut aqua', english: 'bread or water', note: 'Aut means or.' },
+      { latin: 'Manet igitur.', english: 'And so he stays.', note: 'Igitur means and so. It often stands second.' }
+    ],
+    words: [
+      earlyGrammarWord('puer puellaque', 'the boy and the girl', 'What does puer puellaque mean?', ['the boy and the girl', 'the boy or the girl', 'the boy sees the girl', 'because of the girl'], '-que on the second word means and.', 'Puer puellaque means the boy and the girl.'),
+      earlyGrammarWord('Videsne?', 'Do you see?', 'Videsne? means', ['Do you see?', 'You see.', 'Why do you see?', 'How many do you see?'], '-ne turns the word into a question.', 'Videsne? means Do you see?'),
+      earlyGrammarWord('panis aut aqua', 'bread or water', 'What does panis aut aqua mean?', ['bread or water', 'bread and water', 'bread because of water', 'How much bread?'], 'Aut means or.', 'Panis aut aqua means bread or water.'),
+      earlyGrammarWord('quod', 'because', 'In this lesson, quod means', ['because', 'and', 'how many', 'where'], 'This quod gives a reason.', 'Quod means because in this lesson.'),
+      earlyGrammarWord('Quot sunt?', 'How many are there?', 'Quot sunt? means', ['How many are there?', 'Why are they here?', 'Where are they?', 'Do you see them?'], 'Quot asks for a number.', 'Quot sunt? means How many are there?'),
+      earlyGrammarWord('Manet igitur.', 'And so he stays.', 'Manet igitur means', ['And so he stays.', 'He stays because of a friend.', 'Does he stay?', 'He and the girl stay.'], 'Igitur means and so, or therefore, and it often stands second.', 'Manet igitur means And so he stays.')
+    ]
+  },
+  {
+    id: 'grade5-grammar-adverb-endings',
+    grade: 5,
+    kind: 'grammar',
+    title: 'Grade 5 Grammar: Happily and Bravely',
+    description: 'Recognize adverbs in -e and -iter. Do not build a chart.',
+    sourceNote: 'Original classroom lesson. The examples were written for this course.',
+    focus: ['-e from a describing word', '-iter', 'bene as a special word'],
+    explain: [
+      'Laetus means happy. Laete means happily. Fortis means brave. Fortiter means bravely. An adverb tells how something is done. You only need to recognize the word in this lesson.',
+      'Many adverbs end in -e or -iter. Bene means well, and it belongs with bonus, good, even though the shape changes more. Fideliter means faithfully. Breviter means briefly. Misere means miserably.'
+    ],
+    examples: [
+      { latin: 'laete', english: 'happily', note: 'From laetus, happy.' },
+      { latin: 'fortiter', english: 'bravely', note: 'From fortis, brave.' },
+      { latin: 'fideliter', english: 'faithfully', note: 'From fidelis, faithful.' },
+      { latin: 'bene', english: 'well', note: 'The adverb that belongs with bonus.' }
+    ],
+    words: [
+      earlyGrammarWord('laete', 'happily', 'What does laete mean?', ['happily', 'happy', 'sadly', 'brave'], 'Laetus is happy. Laete tells how.', 'Laete means happily.'),
+      earlyGrammarWord('fortiter', 'bravely', 'Fortiter means', ['bravely', 'brave', 'briefly', 'well'], 'Fortis is brave. Fortiter tells how.', 'Fortiter means bravely.'),
+      earlyGrammarWord('fideliter', 'faithfully', 'What does fideliter mean?', ['faithfully', 'faithful', 'happily', 'briefly'], 'Fidelis is faithful. The adverb ends in -iter.', 'Fideliter means faithfully.'),
+      earlyGrammarWord('breviter', 'briefly', 'Breviter means', ['briefly', 'brief', 'bravely', 'well'], 'Brevis is brief or short.', 'Breviter means briefly.'),
+      earlyGrammarWord('misere', 'miserably', 'What does misere mean?', ['miserably', 'wretched', 'happily', 'faithfully'], 'Miser is wretched. Misere tells how.', 'Misere means miserably.'),
+      earlyGrammarWord('bene', 'well', 'Bene means', ['well', 'good', 'badly', 'bravely'], 'Bonus means good. Bene is the special adverb.', 'Bene means well.')
+    ]
+  }
+);
+
 const YEAR4A_MOVE_ON_LESSONS = [
   {
     id: 'grade6-grammar-have-done',
@@ -355,6 +439,33 @@ const YEAR4A_MOVE_ON_LESSONS = [
       earlyGrammarWord('amica!', 'friend!', 'Amica! means', ['friend!', 'of the friend', 'to the friend', 'the friends'], 'Amica stays amica, like puella.', 'Amica! calls a friend.'),
       earlyGrammarWord('serve!', 'serve!', 'Which word calls a servant?', ['serve!', 'servus!', 'servi!', 'servo!'], 'Servus takes -e, like Marcus.', 'Serve! calls a servant.'),
       earlyGrammarWord('Salve, Marce!', 'Hello, Marcus!', 'Salve, Marce! means', ['Hello, Marcus!', 'Hello, son!', 'Marcus sees.', 'The servant says hello.'], 'Salve is hello to one person. Marce is the person called.', 'Salve, Marce! means hello, Marcus.')
+    ]
+  },
+  {
+    id: 'grade6-grammar-adverb-practice',
+    grade: 6,
+    kind: 'grammar',
+    title: 'Grade 6 Grammar: How It Is Done',
+    description: 'Practice the adverbs from Year 3, and notice -e, -iter, and one special word.',
+    sourceNote: 'Original classroom lesson. The examples were written for this course.',
+    focus: ['-e', '-iter', 'bene'],
+    explain: [
+      'To make an adverb from a word like laetus, drop the -us, -a, or -um ending and add -e. Laetus becomes laete, happily. Miser becomes misere, miserably. A word like fortis or fidelis usually adds -iter: fortiter, bravely, and fideliter, faithfully. Brevis becomes breviter, briefly.',
+      'Bonus does not follow that shape. Its adverb is bene, well. Forte looks close to fortis, but forte means by chance, not bravely. In this lesson you choose the meaning. You do not fill a chart for every describing word.'
+    ],
+    examples: [
+      { latin: 'laete', english: 'happily', note: 'Laetus drops -us and adds -e.' },
+      { latin: 'fortiter', english: 'bravely', note: 'Fortis takes -iter.' },
+      { latin: 'bene', english: 'well', note: 'The adverb of bonus.' },
+      { latin: 'forte', english: 'by chance', note: 'Not the adverb of fortis.' }
+    ],
+    words: [
+      earlyGrammarWord('laete', 'happily', 'Laete means', ['happily', 'happy', 'sadly', 'by chance'], 'Laetus is the describing word. Laete tells how.', 'Laete means happily.'),
+      earlyGrammarWord('misere', 'miserably', 'Misere means', ['miserably', 'wretched', 'well', 'briefly'], 'Miser drops its ending and adds -e.', 'Misere means miserably.'),
+      earlyGrammarWord('fortiter', 'bravely', 'Fortiter means', ['bravely', 'by chance', 'brave', 'briefly'], 'Fortis takes -iter. Forte is a different word.', 'Fortiter means bravely. Forte means by chance.'),
+      earlyGrammarWord('fideliter', 'faithfully', 'What does fideliter mean?', ['faithfully', 'faithful', 'happily', 'well'], 'Fidelis takes -iter.', 'Fideliter means faithfully.'),
+      earlyGrammarWord('breviter', 'briefly', 'Breviter means', ['briefly', 'short', 'bravely', 'by chance'], 'Brevis becomes breviter.', 'Breviter means briefly.'),
+      earlyGrammarWord('bene', 'well', 'Bene means', ['well', 'good', 'badly', 'bravely'], 'Bonus uses bene, not bone.', 'Bene means well.')
     ]
   }
 ];

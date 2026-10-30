@@ -44,24 +44,28 @@ test('new grammar lessons keep old ids and add the early pace', () => {
     'grade4-grammar-one-many',
     'grade4-grammar-amo',
     'grade4-grammar-little-words',
-    'grade4-grammar-ego-tu'
+    'grade4-grammar-ego-tu',
+    'grade4-grammar-question-chunks'
   ].join('|'));
   const grade5 = lessons.filter((lesson) => lesson.grade === 5);
-  assert.equal(ids(grade5).split('|').slice(-7).join('|'), [
+  assert.equal(ids(grade5).split('|').slice(-9).join('|'), [
     'grade5-grammar-of-and-to',
     'grade5-grammar-with-from',
     'grade5-grammar-was-doing',
     'grade5-grammar-do-and-to-do',
     'grade5-grammar-bonus-puella',
     'grade5-grammar-rex-pater',
-    'grade5-grammar-one-to-ten'
+    'grade5-grammar-one-to-ten',
+    'grade5-grammar-little-connectors',
+    'grade5-grammar-adverb-endings'
   ].join('|'));
   const grade6 = [...lessons, ...syntax].filter((lesson) => lesson.grade === 6);
-  assert.equal(ids(grade6).split('|').slice(-4).join('|'), [
+  assert.equal(ids(grade6).split('|').slice(-5).join('|'), [
     'grade6-grammar-roman-numerals',
     'grade6-grammar-have-done',
     'grade6-grammar-possum-noli',
-    'grade6-grammar-calling-names'
+    'grade6-grammar-calling-names',
+    'grade6-grammar-adverb-practice'
   ].join('|'));
 
   const added = [...lessons, ...syntax].filter((lesson) => (
