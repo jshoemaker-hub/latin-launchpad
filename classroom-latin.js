@@ -38,7 +38,9 @@ const CLASSROOM_LATIN_PHRASES = [
   { id: 'fiat', latin: 'Fiat.', english: 'All right; let it be done.', category: 'feedback', minGrade: 6, note: 'A brief expression of agreement or permission.' },
   { id: 'de-hoc-satis', latin: 'De hoc satis!', english: 'Enough of this!', category: 'routines', minGrade: 6, note: 'A firm way to close a topic or activity.' },
   { id: 'collige-folia', latin: 'Collige folia.', english: 'Collect the papers.', category: 'commands', minGrade: 4, note: 'A classroom instruction addressed to one person.' },
-  { id: 'quid-dixit', latin: 'Quid dixit?', english: 'What did he or she say?', category: 'help', minGrade: 5, note: 'A listening check about another speaker.' }
+  { id: 'quid-dixit', latin: 'Quid dixit?', english: 'What did he or she say?', category: 'help', minGrade: 5, note: 'A listening check about another speaker.' },
+  { id: 'eheu', latin: 'Eheu!', english: 'Alas! Oh dear!', category: 'exclamations', minGrade: 3, note: 'A cry of sorrow or dismay. Say it when something has gone wrong.' },
+  { id: 'euge', latin: 'Euge!', english: 'Hurrah! Well done!', category: 'exclamations', minGrade: 3, note: 'A cry of joy or praise. It cheers a good answer or a finished task.' }
 ];
 
 const CLASSROOM_LATIN_CATEGORIES = {
@@ -49,7 +51,8 @@ const CLASSROOM_LATIN_CATEGORIES = {
   commands: 'Commands',
   help: 'Get help',
   feedback: 'Feedback',
-  routines: 'Routines'
+  routines: 'Routines',
+  exclamations: 'Exclamations'
 };
 
 function getClassroomPhrasesForLesson(grade, lessonIndex = 0, count = 8) {

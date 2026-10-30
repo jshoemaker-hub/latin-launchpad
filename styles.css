@@ -1165,6 +1165,11 @@ input {
   color: #fff;
 }
 
+.timeline-choices button.is-selected {
+  outline: 2px solid #9a3412;
+  background: #ffedd5;
+}
+
 .roman-world-grid {
   display: grid;
   gap: 12px;

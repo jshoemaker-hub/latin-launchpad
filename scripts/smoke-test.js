@@ -100,11 +100,11 @@ function checkContentData() {
   assertUniqueIds(GRAMMAR_LESSONS, 'grammar lesson');
   assertUniqueIds([...GRAMMAR_LESSONS, ...SYNTAX_GRAMMAR_LESSONS], 'grammar lesson');
 
-  assert(LATIN_PHRASES.length === 144, `Expected 144 phrases, found ${LATIN_PHRASES.length}`);
-  assert(LATIN_CULTURE_CARDS.length === 145, `Expected 145 culture cards, found ${LATIN_CULTURE_CARDS.length}`);
-  assert(CLASSROOM_LATIN_PHRASES.length === 40, `Expected 40 classroom phrases, found ${CLASSROOM_LATIN_PHRASES.length}`);
-  assert(GRAMMAR_LESSONS.length === 32, `Expected 32 grammar lessons, found ${GRAMMAR_LESSONS.length}`);
-  assert(SYNTAX_GRAMMAR_LESSONS.length === 20, `Expected 20 syntax grammar lessons, found ${SYNTAX_GRAMMAR_LESSONS.length}`);
+  assert(LATIN_PHRASES.length === 150, `Expected 150 phrases, found ${LATIN_PHRASES.length}`);
+  assert(LATIN_CULTURE_CARDS.length === 174, `Expected 174 culture cards, found ${LATIN_CULTURE_CARDS.length}`);
+  assert(CLASSROOM_LATIN_PHRASES.length === 42, `Expected 42 classroom phrases, found ${CLASSROOM_LATIN_PHRASES.length}`);
+  assert(GRAMMAR_LESSONS.length === 35, `Expected 35 grammar lessons, found ${GRAMMAR_LESSONS.length}`);
+  assert(SYNTAX_GRAMMAR_LESSONS.length === 21, `Expected 21 syntax grammar lessons, found ${SYNTAX_GRAMMAR_LESSONS.length}`);
 
   const referenceWords = Object.values(REFERENCE_VOCABULARY_BY_GRADE).flat();
   assert(referenceWords.length === 76, `Expected 76 reference vocabulary entries, found ${referenceWords.length}`);

@@ -106,32 +106,71 @@ const CULTURE_UNIT_CARDS = [
   cultureCard('history', 'hist-augustus', 'Augustus', 'Augustus', 'Octavian took the name Augustus in 27 BCE. He kept the old offices in name and became the first emperor, beginning the Empire.', 'The Ara Pacis and the phrase Pax Romana belong to his reign.', ['imperator', 'pax'], 5, 'A'),
   cultureCard('history', 'hist-julio', 'The Julio-Claudians', 'Iulii Claudii', 'The first dynasty ran from Augustus through Tiberius, Caligula, Claudius, and Nero. Nero was the last of that family line to rule.', 'Julio-Claudian means the family of Julius Caesar and of Claudius joined together.', ['imperator', 'familia'], 7, 'I'),
   cultureCard('history', 'hist-flavians', 'The Flavians', 'Flavii', 'After a year of four emperors in 69 CE, Vespasian founded the Flavian dynasty. His sons were Titus and Domitian, and the Colosseum is their amphitheater.', 'They come after Nero and before the Five Good Emperors.', ['imperator', 'urbs'], 7, 'F'),
-  cultureCard('history', 'hist-good-emperors', 'Five Good Emperors', 'Optimi Principes', 'Nerva, Trajan, Hadrian, Antoninus Pius, and Marcus Aurelius ruled in turn from 96 to 180 CE. Writers later remembered their reigns as a stable high point.', 'Hadrian\'s Wall and Trajan\'s Column are monuments from this period.', ['imperator', 'pax'], 7, 'O')
+  cultureCard('history', 'hist-good-emperors', 'Five Good Emperors', 'Optimi Principes', 'Nerva, Trajan, Hadrian, Antoninus Pius, and Marcus Aurelius ruled in turn from 96 to 180 CE. Writers later remembered their reigns as a stable high point.', 'Hadrian\'s Wall and Trajan\'s Column are monuments from this period.', ['imperator', 'pax'], 7, 'O'),
+
+  cultureCard('myth', 'myth-proserpina', 'Proserpina', 'Proserpina', 'Proserpina is the daughter of Ceres. Pluto took her to the Underworld to be his queen. Ceres grieved, and the fields would not grow. A bargain lets Proserpina spend part of the year above the earth and part below, and the growing season and the cold season follow her coming and going.', 'The Ceres card names this daughter. The story here is why the year has a cold time and a growing time.', ['dea', 'terra'], 5, 'P'),
+  cultureCard('myth', 'myth-phaethon', 'Phaethon', 'Phaethon', 'Phaethon asked to drive the chariot of the sun for one day. The horses ran wild, and the earth was in danger. Jupiter struck the chariot down to stop the fire. The story is a warning about a task that is too large.', 'The sun chariot belongs with the sun god. Phaethon is the boy who could not hold it.', ['sol', 'equus'], 5, 'P'),
+  cultureCard('myth', 'myth-prometheus', 'Prometheus', 'Prometheus', 'Prometheus stole fire from the gods and gave it to people. Jupiter punished him for the theft. The story tells how people came to have fire, and what that gift cost the one who brought it.', 'Fire is the sign to remember, and the warning is that a gift from the gods can still be forbidden.', ['ignis', 'deus'], 5, 'P'),
+  cultureCard('myth', 'myth-pandora', 'Pandora', 'Pandora', 'Pandora opened a jar that the gods had given her. Troubles flew out into the world, and hope stayed inside. The older telling uses a jar. A box is a later change to the story.', 'She belongs with Prometheus in the stories about the first people and the first troubles.', ['femina', 'spes'], 6, 'P'),
+  cultureCard('myth', 'myth-pyramus', 'Pyramus and Thisbe', 'Pyramus et Thisbe', 'Pyramus and Thisbe lived next door and spoke through a crack in the wall, because their families would not let them meet. They agreed to meet outside the city. Thisbe ran from a lion, and Pyramus found her scarf and thought she had been killed. The story ends in sorrow, and the mulberry turns dark.', 'The wall, the lion, the scarf, and the dark mulberry are the four signs to keep together.', ['amor', 'murus'], 7, 'P'),
+  cultureCard('myth', 'myth-psyche', 'Cupid and Psyche', 'Cupido et Psyche', 'Psyche was admired so widely that Venus grew jealous. Cupid loved Psyche, but she was told not to look at him. She looked, and lost him. After hard tasks she was reunited with him, and the story ends with a wedding among the gods.', 'Cupid is the son of Venus. Psyche is the young woman who completes the tasks and returns.', ['amor', 'dea'], 7, 'C'),
+  cultureCard('myth', 'myth-europa', 'Europa and Cadmus', 'Europa et Cadmus', 'Europa was carried across the sea to Crete by Jupiter in the shape of a bull. Her brother Cadmus went looking for her. He followed a cow to the place where he founded Thebes, and there he sowed dragon teeth from which armed men sprang.', 'Europa explains a crossing to Crete. Cadmus explains the founding of Thebes.', ['mare', 'urbs'], 7, 'E'),
+  cultureCard('myth', 'myth-niobe', 'Niobe', 'Niobe', 'Niobe boasted that she had more children than Latona. Apollo and Diana, the children of Latona, answered that boast, and Niobe lost her children. She wept until she turned to stone. The story warns against setting oneself beside a god.', 'Latona is the mother of Apollo and Diana. Niobe is the mother who would not stop comparing.', ['mater', 'dea'], 7, 'N'),
+
+  cultureCard('life', 'life-lararium', 'The Household Shrine', 'Lararium', 'The lararium was a small shrine in the house for the Lares, the spirits of the household, and often for the Penates, the spirits of the storeroom. The family paused there and left a little offering.', 'It belongs with the atrium and the hearth. The house had its own holy corner.', ['domus', 'deus'], 4, 'L'),
+  cultureCard('life', 'life-bulla', 'The Bulla', 'Bulla', 'A freeborn child wore a bulla, a small locket, on a cord around the neck. A boy set it aside when he put on the toga of a man. A girl set it aside when she married.', 'The toga card is the ceremony for a boy. The bulla is the charm he wore before that day.', ['puer', 'puella'], 4, 'B'),
+  cultureCard('life', 'life-saturnalia', 'Saturnalia', 'Saturnalia', 'Saturnalia was a December festival of Saturn. Households gave gifts, played games, and shared a large meal. For those days the usual order of work in the house was loosened.', 'December is the month to remember. Gifts and a shared meal are the signs.', ['deus', 'donum'], 5, 'S'),
+  cultureCard('life', 'life-festivals', 'Other Festival Days', 'Feriae', 'The Roman year had more festival days than Saturnalia. The Lupercalia, in February, included a run around the Palatine. The Compitalia honored the spirits of the crossroads, where roads met.', 'Saturnalia is the December feast. These two mark other points in the year.', ['dies', 'via'], 5, 'F'),
+  cultureCard('life', 'life-funeral', 'A Funeral', 'Funus', 'A Roman funeral was a family procession through the streets. A noble family might carry wax masks of ancestors. The body was buried or burned, and the household kept the memory of the dead.', 'The card is about the procession and the memory. It is not a list of later laws about graves.', ['familia', 'via'], 7, 'F'),
+  cultureCard('life', 'life-roman-name', 'A Roman Name', 'Tria nomina', 'A Roman man often had three names. In Marcus Tullius Cicero, Marcus is the praenomen, the personal name. Tullius is the nomen, the name of the clan. Cicero is the cognomen, the branch of the family or a nickname. A daughter of that clan could be called Tullia.', 'Praenomen, nomen, and cognomen are the three parts to keep in order.', ['nomen', 'vir'], 5, 'N'),
+  cultureCard('life', 'life-orders', 'Patricians and Plebeians', 'Patricii et plebeii', 'Patricians were the old noble families. Plebeians were the other free citizens. In the early Republic the split was sharp, and later plebeians won the right to hold the high offices too.', 'Both groups were free. Enslaved people stood outside this split.', ['civis', 'populus'], 6, 'P'),
+  cultureCard('life', 'life-patron', 'Patron and Client', 'Patronus et cliens', 'A patron was a more powerful friend. A client came to him for help and advice, and stood by him in public. The Romans called that tie clientela. It ran through politics as well as through private life.', 'The patron gives protection. The client gives loyalty and a public show of support.', ['amicus', 'civis'], 6, 'P'),
+  cultureCard('life', 'life-freed', 'Freed People', 'Liberti', 'A libertus was a person who had been enslaved and then freed. He was not a slave any longer. His former master became his patron, and the freedman took the clan name of that family.', 'Libertus means a freedman. The patron and client card is the relationship that followed freedom.', ['servus', 'nomen'], 6, 'L'),
+  cultureCard('life', 'life-seven-hills', 'The Seven Hills', 'Septem montes', 'Rome sat on seven hills: the Palatine, the Capitoline, the Aventine, the Caelian, the Esquiline, the Viminal, and the Quirinal. Stories place the first settlement of Romulus on the Palatine. The great temple of Jupiter stood on the Capitol.', 'The Palatine card and the Capitol card are two of the seven. This card keeps the whole set.', ['mons', 'urbs'], 5, 'S'),
+
+  cultureCard('history', 'hist-sabines', 'The Sabine Women', 'Sabinae', 'Romulus needed wives for the new city. He invited the neighboring Sabines to a festival, and the Roman men carried the young women home to be their wives. War followed. The women then stepped between the two armies and made peace, and the Romans and the Sabines became one people.', 'The story sits in the reign of Romulus, before the later kings. Peace comes from the women, not from a longer war.', ['rex', 'femina'], 5, 'S'),
+  cultureCard('history', 'hist-numa', 'Numa', 'Numa', 'Numa was remembered as the second king of Rome, after Romulus. The stories give him a peaceful reign. He set religious rites in order and shaped the calendar, so the months and the early priests are linked with his name.', 'Romulus is the founder. Numa is the king of rites and of the calendar, not a conqueror.', ['rex', 'deus'], 5, 'N'),
+  cultureCard('history', 'hist-camillus', 'Camillus', 'Camillus', 'Camillus was called back from exile when a Gallic army had taken Rome. He drove the Gauls out and argued that the Romans should rebuild the city rather than move away to another town. Later writers called him a second founder of Rome.', 'He belongs after the early heroes of the Republic and before the wars in southern Italy. The year to remember is 390 BCE.', ['urbs', 'dux'], 7, 'C'),
+  cultureCard('history', 'hist-coriolanus', 'Coriolanus', 'Coriolanus', 'Coriolanus was a Roman soldier who quarreled with the people and then led a Volscian army against Rome. His mother Veturia and his wife Volumnia met him on the road and persuaded him to turn back.', 'He is an early Republic story, later than Horatius and earlier than the war with Pyrrhus.', ['mater', 'miles'], 7, 'C'),
+  cultureCard('history', 'hist-scipio', 'Scipio Africanus', 'Scipio Africanus', 'Scipio Africanus carried the war with Hannibal from Italy to Africa. He defeated Hannibal at Zama in 202 BCE. The name Africanus remembers that victory on African soil.', 'The Hannibal card ends at Zama. This card is Scipio himself, the Roman commander.', ['dux', 'victoria'], 7, 'S'),
+  cultureCard('history', 'hist-gracchi', 'The Gracchi', 'Gracchi', 'Tiberius Gracchus and his brother Gaius tried to share public land with poorer citizens. Many senators opposed those laws. Both brothers were killed in the political struggle. The story is about land, the people, and the strain on the Republic.', 'They come after the fall of Carthage and before the civil wars of Marius and Sulla.', ['ager', 'populus'], 7, 'G'),
+  cultureCard('history', 'hist-spartacus', 'Spartacus', 'Spartacus', 'Spartacus was a gladiator who led enslaved people in a rising in Italy from 73 to 71 BCE. The rising grew into a large force. Marcus Crassus defeated it. The story is remembered as a rising of people who had been enslaved.', 'The date sits late in the Republic, after the Gracchi and before Cicero was consul.', ['servus', 'bellum'], 8, 'S'),
+  cultureCard('history', 'hist-etruscans', 'The Etruscans', 'Etrusci', 'The Etruscans lived north of the Tiber, in Etruria. Early stories give Rome Etruscan kings and Etruscan builders. Their cities stood in the region the map labels Etruria.', 'Etruria is the place. Etrusci is the people. They are not the same card as the later Romans.', ['urbs', 'rex'], 6, 'E'),
+  cultureCard('history', 'hist-gauls', 'The Gauls', 'Galli', 'The Gauls lived in Gallia, north and west of Italy, and also in the plain south of the Alps. A Gallic army took Rome in the time of Camillus. Much later, Caesar fought a long war in Gaul.', 'Gallia is the land. Galli are the people. Cisalpine Gaul is the part on the Italian side of the Alps.', ['bellum', 'terra'], 6, 'G'),
+  cultureCard('history', 'hist-carthaginians', 'The Carthaginians', 'Poeni', 'The Carthaginians lived at Carthage on the coast of Africa. Latin calls them Poeni. They were sailors and traders, and Rome fought them in three Punic wars. Punic means Carthaginian.', 'Carthage is the city. Poeni is the people. The Hannibal card is one commander from that people.', ['mare', 'urbs'], 6, 'P'),
+  cultureCard('history', 'hist-greeks', 'The Greeks', 'Graeci', 'The Greeks lived in Greece, and also in cities of southern Italy and Sicily. Romans called that western Greek world Magna Graecia, Great Greece. Greek stories and gods were already old when Rome was young.', 'Graecia is the land east of Italy. Magna Graecia is the Greek cities on the Italian side of the sea.', ['urbs', 'deus'], 6, 'G')
 ];
 
 CULTURE_UNIT_CARDS.forEach((card) => LATIN_CULTURE_CARDS.push(card));
 
 const ROMAN_TIMELINE = [
   { order: 1, cardId: 'hist-romulus', label: 'Romulus founds Rome', when: '753 BCE, traditional' },
-  { order: 2, cardId: 'hist-kings', label: 'Seven kings rule Rome', when: 'before 509 BCE' },
-  { order: 3, cardId: 'hist-lucretia', label: 'The monarchy ends', when: '509 BCE' },
-  { order: 4, cardId: 'hist-republic', label: 'The Republic begins', when: '509 BCE' },
-  { order: 5, cardId: 'hist-horatius', label: 'Horatius at the bridge', when: 'early Republic' },
-  { order: 6, cardId: 'hist-cloelia', label: 'Cloelia swims the Tiber', when: 'early Republic' },
-  { order: 7, cardId: 'hist-mucius', label: 'Mucius and Porsenna', when: 'early Republic' },
-  { order: 8, cardId: 'hist-pyrrhus', label: 'Pyrrhus fights Rome', when: '280–275 BCE' },
-  { order: 9, cardId: 'hist-punic-1', label: 'First war with Carthage', when: '264–241 BCE' },
-  { order: 10, cardId: 'hist-hannibal', label: 'Hannibal invades Italy', when: '218 BCE' },
-  { order: 11, cardId: 'hist-carthage', label: 'Carthage is destroyed', when: '146 BCE' },
-  { order: 12, cardId: 'hist-marius', label: 'Marius and Sulla', when: 'late Republic' },
-  { order: 13, cardId: 'hist-cicero', label: 'Cicero and Catiline', when: '63 BCE' },
-  { order: 14, cardId: 'hist-caesar', label: 'Caesar, Pompey, and Crassus', when: '60 BCE' },
-  { order: 15, cardId: 'hist-rubicon', label: 'Caesar crosses the Rubicon', when: '49 BCE' },
-  { order: 16, cardId: 'hist-actium', label: 'Actium', when: '31 BCE' },
-  { order: 17, cardId: 'hist-augustus', label: 'Augustus', when: '27 BCE' },
-  { order: 18, cardId: 'hist-julio', label: 'Julio-Claudians', when: '27 BCE–68 CE' },
-  { order: 19, cardId: 'hist-flavians', label: 'Flavians', when: '69–96 CE' },
-  { order: 20, cardId: 'hist-good-emperors', label: 'Five Good Emperors', when: '96–180 CE' }
+  { order: 2, cardId: 'hist-sabines', label: 'The Sabine women make peace', when: 'reign of Romulus' },
+  { order: 3, cardId: 'hist-numa', label: 'Numa, the second king', when: 'after Romulus' },
+  { order: 4, cardId: 'hist-kings', label: 'Seven kings rule Rome', when: 'before 509 BCE' },
+  { order: 5, cardId: 'hist-lucretia', label: 'The monarchy ends', when: '509 BCE' },
+  { order: 6, cardId: 'hist-republic', label: 'The Republic begins', when: '509 BCE' },
+  { order: 7, cardId: 'hist-horatius', label: 'Horatius at the bridge', when: 'early Republic' },
+  { order: 8, cardId: 'hist-cloelia', label: 'Cloelia swims the Tiber', when: 'early Republic' },
+  { order: 9, cardId: 'hist-mucius', label: 'Mucius and Porsenna', when: 'early Republic' },
+  { order: 10, cardId: 'hist-coriolanus', label: 'Coriolanus turns back', when: 'early Republic' },
+  { order: 11, cardId: 'hist-camillus', label: 'Camillus and the Gauls', when: '390 BCE' },
+  { order: 12, cardId: 'hist-pyrrhus', label: 'Pyrrhus fights Rome', when: '280–275 BCE' },
+  { order: 13, cardId: 'hist-punic-1', label: 'First war with Carthage', when: '264–241 BCE' },
+  { order: 14, cardId: 'hist-hannibal', label: 'Hannibal invades Italy', when: '218 BCE' },
+  { order: 15, cardId: 'hist-scipio', label: 'Scipio defeats Hannibal', when: '202 BCE' },
+  { order: 16, cardId: 'hist-carthage', label: 'Carthage is destroyed', when: '146 BCE' },
+  { order: 17, cardId: 'hist-gracchi', label: 'The Gracchi and the land', when: '133–121 BCE' },
+  { order: 18, cardId: 'hist-marius', label: 'Marius and Sulla', when: 'late Republic' },
+  { order: 19, cardId: 'hist-spartacus', label: 'Spartacus', when: '73–71 BCE' },
+  { order: 20, cardId: 'hist-cicero', label: 'Cicero and Catiline', when: '63 BCE' },
+  { order: 21, cardId: 'hist-caesar', label: 'Caesar, Pompey, and Crassus', when: '60 BCE' },
+  { order: 22, cardId: 'hist-rubicon', label: 'Caesar crosses the Rubicon', when: '49 BCE' },
+  { order: 23, cardId: 'hist-actium', label: 'Actium', when: '31 BCE' },
+  { order: 24, cardId: 'hist-augustus', label: 'Augustus', when: '27 BCE' },
+  { order: 25, cardId: 'hist-julio', label: 'Julio-Claudians', when: '27 BCE–68 CE' },
+  { order: 26, cardId: 'hist-flavians', label: 'Flavians', when: '69–96 CE' },
+  { order: 27, cardId: 'hist-good-emperors', label: 'Five Good Emperors', when: '96–180 CE' }
 ];
 
 const ROMAN_MAP_PLACES = [
@@ -159,6 +198,15 @@ const ROMAN_MAP_PLACES = [
   { id: 'cannae', latin: 'Cannae', english: 'Cannae', group: 'italy', lat: 41.3, lon: 16.15 },
   { id: 'rubico', latin: 'Rubico', english: 'the Rubicon', group: 'italy', lat: 44.1, lon: 12.4 },
   { id: 'tiberis', latin: 'Tiberis', english: 'the Tiber', group: 'italy', lat: 42.2, lon: 12.4 },
+  { id: 'padus', latin: 'Padus', english: 'the Po', group: 'italy', minGrade: 5, lat: 45.10, lon: 8.6 },
+  { id: 'arnus', latin: 'Arnus', english: 'the Arno', group: 'italy', minGrade: 5, lat: 43.71, lon: 10.4 },
+  { id: 'palatinus', latin: 'Mons Palatinus', english: 'the Palatine', group: 'italy', minGrade: 5, lat: 41.889, lon: 12.487 },
+  { id: 'capitolinus', latin: 'Mons Capitolinus', english: 'the Capitoline', group: 'italy', minGrade: 5, lat: 41.8935, lon: 12.483 },
+  { id: 'aventinus', latin: 'Mons Aventinus', english: 'the Aventine', group: 'italy', minGrade: 5, lat: 41.882, lon: 12.482 },
+  { id: 'caelius', latin: 'Mons Caelius', english: 'the Caelian', group: 'italy', minGrade: 5, lat: 41.886, lon: 12.496 },
+  { id: 'esquilinus', latin: 'Mons Esquilinus', english: 'the Esquiline', group: 'italy', minGrade: 5, lat: 41.896, lon: 12.498 },
+  { id: 'viminalis', latin: 'Mons Viminalis', english: 'the Viminal', group: 'italy', minGrade: 5, lat: 41.899, lon: 12.493 },
+  { id: 'quirinalis', latin: 'Mons Quirinalis', english: 'the Quirinal', group: 'italy', minGrade: 5, lat: 41.901, lon: 12.487 },
   { id: 'latium', latin: 'Latium', english: 'Latium', group: 'italy', lat: 41.5, lon: 13.1 },
   { id: 'campania', latin: 'Campania', english: 'Campania', group: 'italy', lat: 40.95, lon: 15.1 },
   { id: 'etruria', latin: 'Etruria', english: 'Etruria', group: 'italy', lat: 43.0, lon: 11.6 },
@@ -171,7 +219,7 @@ const ROMAN_MAP_PLACES = [
   { id: 'rhenus', latin: 'Rhenus', english: 'the Rhine', group: 'waters', lat: 49.5, lon: 8.0 },
   { id: 'danuvius', latin: 'Danuvius', english: 'the Danube', group: 'waters', lat: 47.2, lon: 19.0 },
   { id: 'rhodanus', latin: 'Rhodanus', english: 'the Rhone', group: 'waters', lat: 44.5, lon: 4.7 },
-  { id: 'sardinia', latin: 'Sardinia', english: 'Sardinia', group: 'waters', lat: 40.1, lon: 9.0 },
+  { id: 'sardinia', latin: 'Sardinia', english: 'Sardinia', group: 'lands', lat: 40.1, lon: 9.0 },
   { id: 'corsica', latin: 'Corsica', english: 'Corsica', group: 'lands', lat: 42.1, lon: 9.1 },
   { id: 'alpes', latin: 'Alpes', english: 'the Alps', group: 'lands', lat: 46.5, lon: 10.0 },
   { id: 'apenninus', latin: 'Apenninus', english: 'the Apennines', group: 'lands', lat: 42.8, lon: 13.3 },
@@ -236,7 +284,7 @@ const ROMAN_MAP_DETAIL = {
     imageWidth: 2028,
     imageHeight: 2548,
     replace: true,
-    labels: ['roma', 'italia', 'sicilia', 'ostia', 'pompeii', 'brundisium', 'capua', 'cannae', 'rubico', 'tiberis', 'latium', 'campania', 'etruria', 'vesuvius', 'aetna', 'cumae', 'apenninus', 'corsica', 'sardinia', 'mantua', 'cisalpina', 'alpes']
+    labels: ['roma', 'italia', 'sicilia', 'ostia', 'pompeii', 'brundisium', 'capua', 'cannae', 'rubico', 'tiberis', 'latium', 'campania', 'etruria', 'vesuvius', 'aetna', 'cumae', 'apenninus', 'corsica', 'sardinia', 'mantua', 'cisalpina', 'alpes', 'padus', 'arnus', 'palatinus', 'capitolinus', 'aventinus', 'caelius', 'esquilinus', 'viminalis', 'quirinalis']
   },
   mediterranean: {
     minX: 490,
@@ -388,8 +436,28 @@ function renderCultureUnitCard(card) {
   `;
 }
 
+function romanWorldGradeLimit(grade) {
+  const value = Number(grade);
+  return value >= 3 && value <= 8 ? value : 8;
+}
+
+function romanWorldCards(unit, grade) {
+  const maxGrade = romanWorldGradeLimit(grade);
+  return CULTURE_UNIT_CARDS.filter((card) => card.unit === unit && (card.minGrade || 3) <= maxGrade);
+}
+
+function romanWorldTimeline(grade) {
+  const maxGrade = romanWorldGradeLimit(grade);
+  const paced = ROMAN_TIMELINE.filter((event) => {
+    const card = CULTURE_UNIT_CARDS.find((item) => item.id === event.cardId);
+    return card && (card.minGrade || 3) <= maxGrade;
+  });
+  return paced.length >= 5 ? paced : ROMAN_TIMELINE;
+}
+
 function startTimelineRound() {
-  const pool = romanWorldShuffle(ROMAN_TIMELINE).slice(0, 5);
+  const grade = typeof AppState === 'undefined' ? 8 : AppState.grade;
+  const pool = romanWorldShuffle(romanWorldTimeline(grade)).slice(0, 5);
   RomanWorldState.timelineChoices = pool;
   RomanWorldState.timelinePicks = [];
   RomanWorldState.timelineChecked = false;
@@ -434,8 +502,13 @@ function renderTimelineGame() {
 }
 
 function mapPlacesForGroup(group) {
-  if (!group || group === 'all') return ROMAN_MAP_PLACES;
-  return ROMAN_MAP_PLACES.filter((place) => place.group === group);
+  const all = !group || group === 'all'
+    ? ROMAN_MAP_PLACES
+    : ROMAN_MAP_PLACES.filter((place) => place.group === group);
+  const grade = typeof AppState === 'undefined' ? 8 : AppState.grade;
+  const maxGrade = romanWorldGradeLimit(grade);
+  const paced = all.filter((place) => !place.minGrade || place.minGrade <= maxGrade);
+  return paced.length ? paced : all;
 }
 
 function startMapRound() {
@@ -975,11 +1048,13 @@ function renderRomanWorld() {
     ['values', 'Values'],
     ['map', 'Map']
   ];
-  const cards = RomanWorldState.tab === 'map'
-    ? ''
-    : CULTURE_UNIT_CARDS.filter((card) => card.unit === (RomanWorldState.tab === 'history' ? 'history' : RomanWorldState.tab))
-      .map(renderCultureUnitCard)
-      .join('');
+  const cardUnit = RomanWorldState.tab === 'history' ? 'history' : RomanWorldState.tab;
+  const grade = typeof AppState === 'undefined' ? 8 : AppState.grade;
+  const visibleCards = RomanWorldState.tab === 'map' ? [] : romanWorldCards(cardUnit, grade);
+  const cards = visibleCards.map(renderCultureUnitCard).join('');
+  const emptyCards = RomanWorldState.tab !== 'map' && visibleCards.length === 0
+    ? '<p>These cards open in a later year.</p>'
+    : '';
   const extra = RomanWorldState.tab === 'history'
     ? renderTimelineGame()
     : RomanWorldState.tab === 'map'
@@ -990,6 +1065,7 @@ function renderRomanWorld() {
       ${tabs.map(([id, label]) => `<button type="button" role="tab" data-roman-tab="${id}" class="${RomanWorldState.tab === id ? 'active' : ''}" aria-selected="${RomanWorldState.tab === id}">${label}</button>`).join('')}
     </div>
     ${extra}
+    ${emptyCards}
     <div class="roman-world-grid">${cards}</div>
   `;
   applyMapFrame();
