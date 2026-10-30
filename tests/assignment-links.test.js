@@ -22,7 +22,9 @@ test('assignment routes round-trip for every activity kind', () => {
     { kind: 'annual-exam', levelId: 'beginning', category: 'mythology', count: 10 },
     { kind: 'cards', year: 2, seconds: 600, shuffle: 1 },
     { kind: 'deck', year: 1, minutes: 5, sessionType: 'visual' },
-    { kind: 'check' }
+    { kind: 'check' },
+    { kind: 'roman-world' },
+    { kind: 'word-building' }
   ];
   routes.forEach((route) => {
     const path = assign.buildPath(route);

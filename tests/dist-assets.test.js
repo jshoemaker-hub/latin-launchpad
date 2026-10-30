@@ -62,4 +62,27 @@ test('the Netlify build copies every referenced asset into dist', () => {
     assert.ok(fs.existsSync(filePath), `dist is missing ${assetPath}`);
     assert.ok(fs.statSync(filePath).size > 0, `${assetPath} is empty`);
   });
+
+  const robots = fs.readFileSync(path.join(dist, 'robots.txt'), 'utf8');
+  assert.match(robots, /Sitemap: https:\/\/latinlaunchpad\.com\/sitemap\.xml/);
+  const sitemap = fs.readFileSync(path.join(dist, 'sitemap.xml'), 'utf8');
+  [
+    'https://latinlaunchpad.com/',
+    'https://latinlaunchpad.com/topics/index.html',
+    'https://latinlaunchpad.com/topics/vocabulary-year-1.html',
+    'https://latinlaunchpad.com/topics/grammar/index.html',
+    'https://latinlaunchpad.com/topics/roman-culture/index.html',
+    'https://latinlaunchpad.com/topics/derivatives.html',
+    'https://latinlaunchpad.com/topics/mottoes/index.html',
+    'https://latinlaunchpad.com/topics/annual-exam-study/index.html',
+    'https://latinlaunchpad.com/topics/printables.html'
+  ].forEach((url) => assert.ok(sitemap.includes(`<loc>${url}</loc>`), url));
+  const yearOne = fs.readFileSync(path.join(dist, 'topics', 'vocabulary-year-1.html'), 'utf8');
+  assert.match(yearOne, /<h1>Year 1 Latin vocabulary \(Grade 3\)<\/h1>/);
+  assert.match(yearOne, /<td lang="la">puella<\/td>/);
+  assert.match(yearOne, /<p class="trust-lead">/);
+  const home = fs.readFileSync(path.join(dist, 'index.html'), 'utf8');
+  assert.match(home, /homeschool/);
+  assert.match(home, /FAQPage/);
+  assert.match(home, /id="courseOverview"/);
 });
