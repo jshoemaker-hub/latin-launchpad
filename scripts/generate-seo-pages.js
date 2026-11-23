@@ -5,9 +5,57 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { buildLandingPages } = require('./seo-landing');
 
 const root = path.resolve(__dirname, '..');
 const SITE = 'https://latinlaunchpad.com';
+
+const CLASSICS_LINKS = {
+  'author-vergil': [
+    ['https://classicslaunch.org/authors/virgil/', 'Virgil'],
+    ['https://classicslaunch.org/works/the-aeneid/', 'the Aeneid']
+  ],
+  'author-ovid': [
+    ['https://classicslaunch.org/authors/ovid/', 'Ovid'],
+    ['https://classicslaunch.org/works/metamorphoses/', 'the Metamorphoses']
+  ],
+  'author-cicero': [
+    ['https://classicslaunch.org/authors/marcus%20tullius%20cicero/', 'Cicero'],
+    ['https://classicslaunch.org/works/cicero-on-duties/', 'On Duties']
+  ],
+  'author-caesar': [
+    ['https://classicslaunch.org/authors/julius%20caesar/', 'Julius Caesar']
+  ],
+  'author-horace': [
+    ['https://classicslaunch.org/authors/horace/', 'Horace'],
+    ['https://classicslaunch.org/works/horace-odes/', 'the Odes']
+  ],
+  'author-livy': [
+    ['https://classicslaunch.org/authors/livy%20(titus%20livius)/', 'Livy'],
+    ['https://classicslaunch.org/works/livy-history-of-rome-books-i-v/', 'the History of Rome, books I–V']
+  ],
+  'author-tacitus': [
+    ['https://classicslaunch.org/authors/tacitus/', 'Tacitus'],
+    ['https://classicslaunch.org/works/tacitus-the-histories/', 'the Histories']
+  ],
+  'author-suetonius': [
+    ['https://classicslaunch.org/authors/suetonius/', 'Suetonius'],
+    ['https://classicslaunch.org/works/the-twelve-caesars/', 'the Lives of the Caesars']
+  ],
+  'author-pliny': [
+    ['https://classicslaunch.org/authors/pliny%20the%20younger/', 'Pliny the Younger'],
+    ['https://classicslaunch.org/works/pliny-the-younger-letters/', 'the Letters']
+  ],
+  'author-plautus': [
+    ['https://classicslaunch.org/authors/plautus/', 'Plautus'],
+    ['https://classicslaunch.org/authors/terence/', 'Terence']
+  ],
+  'author-homer': [
+    ['https://classicslaunch.org/authors/homer/', 'Homer'],
+    ['https://classicslaunch.org/works/the-iliad/', 'the Iliad'],
+    ['https://classicslaunch.org/works/the-odyssey/', 'the Odyssey']
+  ]
+};
 
 const DATA_FILES = [
   'word-banks.js',
@@ -78,14 +126,26 @@ const UNIT_LABELS = [
 ];
 
 const NAV = [
+  ['/start-here.html', 'Start here'],
+  ['/latin-by-grade.html', 'By grade'],
   ['/topics/index.html', 'All topics'],
-  ['/topics/vocabulary.html', 'Vocabulary'],
+  ['/latin-vocabulary.html', 'Word lists'],
   ['/topics/grammar/index.html', 'Grammar'],
+  ['/latin-prayers.html', 'Prayers'],
   ['/topics/roman-culture/index.html', 'Roman culture'],
-  ['/topics/derivatives.html', 'Derivatives'],
   ['/topics/mottoes/index.html', 'Mottoes'],
   ['/topics/annual-exam-study/index.html', 'Annual Exam Study'],
   ['/topics/printables.html', 'Printables']
+];
+
+const GUIDE_LINKS = [
+  ['/start-here.html', 'Start here'],
+  ['/latin-by-grade.html', 'Latin by grade'],
+  ['/latin-vocabulary.html', 'Vocabulary lists'],
+  ['/latin-grammar.html', 'Grammar basics'],
+  ['/latin-prayers.html', 'Prayers and hymns'],
+  ['/first-100-latin-words.html', 'First 100 words'],
+  ['/latin-in-10-minutes.html', '10 minutes a day']
 ];
 
 function esc(value) {
@@ -139,7 +199,53 @@ function loadData() {
       ANNUAL_EXAM_NOTE
     };
   `, context);
+  const appSource = fs.readFileSync(path.join(root, 'app.js'), 'utf8');
+  const lessonCut = appSource.indexOf('const ENDING_HINTS');
+  if (lessonCut < 0) throw new Error('Could not find the lesson builder in app.js');
+  vm.runInContext(`${appSource.slice(0, lessonCut)}\nglobalThis.__LESSONS = LESSONS;`, context, { filename: 'app.js' });
+  context.__CONTENT.LESSONS = context.__LESSONS;
   return context.__CONTENT;
+}
+
+function measurementId() {
+  const source = fs.readFileSync(path.join(root, 'analytics.js'), 'utf8');
+  const match = source.match(/const MEASUREMENT_ID = '([^']+)'/);
+  if (!match) throw new Error('GA4 measurement ID is missing from analytics.js');
+  return match[1];
+}
+
+function stripAnalyticsTags(html) {
+  return html.replace(/\s*<script\b[^>]*\bsrc\s*=\s*["'][^"']*analytics\.js["'][^>]*>\s*<\/script>/gi, '');
+}
+
+function ensureAnalytics(html, id = measurementId()) {
+  const stripped = stripAnalyticsTags(html);
+  const index = stripped.lastIndexOf('</body>');
+  if (index < 0) throw new Error('HTML page is missing </body>');
+  const tag = `  <script defer src="/analytics.js" data-ga4="${id}"></script>\n`;
+  return `${stripped.slice(0, index)}${tag}${stripped.slice(index)}`;
+}
+
+function stampAnalytics(outDir) {
+  const id = measurementId();
+  const files = [];
+  function walk(dir) {
+    if (!fs.existsSync(dir)) return;
+    fs.readdirSync(dir, { withFileTypes: true }).forEach((entry) => {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walk(full);
+      else if (entry.name.endsWith('.html')) files.push(full);
+    });
+  }
+  walk(outDir);
+  files.forEach((file) => {
+    const html = fs.readFileSync(file, 'utf8');
+    if (!html.includes('</body>')) {
+      throw new Error(`HTML page is missing </body>: ${path.relative(outDir, file)}`);
+    }
+    fs.writeFileSync(file, ensureAnalytics(html, id));
+  });
+  return { files: files.map((file) => path.relative(outDir, file).split(path.sep).join('/')), measurementId: id };
 }
 
 function isYearFourReadingWord(word) {
@@ -201,62 +307,93 @@ function organization() {
   };
 }
 
+function resourceNode(page, url) {
+  const type = page.schemaType || 'LearningResource';
+  const node = {
+    '@type': type,
+    name: page.title,
+    description: page.description,
+    url,
+    educationalLevel: page.educationalLevel || 'Grades 3-8',
+    inLanguage: ['en', 'la'],
+    isAccessibleForFree: true,
+    audience: {
+      '@type': 'EducationalAudience',
+      educationalRole: 'student',
+      audienceType: 'Parents, students, and teachers in classical Christian schools and homeschools'
+    },
+    provider: {
+      '@type': 'EducationalOrganization',
+      name: 'Latin Launchpad',
+      url: `${SITE}/`,
+      sameAs: 'https://schoollaunch.org/',
+      description: 'Latin Launchpad is a course on School Launch.'
+    }
+  };
+  if (type === 'LearningResource') {
+    node.learningResourceType = page.learningResourceType || page.resourceType || 'reading';
+  }
+  return node;
+}
+
+function trailFor(page, url) {
+  const lead = page.underTopics === false
+    ? [{ name: 'Latin Launchpad', href: '/', item: `${SITE}/` }]
+    : [
+      { name: 'Latin Launchpad', href: '/', item: `${SITE}/` },
+      { name: 'Topics', href: '/topics/index.html', item: `${SITE}/topics/index.html` }
+    ];
+  const trail = [...lead, ...(page.crumbs || [])];
+  const last = trail[trail.length - 1];
+  if (!last || last.item !== url) {
+    trail.push({ name: page.crumbLabel || page.title, item: url, href: `/${page.relPath}` });
+  }
+  return trail;
+}
+
 function renderPage(page) {
   const url = `${SITE}/${page.relPath}`;
-  const crumbs = [
-    { name: 'Latin Launchpad', item: `${SITE}/` },
-    { name: 'Topics', item: `${SITE}/topics/index.html` },
-    ...page.crumbs
-  ];
+  const fullTitle = `${page.title} | Latin Launchpad`;
+  const trail = trailFor(page, url);
   const crumbList = {
     '@type': 'BreadcrumbList',
-    itemListElement: crumbs.map((crumb, index) => ({
+    itemListElement: trail.map((crumb, index) => ({
       '@type': 'ListItem',
       position: index + 1,
       name: crumb.name,
       item: crumb.item || url
     }))
   };
-  const mainEntity = page.mainEntity || {
-    '@type': 'LearningResource',
-    name: page.title,
-    description: page.description,
-    url,
-    learningResourceType: page.resourceType || 'reading',
-    educationalLevel: page.educationalLevel || 'Grades 3-8',
-    inLanguage: ['en', 'la'],
-    isAccessibleForFree: true,
-    provider: organization()
-  };
+  const graph = [crumbList, page.mainEntity, resourceNode(page, url), page.faqSchema, ...(page.extraSchema || [])].filter(Boolean);
   const nav = NAV.map(([href, label]) => {
     const current = href === `/${page.relPath}` ? ' aria-current="page"' : '';
     return `<a href="${href}"${current}>${label}</a>`;
   }).join('\n          ');
-  const visibleCrumbs = [
-    `<a href="/">Latin Launchpad</a>`,
-    `<a href="/topics/index.html">Topics</a>`,
-    ...page.crumbs.slice(0, -1).map((crumb) => `<a href="${esc(crumb.href)}">${esc(crumb.name)}</a>`),
-    `<span>${esc(page.crumbLabel || page.title)}</span>`
-  ].join('<span aria-hidden="true"> / </span>');
+  const guides = GUIDE_LINKS.map(([href, label]) => `<a href="${href}">${label}</a>`).join('\n        ');
+  const visibleCrumbs = trail.map((crumb, index) => {
+    if (index === trail.length - 1) return `<span>${esc(crumb.name)}</span>`;
+    return `<a href="${esc(crumb.href || '/')}">${esc(crumb.name)}</a>`;
+  }).join('<span aria-hidden="true"> / </span>');
+  const bodyClass = page.bodyClass ? ` class="${esc(page.bodyClass)}"` : '';
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>${esc(page.title)} | Latin Launchpad</title>
+  <title>${esc(fullTitle)}</title>
   <meta name="description" content="${esc(page.description)}">
   <meta name="robots" content="index, follow">
   <link rel="canonical" href="${url}">
   <meta property="og:type" content="website">
   <meta property="og:url" content="${url}">
-  <meta property="og:title" content="${esc(page.title)}">
+  <meta property="og:title" content="${esc(fullTitle)}">
   <meta property="og:description" content="${esc(page.description)}">
   <meta property="og:image" content="${SITE}/og-image.jpg">
   <meta property="og:image:alt" content="Latin Launchpad, Latin practice for grades 3–8">
   <meta property="og:site_name" content="Latin Launchpad">
   <meta property="og:locale" content="en_US">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="${esc(page.title)}">
+  <meta name="twitter:title" content="${esc(fullTitle)}">
   <meta name="twitter:description" content="${esc(page.description)}">
   <meta name="twitter:image" content="${SITE}/og-image.jpg">
   <meta name="twitter:image:alt" content="Latin Launchpad, Latin practice for grades 3–8">
@@ -264,9 +401,9 @@ function renderPage(page) {
   <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="/styles.css">
-  ${jsonScript({ '@context': 'https://schema.org', '@graph': [crumbList, mainEntity] })}
+  ${jsonScript({ '@context': 'https://schema.org', '@graph': graph })}
 </head>
-<body>
+<body${bodyClass}>
   <a class="skip-link" href="#main">Skip to main content</a>
   <aside id="analyticsConsentBanner" class="analytics-consent" aria-labelledby="analyticsConsentTitle">
     <div>
@@ -292,10 +429,11 @@ function renderPage(page) {
       ${page.body}
     </main>
     <footer class="site-footer">
-      <p><strong>Latin Launchpad</strong><span>Independent Latin practice for grades 3–8.</span><span>Latin Launchpad is a course on <a href="https://schoollaunch.org/" target="_blank" rel="noopener">School Launch</a>.</span></p>
+      <p><strong>Latin Launchpad</strong><span>Independent Latin practice for grades 3–8.</span><span>Latin Launchpad is a course on <a href="https://schoollaunch.org/" target="_blank" rel="noopener">School Launch</a>. Read the authors in the <a href="https://classicslaunch.org/">Classics Library</a>.</span></p>
       <nav aria-label="Footer links">
         <a href="/">Practice</a>
         <a href="/topics/index.html">Topics</a>
+        ${guides}
         <a href="/about.html">About</a>
         <a href="/parents-teachers.html">For Parents / Teachers</a>
         <a href="/flashcards.html">Flashcards</a>
@@ -306,10 +444,67 @@ function renderPage(page) {
       </nav>
     </footer>
   </div>
-  <script defer src="/analytics.js"></script>
 </body>
 </html>
 `;
+}
+
+function vocabularyLessons(data) {
+  return (data.LESSONS || []).filter((lesson) => lesson && lesson.kind === 'vocabulary' && lesson.id);
+}
+
+function vocabularyLessonPages(data) {
+  const lessons = vocabularyLessons(data);
+  if (lessons.length < 100) throw new Error(`Expected vocabulary lessons, found ${lessons.length}`);
+  return lessons.map((lesson) => {
+    const level = levelForGrade(lesson.grade) || {
+      label: `Grade ${lesson.grade}`,
+      gradeName: `Grade ${lesson.grade}`,
+      year: 1,
+      slug: 'vocabulary.html'
+    };
+    const words = Array.isArray(lesson.vocabularyWords) ? lesson.vocabularyWords : [];
+    const preview = words.slice(0, 4).map((word) => `${word.latin} (${word.english})`).join(', ');
+    const year = level.year || yearForGrade(lesson.grade) || 1;
+    const slug = level.slug || 'vocabulary.html';
+    return {
+      relPath: `topics/lessons/${lesson.id}.html`,
+      title: lesson.title,
+      linkText: lesson.title,
+      group: 'Vocabulary lessons',
+      kicker: `${level.label} · ${level.gradeName}`,
+      learningResourceType: 'lesson',
+      description: summarize(`${lesson.title} for ${level.gradeName} is a free Latin lesson with practice on Latin Launchpad. Words in this lesson: ${preview}.`),
+      educationalLevel: level.gradeName,
+      crumbs: [
+        { name: 'Vocabulary', href: '/topics/vocabulary.html', item: `${SITE}/topics/vocabulary.html` },
+        { name: `${level.label} vocabulary`, href: `/topics/${slug}.html`, item: `${SITE}/topics/${slug}.html` },
+        { name: lesson.title, item: `${SITE}/topics/lessons/${lesson.id}.html` }
+      ],
+      body: `
+        <p class="trust-lead">${esc(lesson.title)} is part of ${esc(level.label)} (${esc(level.gradeName)}). ${esc(lesson.description || 'Practice the words, then open the lesson in the app.')}</p>
+        <p class="topic-practice"><a href="/#/y/${year}/l/${lesson.id}">Practice this lesson</a> · <a href="/topics/${slug}.html">Full ${esc(level.label)} vocabulary list</a> · <a href="${flashcardHref(level)}">Flashcards</a></p>
+        <h2>Words in this lesson</h2>
+        <p>These headwords are this course's own, in the order the lesson teaches them.</p>
+        ${wordTable(words, lesson.title)}
+      `
+    };
+  });
+}
+
+function classicsParagraph(card) {
+  const links = CLASSICS_LINKS[card.id];
+  if (links) {
+    const formatted = links.map(([href, label]) => `<a href="${href}">${esc(label)}</a>`);
+    const sentence = formatted.length === 1
+      ? formatted[0]
+      : `${formatted.slice(0, -1).join(', ')} and ${formatted[formatted.length - 1]}`;
+    return `<p>Read further in the Classics Library: ${sentence}.</p>`;
+  }
+  if (String(card.id || '').startsWith('author-')) {
+    return '<p>Read further in the <a href="https://classicslaunch.org/">Classics Library</a>.</p>';
+  }
+  return '';
 }
 
 function vocabularyPages(data) {
@@ -355,6 +550,10 @@ function vocabularyPages(data) {
     const flashNote = level.grade >= 7
       ? `On the flashcard page, choose ${level.label}.`
       : 'A 10-minute flashcard session opens in a new page.';
+    const lessonItems = vocabularyLessons(data)
+      .filter((lesson) => Number(lesson.grade) === level.grade)
+      .map((lesson) => `<li><a href="/topics/lessons/${lesson.id}.html">${esc(lesson.title)}</a></li>`)
+      .join('');
     pages.push({
       relPath: `topics/${level.slug}.html`,
       title: `${level.label} Latin vocabulary (${level.gradeName})`,
@@ -371,6 +570,7 @@ function vocabularyPages(data) {
         <p class="trust-lead">${esc(objectives?.intro || `${level.label} vocabulary for ${level.gradeName}.`)} These are this course's own headwords, in the order the lessons teach them.</p>
         ${goals}
         <p class="topic-practice"><a href="${firstLessonHref(level.grade, data.GRADE_WORDS)}">Practice ${esc(level.label)} in the app</a> · <a href="${flashcardHref(level)}">Flashcards</a>. ${esc(flashNote)}</p>
+        ${lessonItems ? `<h2>Lessons</h2><ul>${lessonItems}</ul>` : ''}
         <h2>Lesson words</h2>
         <p>${main.length} words from the main ${esc(level.label)} lessons.</p>
         ${wordTable(main, `${level.label} lesson words`)}
@@ -510,6 +710,7 @@ function culturePages(data) {
 
   const indexBody = `
     <p class="trust-lead">Roman culture in Latin Launchpad is a set of short cards: myth, daily life, history, values, authors, and places. Students read a card, connect it to Latin words they know, and can open the same material in the Roman world section of the app.</p>
+    <p>When a class is ready to read an author, the <a href="https://classicslaunch.org/">Classics Library</a> has the works: <a href="https://classicslaunch.org/authors/virgil/">Virgil</a>, <a href="https://classicslaunch.org/authors/julius%20caesar/">Caesar</a>, <a href="https://classicslaunch.org/authors/ovid/">Ovid</a>, and <a href="https://classicslaunch.org/authors/marcus%20tullius%20cicero/">Cicero</a>.</p>
     <p class="topic-practice"><a href="/#/roman-world">Open Roman world in the app</a></p>
     ${groups.map((group) => `
       <h2 id="unit-${group.unit}">${esc(group.label)}</h2>
@@ -560,6 +761,7 @@ function culturePages(data) {
         ${card.connection ? `<h2>How it connects</h2><p>${esc(card.connection)}</p>` : ''}
         ${example}
         ${links}
+        ${classicsParagraph(card)}
         <p class="topic-practice"><a href="/#/roman-world">Open Roman world</a> · <a href="/topics/roman-culture/index.html#unit-${(card.unit || 'places')}">More ${esc(unitLabel).toLowerCase()} cards</a></p>
       `
     });
@@ -820,6 +1022,7 @@ function hubPage(pages) {
     linkText: 'All topics',
     group: 'Topics',
     kicker: 'Topics',
+    schemaType: 'Course',
     description: summarize('Browse Latin Launchpad topics: vocabulary by year, grammar, Roman culture and myth, derivatives, mottoes, Annual Exam Study, stories, and printables.'),
     crumbs: [],
     mainEntity: {
@@ -846,7 +1049,7 @@ function hubPage(pages) {
       <h2>Every topic page</h2>
       <p>Search engines and families can open any of these without running the practice app. Each page links back to the lesson, flashcards, Roman world, word building, or Annual Exam Study screen that uses the same material.</p>
       ${directory}
-      <p class="topic-practice"><a href="/">Start practicing</a> · <a href="/about.html">About the course</a> · <a href="/parents-teachers.html">For parents and teachers</a></p>
+      <p class="topic-practice"><a href="/">Start practicing</a> · <a href="/start-here.html">Start Latin here</a> · <a href="/about.html">About the course</a> · <a href="/parents-teachers.html">For parents and teachers</a></p>
     `
   };
 }
@@ -887,10 +1090,38 @@ function robotsTxt() {
   return 'User-agent: *\nAllow: /\n\nSitemap: https://latinlaunchpad.com/sitemap.xml\n';
 }
 
+function disambiguateCopy(pages) {
+  const titles = new Set();
+  const descriptions = new Set();
+  pages.forEach((page) => {
+    const title = `${page.title} | Latin Launchpad`;
+    if (titles.has(title)) throw new Error(`Duplicate title: ${title}`);
+    titles.add(title);
+    if (!page.description || page.description.length < 40) {
+      throw new Error(`Short description for ${page.relPath}`);
+    }
+    if (descriptions.has(page.description)) {
+      throw new Error(`Duplicate description for ${page.relPath}: ${page.description}`);
+    }
+    descriptions.add(page.description);
+  });
+}
+
 function generate(outDir) {
   const data = loadData();
   const pages = [
+    ...buildLandingPages({
+      esc,
+      summarize,
+      SITE,
+      LEVELS,
+      data,
+      wordsForGrade,
+      firstLessonHref,
+      flashcardHref
+    }),
     ...vocabularyPages(data),
+    ...vocabularyLessonPages(data),
     ...grammarPages(data),
     ...culturePages(data),
     derivativePage(data),
@@ -901,15 +1132,7 @@ function generate(outDir) {
     printablesPage(data)
   ];
   pages.unshift(hubPage(pages.slice()));
-  const titles = new Set();
-  pages.forEach((page) => {
-    const title = `${page.title} | Latin Launchpad`;
-    if (titles.has(title)) throw new Error(`Duplicate title: ${title}`);
-    titles.add(title);
-    if (!page.description || page.description.length < 40) {
-      throw new Error(`Short description for ${page.relPath}`);
-    }
-  });
+  disambiguateCopy(pages);
   const rendered = new Map(pages.map((page) => [page.relPath, renderPage(page)]));
   assertLinks(rendered);
   fs.rmSync(path.join(outDir, 'topics'), { recursive: true, force: true });
@@ -921,7 +1144,8 @@ function generate(outDir) {
   fs.mkdirSync(outDir, { recursive: true });
   fs.writeFileSync(path.join(outDir, 'sitemap.xml'), sitemapXml(pages.map((page) => page.relPath)));
   fs.writeFileSync(path.join(outDir, 'robots.txt'), robotsTxt());
-  return { pages: pages.map((page) => page.relPath), outDir };
+  const analytics = stampAnalytics(outDir);
+  return { pages: pages.map((page) => page.relPath), outDir, analytics };
 }
 
 if (require.main === module) {
@@ -930,4 +1154,11 @@ if (require.main === module) {
   console.log(`Wrote ${result.pages.length} topic pages to ${outDir}`);
 }
 
-module.exports = { generate, STATIC_URLS, SITE };
+module.exports = {
+  generate,
+  STATIC_URLS,
+  SITE,
+  measurementId,
+  ensureAnalytics,
+  stampAnalytics
+};

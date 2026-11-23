@@ -209,6 +209,11 @@ button:disabled {
   text-align: left;
 }
 
+.header-more-menu a.pill-button {
+  display: block;
+  text-decoration: none;
+}
+
 .header-more-menu .pill-button:hover,
 .header-more-menu .pill-button:focus-visible {
   background: var(--primary-soft);
@@ -5738,6 +5743,87 @@ main:focus {
   padding: 12px 16px;
   border-left: 4px solid var(--accent);
   background: #fffaf3;
+}
+
+.word-groups {
+  display: grid;
+  gap: 8px;
+}
+
+.word-group h2 {
+  margin-bottom: 8px;
+}
+
+.print-citation {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+@media (min-width: 760px) {
+  .word-groups {
+    columns: 2;
+    column-gap: 28px;
+  }
+
+  .word-group {
+    break-inside: avoid;
+  }
+}
+
+@media print {
+  @page {
+    size: letter;
+    margin: 0.55in;
+  }
+
+  html:has(body.print-document),
+  body.print-document {
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+  }
+
+  body.print-document > *:not(#printArea) {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  body.print-document .analytics-consent,
+  body.print-document .skip-link,
+  body.print-document .trust-header nav,
+  body.print-document .site-footer,
+  body.print-document .no-print {
+    display: none !important;
+  }
+
+  body.print-document .app-shell,
+  body.print-document .topic-page {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+    border: 0;
+  }
+
+  body.print-document .word-groups {
+    columns: 2;
+    column-gap: 0.3in;
+  }
+
+  body.print-document .word-group,
+  body.print-document .topic-table,
+  body.print-document .topic-table tr,
+  body.print-document h2,
+  body.print-document h3 {
+    break-inside: avoid;
+  }
+
+  body.print-document .topic-table td,
+  body.print-document .topic-table th {
+    padding: 1px 6px;
+    font-size: 10.5pt;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
