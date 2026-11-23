@@ -64,7 +64,7 @@ test('generated topic pages are static, linked from the hub, and listed in the s
   STATIC_URLS.forEach((url) => assert.ok(locs.includes(url), url));
   assert.equal(locs.includes('https://latinlaunchpad.com/404.html'), false);
 
-  const htmlFiles = walk(path.join(dir, 'topics')).filter((file) => file.endsWith('.html'));
+  const htmlFiles = walk(dir).filter((file) => file.endsWith('.html'));
   assert.equal(htmlFiles.length, result.pages.length);
   assert.ok(htmlFiles.length > 50);
   const hub = fs.readFileSync(path.join(dir, 'topics', 'index.html'), 'utf8');

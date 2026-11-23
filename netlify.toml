@@ -61,3 +61,58 @@
   to = "/og-image.jpg"
   status = 301
   force = true
+
+[[redirects]]
+  from = "/start-here"
+  to = "/start-here.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/latin-by-grade"
+  to = "/latin-by-grade.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/latin-vocabulary"
+  to = "/latin-vocabulary.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/latin-grammar"
+  to = "/latin-grammar.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/latin-prayers"
+  to = "/latin-prayers.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/first-100-latin-words"
+  to = "/first-100-latin-words.html"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/latin-in-10-minutes"
+  to = "/latin-in-10-minutes.html"
+  status = 301
+  force = true
+
+# The apex domain is canonical. Netlify also 301s www to the apex as the primary domain.
+[[redirects]]
+  from = "https://www.latinlaunchpad.com/*"
+  to = "https://latinlaunchpad.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.latinlaunchpad.com/"
+  to = "https://latinlaunchpad.com/"
+  status = 301
+  force = true
